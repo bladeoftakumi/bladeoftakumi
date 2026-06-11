@@ -1,0 +1,5 @@
+# Blade of Takumi — essay manifest
+# One filename per line, in any order (the page sorts by date).
+# Lines starting with # are ignored.
+the-weight-of-finished-things.txt
+on-sharpening.txt

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Suzuri — Blade of Takumi</title>
+<link rel="icon" type="image/png" href="assets/logo-line.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Spectral:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-soft: #0e0d0b;
+    --surface: #121110;
+    --surface-2: #161412;
+    --line: #211f1b;
+    --line-soft: #1a1815;
+    --ink: #e9e4d8;
+    --ink-dim: #9a948a;
+    --ink-faint: #6b665d;
+    --accent: #b4965a;
+    --accent-soft: rgba(180,150,90,0.14);
+    --font-head: 'Instrument Serif', Georgia, serif;
+    --font-body: 'Spectral', Georgia, serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  a { color: inherit; text-decoration: none; }
+
+  .mono {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    font-size: 0.72rem;
+  }
+  .wrap { width: min(1180px, 92vw); margin: 0 auto; }
+
+  /* ---------- NAV ---------- */
+  nav.site {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(10,10,10,0.78);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  nav.site .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 68px;
+  }
+  .logo {
+    font-family: var(--font-head);
+    color: var(--accent);
+    font-size: 1.18rem;
+    letter-spacing: 0.04em;
+  }
+  .navlinks { display: flex; gap: clamp(1.4rem, 3vw, 2.8rem); }
+  .navlinks a { color: var(--ink-dim); transition: color 0.3s ease; position: relative; }
+  .navlinks a::after {
+    content: ""; position: absolute; left: 0; bottom: -6px;
+    width: 100%; height: 1px; background: var(--accent);
+    transform: scaleX(0); transform-origin: left; transition: transform 0.35s ease;
+  }
+  .navlinks a:hover { color: var(--ink); }
+  .navlinks a:hover::after { transform: scaleX(1); }
+
+  /* ---------- PAGE HEAD ---------- */
+  .page-head { padding: clamp(3rem, 7vh, 5rem) 0 0; }
+  .sec-head { display: flex; align-items: center; gap: 1.6rem; }
+  .sec-head .label { color: var(--accent); white-space: nowrap; }
+  .sec-head .rule { height: 1px; background: linear-gradient(90deg, var(--accent), var(--line)); flex: 1; opacity: 0.6; }
+  .page-title {
+    font-family: var(--font-head);
+    font-weight: 400;
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    line-height: 1;
+    margin: 2rem 0 0;
+    letter-spacing: 0.01em;
+  }
+  .page-dek {
+    font-style: italic;
+    color: var(--ink-dim);
+    font-size: 1.15rem;
+    margin: 1rem 0 0;
+    max-width: 52ch;
+    line-height: 1.5;
+  }
+
+  /* ---------- WORKBENCH ---------- */
+  .bench {
+    display: grid;
+    grid-template-columns: minmax(360px, 5fr) 7fr;
+    gap: clamp(1.5rem, 3vw, 3rem);
+    align-items: start;
+    padding: clamp(2.5rem, 6vh, 4rem) 0 clamp(5rem, 10vh, 7rem);
+  }
+
+  /* form column */
+  .composer {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 2rem 1.8rem;
+    display: flex; flex-direction: column; gap: 1.5rem;
+    position: sticky; top: 92px;
+  }
+  .field { display: flex; flex-direction: column; gap: 0.55rem; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .field label {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+  }
+  .field label em { color: var(--ink-faint); font-style: normal; text-transform: none; letter-spacing: 0.1em; }
+  .field input,
+  .field textarea {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    padding: 0.7rem 0.85rem;
+    outline: none;
+    border-radius: 0;
+    transition: border-color 0.3s ease;
+    width: 100%;
+  }
+  .field input:focus,
+  .field textarea:focus { border-color: var(--accent); }
+  .field input::placeholder,
+  .field textarea::placeholder { color: var(--ink-faint); font-style: italic; }
+  .field textarea {
+    min-height: 320px;
+    resize: vertical;
+  }
+  .field input[type="date"] { color-scheme: dark; }
+  .hint {
+    color: var(--ink-faint);
+    font-size: 0.85rem;
+    font-style: italic;
+    line-height: 1.5;
+    margin: 0;
+  }
+  .hint code {
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.72rem;
+    color: var(--ink-dim);
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    padding: 0.05rem 0.35rem;
+  }
+
+  .actions { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+  .btn {
+    appearance: none;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #0a0a0a;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    padding: 0.85rem 1.3rem;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  .btn:hover { background: #c5a76b; border-color: #c5a76b; }
+  .btn.ghost { background: transparent; color: var(--ink-dim); border-color: var(--line); }
+  .btn.ghost:hover { color: var(--accent); border-color: var(--accent); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* after-download instructions */
+  .shelf {
+    border-top: 1px solid var(--line);
+    padding-top: 1.4rem;
+    display: flex; flex-direction: column; gap: 0.9rem;
+  }
+  .shelf-title { color: var(--ink-dim); font-size: 0.62rem; }
+  .shelf-step { display: flex; gap: 0.8rem; align-items: baseline; color: var(--ink-dim); font-size: 0.95rem; line-height: 1.5; }
+  .shelf-step .n { color: var(--accent); font-family: var(--font-mono); font-size: 0.66rem; }
+  .shelf-link { color: var(--accent); border-bottom: 1px solid var(--accent-soft); transition: border-color 0.3s ease; }
+  .shelf-link:hover { border-color: var(--accent); }
+  .manifest-line {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    padding: 0.5rem 0.5rem 0.5rem 0.85rem;
+  }
+  .manifest-line code {
+    flex: 1; min-width: 0;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--ink);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .copy-btn {
+    appearance: none;
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    padding: 0.45rem 0.7rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.3s ease, border-color 0.3s ease;
+  }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* preview column */
+  .preview {
+    border: 1px solid var(--line);
+    background: var(--bg-soft);
+    padding: clamp(2rem, 4vw, 3.5rem);
+    min-height: 70vh;
+  }
+  .pv-tag { color: var(--ink-faint); font-size: 0.6rem; margin-bottom: 2.4rem; display: flex; align-items: center; gap: 1.2rem; }
+  .pv-tag .rule { height: 1px; background: var(--line); flex: 1; }
+  .reader-meta { display: flex; align-items: baseline; gap: 1.4rem; color: var(--ink-faint); font-size: 0.66rem; }
+  .reader-title {
+    font-family: var(--font-head);
+    font-weight: 400;
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.06;
+    margin: 1rem 0 0;
+    letter-spacing: 0.01em;
+    text-wrap: pretty;
+  }
+  .reader-title.empty, .reader-body .empty { color: var(--ink-faint); font-style: italic; }
+  .reader-sub {
+    font-style: italic;
+    color: var(--ink-dim);
+    font-size: 1.15rem;
+    line-height: 1.45;
+    margin: 1rem 0 0;
+    text-wrap: pretty;
+  }
+  .reader-rule {
+    height: 1px; margin: 2.2rem 0 2.4rem;
+    background: linear-gradient(90deg, var(--accent), var(--line));
+    opacity: 0.6;
+  }
+  .reader-body p {
+    font-size: 1.12rem;
+    line-height: 1.75;
+    font-weight: 300;
+    color: var(--ink);
+    margin: 0 0 1.5em;
+    text-wrap: pretty;
+  }
+  .reader-body p.empty { font-size: 1.05rem; }
+  .reader-body h2 {
+    font-family: var(--font-head);
+    font-weight: 400;
+    font-size: 1.6rem;
+    line-height: 1.15;
+    margin: 2.2em 0 0.7em;
+    color: var(--ink);
+  }
+  .reader-body blockquote {
+    margin: 2em 0;
+    padding: 0;
+    font-family: var(--font-head);
+    font-style: italic;
+    font-size: 1.45rem;
+    line-height: 1.35;
+    color: var(--accent);
+    text-wrap: pretty;
+  }
+  .reader-body hr { border: none; height: 1px; width: 120px; margin: 2.6em auto; background: var(--line); }
+
+  /* ---------- FOOTER ---------- */
+  footer.site {
+    border-top: 1px solid var(--line-soft);
+    padding: 2.4rem 0;
+    background: var(--bg-soft);
+  }
+  footer.site .wrap { display: flex; align-items: center; justify-content: space-between; }
+  footer .f-brand { font-family: var(--font-head); color: var(--accent); font-size: 1rem; letter-spacing: 0.04em; }
+  footer .f-copy { color: var(--ink-faint); font-size: 0.64rem; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 980px) {
+    .bench { grid-template-columns: 1fr; }
+    .composer { position: static; }
+  }
+  @media (max-width: 860px) {
+    .navlinks { gap: 1.2rem; }
+    .navlinks a { font-size: 0.62rem; letter-spacing: 0.18em; }
+  }
+  @media (max-width: 560px) {
+    nav.site .wrap { height: 58px; }
+    .logo { font-size: 1rem; }
+    .navlinks a:nth-child(1) { display: none; }
+    .field-row { grid-template-columns: 1fr; }
+    footer.site .wrap { flex-direction: column; gap: 0.8rem; align-items: flex-start; }
+  }
+</style>
+</head>
+<body data-screen-label="Suzuri — essay composer">
+<nav class="site">
+  <div class="wrap">
+    <a href="index.html" class="logo">Blade of Takumi</a>
+    <div class="navlinks">
+      <a class="mono" href="index.html#presence">Presence</a>
+      <a class="mono" href="index.html#tools">Tools</a>
+      <a class="mono" href="Essays.html">Essays</a>
+      <a class="mono" href="https://www.instagram.com/bladeoftakumi" target="_blank" rel="noopener noreferrer">Connect</a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <div class="sec-head"><span class="label mono">Suzuri · Essay Composer</span><span class="rule"></span></div>
+    <h1 class="page-title">Prepare the ink.</h1>
+    <p class="page-dek">Fill the fields, watch the essay take shape, and receive a perfectly formatted file — no formatting to remember.</p>
+  </div>
+</header>
+
+<main class="bench wrap">
+  <section class="composer" aria-label="Essay form">
+    <div class="field">
+      <label for="f-title">Title</label>
+      <input id="f-title" type="text" placeholder="The title of your essay" autocomplete="off" />
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="f-date">Date</label>
+        <input id="f-date" type="date" />
+      </div>
+      <div class="field">
+        <label for="f-file">Filename <em>(auto)</em></label>
+        <input id="f-file" type="text" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="f-sub">Subtitle <em>(optional)</em></label>
+      <input id="f-sub" type="text" placeholder="A one-line dek beneath the title" autocomplete="off" />
+    </div>
+
+    <div class="field">
+      <label for="f-body">Essay</label>
+      <textarea id="f-body" placeholder="Write here. A blank line starts a new paragraph." spellcheck="true"></textarea>
+      <p class="hint">Blank line = new paragraph &nbsp;·&nbsp; <code>##&nbsp;Heading</code> &nbsp;·&nbsp; <code>&gt;&nbsp;pulled quote</code> &nbsp;·&nbsp; <code>---</code> divider</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn" id="b-download" type="button">Download .txt</button>
+      <button class="btn ghost" id="b-copy" type="button">Copy contents</button>
+      <button class="btn ghost" id="b-clear" type="button">Clear</button>
+    </div>
+
+    <div class="shelf">
+      <span class="shelf-title mono">Then, to publish</span>
+      <div class="shelf-step"><span class="n">1</span><span>Drop the downloaded file into the <strong>essays</strong> folder of the repo — <a class="shelf-link" href="https://github.com/bladeoftakumi/bladeoftakumi/upload/main/essays" target="_blank" rel="noopener noreferrer">upload it here</a>.</span></div>
+      <div class="shelf-step"><span class="n">2</span><span>That's it — the Essays page reads the folder on its own.</span></div>
+    </div>
+  </section>
+
+  <section class="preview" aria-label="Live preview">
+    <div class="pv-tag mono"><span>Preview — as it will appear</span><span class="rule"></span></div>
+    <div class="reader-meta mono"><span id="pv-date"></span><span id="pv-time"></span></div>
+    <h2 class="reader-title" id="pv-title"></h2>
+    <p class="reader-sub" id="pv-sub" hidden=""></p>
+    <div class="reader-rule"></div>
+    <div class="reader-body" id="pv-body"></div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span class="f-brand">Blade of Takumi</span>
+    <span class="f-copy mono">© 2026 — All rights reserved</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var DRAFT_KEY = "suzuri-draft-v1";
+  var $ = function (id) { return document.getElementById(id); };
+  var fTitle = $("f-title"), fDate = $("f-date"), fFile = $("f-file"),
+      fSub = $("f-sub"), fBody = $("f-body");
+  var fileTouched = false;
+
+  function esc(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function slugify(s) {
+    return s.toLowerCase()
+      .replace(/['’]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60);
+  }
+  function todayISO() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function fmtDate(iso) {
+    if (!iso) return "Undated";
+    var d = new Date(iso + "T12:00:00");
+    if (isNaN(d)) return "Undated";
+    return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  }
+  function readTime(text) {
+    var words = text.split(/\s+/).filter(Boolean).length;
+    return Math.max(1, Math.round(words / 220)) + " min read";
+  }
+
+  /* ---------- the output file ---------- */
+  function buildFile() {
+    var out = [];
+    out.push((fTitle.value || "Untitled").trim());
+    if (fDate.value) out.push("date: " + fDate.value);
+    if (fSub.value.trim()) out.push("subtitle: " + fSub.value.trim());
+    out.push("");
+    out.push(fBody.value.replace(/\r\n/g, "\n").trim());
+    out.push("");
+    return out.join("\n");
+  }
+  function filename() {
+    var f = fFile.value.trim();
+    if (!f) f = slugify(fTitle.value) || "untitled-essay";
+    if (!/\.txt$/i.test(f)) f += ".txt";
+    return f;
+  }
+
+  /* ---------- preview ---------- */
+  function bodyToHtml(text) {
+    var lines = text.replace(/\r\n/g, "\n").split("\n");
+    var html = [], para = [];
+    function flush() {
+      if (para.length) { html.push("<p>" + esc(para.join(" ")) + "</p>"); para = []; }
+    }
+    for (var i = 0; i < lines.length; i++) {
+      var l = lines[i].trim();
+      if (l === "") { flush(); continue; }
+      if (l === "---") { flush(); html.push("<hr />"); continue; }
+      if (/^##\s/.test(l)) { flush(); html.push("<h2>" + esc(l.replace(/^##\s+/, "")) + "</h2>"); continue; }
+      if (/^>\s/.test(l)) { flush(); html.push("<blockquote>" + esc(l.replace(/^>\s+/, "")) + "</blockquote>"); continue; }
+      para.push(l);
+    }
+    flush();
+    return html.join("\n");
+  }
+
+  function render() {
+    var title = fTitle.value.trim();
+    var titleEl = $("pv-title");
+    titleEl.textContent = title || "Untitled";
+    titleEl.classList.toggle("empty", !title);
+
+    $("pv-date").textContent = fmtDate(fDate.value);
+    $("pv-time").textContent = readTime(fBody.value);
+
+    var subEl = $("pv-sub");
+    if (fSub.value.trim()) { subEl.hidden = false; subEl.textContent = fSub.value.trim(); }
+    else { subEl.hidden = true; }
+
+    var bodyEl = $("pv-body");
+    var bh = bodyToHtml(fBody.value);
+    bodyEl.innerHTML = bh || '<p class="empty">Your essay will appear here as you write…</p>';
+
+    if (!fileTouched) fFile.value = slugify(title) || "";
+  }
+
+  /* ---------- persistence ---------- */
+  function saveDraft() {
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({
+        title: fTitle.value, date: fDate.value, sub: fSub.value,
+        body: fBody.value, file: fileTouched ? fFile.value : ""
+      }));
+    } catch (e) {}
+  }
+  function loadDraft() {
+    try {
+      var d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+      if (!d) return;
+      fTitle.value = d.title || "";
+      fDate.value = d.date || todayISO();
+      fSub.value = d.sub || "";
+      fBody.value = d.body || "";
+      if (d.file) { fFile.value = d.file; fileTouched = true; }
+    } catch (e) {}
+  }
+
+  /* ---------- actions ---------- */
+  function flash(btn, msg) {
+    var old = btn.textContent;
+    btn.textContent = msg;
+    setTimeout(function () { btn.textContent = old; }, 1400);
+  }
+
+  $("b-download").addEventListener("click", function () {
+    var blob = new Blob([buildFile()], { type: "text/plain;charset=utf-8" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename();
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    flash(this, "Saved ✓");
+  });
+
+  $("b-copy").addEventListener("click", function () {
+    var self = this;
+    navigator.clipboard.writeText(buildFile()).then(function () { flash(self, "Copied ✓"); });
+  });
+
+  $("b-clear").addEventListener("click", function () {
+    if (fBody.value.trim() && !confirm("Clear the draft? This can't be undone.")) return;
+    fTitle.value = ""; fSub.value = ""; fBody.value = ""; fFile.value = "";
+    fDate.value = todayISO();
+    fileTouched = false;
+    saveDraft();
+    render();
+  });
+
+  fFile.addEventListener("input", function () {
+    fileTouched = fFile.value.trim() !== "";
+    saveDraft();
+  });
+
+  [fTitle, fDate, fSub, fBody].forEach(function (el) {
+    el.addEventListener("input", function () { render(); saveDraft(); });
+  });
+
+  /* ---------- init ---------- */
+  fDate.value = todayISO();
+  loadDraft();
+  render();
+})();
+</script>
+</body>
+</html>
