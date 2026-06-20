@@ -27,6 +27,14 @@
   }
 
   * { box-sizing: border-box; }
+
+  /* minimal scrollbar */
+  * { scrollbar-width: thin; scrollbar-color: #2a2620 transparent; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2620; border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent, #b4965a); background-clip: padding-box; }
+
   body {
     margin: 0;
     background: var(--bg);
@@ -145,6 +153,43 @@
     resize: vertical;
   }
   .field input[type="date"] { color-scheme: dark; }
+
+  /* ---------- AUDIO SLOT ---------- */
+  .audio-pick {
+    width: 100%;
+    display: flex; align-items: center; gap: 0.7rem;
+    background: var(--bg);
+    border: 1px dashed var(--line);
+    color: var(--ink-dim);
+    font-family: var(--font-body);
+    font-size: 1.02rem;
+    padding: 0.85rem 0.9rem;
+    cursor: pointer;
+    transition: border-color 0.3s ease, color 0.3s ease;
+  }
+  .audio-pick:hover { border-color: var(--accent); color: var(--ink); }
+  .audio-pick .ap-glyph { color: var(--accent); font-size: 1.05rem; line-height: 1; }
+  .audio-loaded { display: flex; flex-direction: column; gap: 0.7rem; }
+  .audio-loaded[hidden] { display: none; }
+  .audio-name {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 1rem;
+  }
+  .audio-name .fn {
+    font-family: var(--font-mono); font-size: 0.72rem; color: var(--ink-dim);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .audio-remove {
+    appearance: none; background: transparent; border: none;
+    color: var(--ink-faint);
+    font-family: var(--font-mono); font-size: 0.56rem;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    border-bottom: 1px solid var(--line); padding: 0 0 1px; cursor: pointer;
+    white-space: nowrap;
+  }
+  .audio-remove:hover { color: var(--accent); border-color: var(--accent); }
+
+  .reader-audio { margin: 1.6rem 0 0; }
+  .reader-audio audio { width: 100%; height: 40px; }
   .hint {
     color: var(--ink-faint);
     font-size: 0.85rem;
@@ -161,6 +206,42 @@
     border: 1px solid var(--line);
     padding: 0.05rem 0.35rem;
   }
+
+  /* ---------- FORMAT TOOLBAR ---------- */
+  .fmt-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .fmt-btn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    padding: 0.5rem 0.7rem;
+    cursor: pointer;
+    transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  }
+  .fmt-btn .gl {
+    font-family: var(--font-head);
+    font-size: 0.95rem;
+    line-height: 1;
+    letter-spacing: 0;
+    color: var(--ink);
+    transition: color 0.25s ease;
+  }
+  .fmt-btn .gl.b { font-weight: 700; }
+  .fmt-btn .gl.i { font-style: italic; }
+  .fmt-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--bg); }
+  .fmt-btn:hover .gl { color: var(--accent); }
+  .fmt-btn:active { background: var(--accent-soft); }
 
   .actions { display: flex; gap: 0.8rem; flex-wrap: wrap; }
   .btn {
@@ -180,6 +261,42 @@
   .btn.ghost { background: transparent; color: var(--ink-dim); border-color: var(--line); }
   .btn.ghost:hover { color: var(--accent); border-color: var(--accent); }
   .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn.locked { background: transparent; color: var(--ink-faint); border-color: var(--line); }
+  .btn.locked:hover { background: transparent; color: var(--accent); border-color: var(--accent); }
+
+  /* publish status + account chip */
+  .pub-status { font-size: 0.88rem; font-style: italic; line-height: 1.5; margin: 0; color: var(--ink-faint); min-height: 1.2em; }
+  .pub-status.ok { color: var(--accent); font-style: normal; }
+  .pub-status.err { color: #d98c6a; font-style: normal; }
+  .pub-status a { color: var(--accent); border-bottom: 1px solid var(--accent-soft); }
+  .pub-status a:hover { border-color: var(--accent); }
+  .edit-banner {
+    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 0.8rem;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    color: var(--ink);
+    padding: 0.8rem 1rem;
+    font-size: 0.95rem;
+  }
+  .edit-banner b { color: var(--accent); font-weight: 600; }
+  .edit-banner button {
+    appearance: none; cursor: pointer;
+    background: transparent; border: none;
+    color: var(--ink-dim);
+    font-family: var(--font-mono); font-size: 0.58rem;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    border-bottom: 1px solid var(--line);
+    padding: 0 0 1px;
+  }
+  .edit-banner button:hover { color: var(--accent); border-color: var(--accent); }
+  .nav-acct {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    color: var(--ink-faint) !important;
+  }
+  .nav-acct .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: none; }
+  .nav-acct.in { color: var(--ink-dim) !important; }
+  .nav-acct.in .dot { display: inline-block; }
+  .nav-acct::after { display: none !important; }
 
   /* after-download instructions */
   .shelf {
@@ -282,6 +399,14 @@
     text-wrap: pretty;
   }
   .reader-body hr { border: none; height: 1px; width: 120px; margin: 2.6em auto; background: var(--line); }
+  .reader-body a {
+    color: var(--accent);
+    border-bottom: 1px solid var(--accent-soft);
+    transition: border-color 0.3s ease;
+  }
+  .reader-body a:hover { border-color: var(--accent); }
+  .reader-body strong { font-weight: 600; color: var(--ink); }
+  .reader-body em { font-style: italic; }
 
   /* ---------- FOOTER ---------- */
   footer.site {
@@ -320,6 +445,7 @@
       <a class="mono" href="index.html#tools">Tools</a>
       <a class="mono" href="Essays.html">Essays</a>
       <a class="mono" href="https://www.instagram.com/bladeoftakumi" target="_blank" rel="noopener noreferrer">Connect</a>
+      <a class="mono nav-acct" id="nav-acct" href="index.html" title="Account"><span class="dot"></span><span id="nav-acct-label">Log in</span></a>
     </div>
   </div>
 </nav>
@@ -328,12 +454,15 @@
   <div class="wrap">
     <div class="sec-head"><span class="label mono">Suzuri · Essay Composer</span><span class="rule"></span></div>
     <h1 class="page-title">Prepare the ink.</h1>
-    <p class="page-dek">Fill the fields, watch the essay take shape, and receive a perfectly formatted file — no formatting to remember.</p>
   </div>
 </header>
 
 <main class="bench wrap">
   <section class="composer" aria-label="Essay form">
+    <div class="edit-banner" id="edit-banner" hidden="">
+      <span>Editing <b id="edit-banner-title"></b> — publishing updates it in place.</span>
+      <button type="button" id="edit-cancel">Start a new essay instead</button>
+    </div>
     <div class="field">
       <label for="f-title">Title</label>
       <input id="f-title" type="text" placeholder="The title of your essay" autocomplete="off" />
@@ -356,21 +485,40 @@
     </div>
 
     <div class="field">
+      <label for="f-audio">Audio <em>(optional · one per essay)</em></label>
+      <input id="f-audio" type="file" accept="audio/*" hidden="" />
+      <button class="audio-pick" id="audio-pick" type="button"><span class="ap-glyph">♪</span><span id="audio-pick-text">Add an audio file</span></button>
+      <div class="audio-loaded" id="audio-loaded" hidden="">
+        <div id="audio-player"></div>
+        <div class="audio-name"><span class="fn" id="audio-fn"></span><button class="audio-remove" id="audio-remove" type="button">Remove</button></div>
+      </div>
+    </div>
+
+    <div class="field">
       <label for="f-body">Essay</label>
+      <div class="fmt-bar" role="toolbar" aria-label="Formatting">
+        <button class="fmt-btn" type="button" data-fmt="heading" title="Heading — turn the current line into a section heading"><span class="gl">H</span> Heading</button>
+        <button class="fmt-btn" type="button" data-fmt="bold" title="Bold the selected text (Ctrl/Cmd+B)"><span class="gl b">B</span> Bold</button>
+        <button class="fmt-btn" type="button" data-fmt="italic" title="Italicise the selected text (Ctrl/Cmd+I)"><span class="gl i">I</span> Italic</button>
+        <button class="fmt-btn" type="button" data-fmt="quote" title="Pull the current line out as a quote"><span class="gl">“</span> Quote</button>
+        <button class="fmt-btn" type="button" data-fmt="link" title="Insert a link (Ctrl/Cmd+K)"><span class="gl">↗</span> Link</button>
+        <button class="fmt-btn" type="button" data-fmt="divider" title="Insert a divider between sections"><span class="gl">—</span> Divider</button>
+      </div>
       <textarea id="f-body" placeholder="Write here. A blank line starts a new paragraph." spellcheck="true"></textarea>
-      <p class="hint">Blank line = new paragraph &nbsp;·&nbsp; <code>##&nbsp;Heading</code> &nbsp;·&nbsp; <code>&gt;&nbsp;pulled quote</code> &nbsp;·&nbsp; <code>---</code> divider</p>
+      <p class="hint">Select text, then tap a button above to format it — or type the marks yourself: <code>##&nbsp;Heading</code> &nbsp;·&nbsp; <code>**bold**</code> &nbsp;·&nbsp; <code>*italic*</code> &nbsp;·&nbsp; <code>[text](url)</code></p>
     </div>
 
     <div class="actions">
-      <button class="btn" id="b-download" type="button">Download .txt</button>
+      <button class="btn" id="b-publish" type="button">Publish to site</button>
+      <button class="btn ghost" id="b-download" type="button">Download .txt</button>
       <button class="btn ghost" id="b-copy" type="button">Copy contents</button>
       <button class="btn ghost" id="b-clear" type="button">Clear</button>
     </div>
+    <p class="pub-status" id="pub-status"></p>
 
     <div class="shelf">
-      <span class="shelf-title mono">Then, to publish</span>
-      <div class="shelf-step"><span class="n">1</span><span>Drop the downloaded file into the <strong>essays</strong> folder of the repo — <a class="shelf-link" href="https://github.com/bladeoftakumi/bladeoftakumi/upload/main/essays" target="_blank" rel="noopener noreferrer">upload it here</a>.</span></div>
-      <div class="shelf-step"><span class="n">2</span><span>That's it — the Essays page reads the folder on its own.</span></div>
+      <span class="shelf-title mono" id="shelf-title">Publishing</span>
+      <div class="shelf-step" id="shelf-body"><span class="n">↗</span><span>When you're logged in, <strong>Publish to site</strong> sends the essay straight to the Essays page — no upload, no file to manage.</span></div>
     </div>
   </section>
 
@@ -379,6 +527,7 @@
     <div class="reader-meta mono"><span id="pv-date"></span><span id="pv-time"></span></div>
     <h2 class="reader-title" id="pv-title"></h2>
     <p class="reader-sub" id="pv-sub" hidden=""></p>
+    <div class="reader-audio" id="pv-audio" hidden=""><div id="pv-audio-player"></div></div>
     <div class="reader-rule"></div>
     <div class="reader-body" id="pv-body"></div>
   </section>
@@ -391,13 +540,24 @@
   </div>
 </footer>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="botakumi-auth.js"></script>
+<script src="botakumi-account.js"></script>
+<script src="audio-player.js"></script>
+
 <script>
 (function () {
   var DRAFT_KEY = "suzuri-draft-v1";
   var $ = function (id) { return document.getElementById(id); };
   var fTitle = $("f-title"), fDate = $("f-date"), fFile = $("f-file"),
-      fSub = $("f-sub"), fBody = $("f-body");
+      fSub = $("f-sub"), fBody = $("f-body"), fAudio = $("f-audio");
   var fileTouched = false;
+  var audioName = "";   // remembered filename (persisted in the draft)
+  var audioURL = "";    // session-only object URL for in-page playback
 
   function esc(s) {
     return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -430,6 +590,7 @@
     out.push((fTitle.value || "Untitled").trim());
     if (fDate.value) out.push("date: " + fDate.value);
     if (fSub.value.trim()) out.push("subtitle: " + fSub.value.trim());
+    if (audioName) out.push("audio: " + audioName);
     out.push("");
     out.push(fBody.value.replace(/\r\n/g, "\n").trim());
     out.push("");
@@ -443,18 +604,31 @@
   }
 
   /* ---------- preview ---------- */
+  function inline(s) {
+    s = esc(s);
+    // links: [text](url)
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, t, u) {
+      return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + t + '</a>';
+    });
+    // bold: **text**
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // italic: *text*
+    s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    return s;
+  }
+
   function bodyToHtml(text) {
     var lines = text.replace(/\r\n/g, "\n").split("\n");
     var html = [], para = [];
     function flush() {
-      if (para.length) { html.push("<p>" + esc(para.join(" ")) + "</p>"); para = []; }
+      if (para.length) { html.push("<p>" + inline(para.join(" ")) + "</p>"); para = []; }
     }
     for (var i = 0; i < lines.length; i++) {
       var l = lines[i].trim();
       if (l === "") { flush(); continue; }
       if (l === "---") { flush(); html.push("<hr />"); continue; }
-      if (/^##\s/.test(l)) { flush(); html.push("<h2>" + esc(l.replace(/^##\s+/, "")) + "</h2>"); continue; }
-      if (/^>\s/.test(l)) { flush(); html.push("<blockquote>" + esc(l.replace(/^>\s+/, "")) + "</blockquote>"); continue; }
+      if (/^##\s/.test(l)) { flush(); html.push("<h2>" + inline(l.replace(/^##\s+/, "")) + "</h2>"); continue; }
+      if (/^>\s/.test(l)) { flush(); html.push("<blockquote>" + inline(l.replace(/^>\s+/, "")) + "</blockquote>"); continue; }
       para.push(l);
     }
     flush();
@@ -474,6 +648,13 @@
     if (fSub.value.trim()) { subEl.hidden = false; subEl.textContent = fSub.value.trim(); }
     else { subEl.hidden = true; }
 
+    var pvAudio = $("pv-audio"), pvPlayer = $("pv-audio-player");
+    if (audioURL) {
+      pvAudio.hidden = false;
+      if (!pvPlayer.firstChild) { pvPlayer.innerHTML = BOTAudio.html(audioURL); BOTAudio.wire(pvPlayer); }
+      else { BOTAudio.setSrc(pvPlayer.firstChild, audioURL); }
+    } else { pvAudio.hidden = true; pvPlayer.innerHTML = ""; }
+
     var bodyEl = $("pv-body");
     var bh = bodyToHtml(fBody.value);
     bodyEl.innerHTML = bh || '<p class="empty">Your essay will appear here as you write…</p>';
@@ -486,7 +667,7 @@
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify({
         title: fTitle.value, date: fDate.value, sub: fSub.value,
-        body: fBody.value, file: fileTouched ? fFile.value : ""
+        body: fBody.value, file: fileTouched ? fFile.value : "", audio: audioName
       }));
     } catch (e) {}
   }
@@ -499,6 +680,7 @@
       fSub.value = d.sub || "";
       fBody.value = d.body || "";
       if (d.file) { fFile.value = d.file; fileTouched = true; }
+      if (d.audio) { audioName = d.audio; }
     } catch (e) {}
   }
 
@@ -531,6 +713,7 @@
     fTitle.value = ""; fSub.value = ""; fBody.value = ""; fFile.value = "";
     fDate.value = todayISO();
     fileTouched = false;
+    clearAudio();
     saveDraft();
     render();
   });
@@ -540,14 +723,331 @@
     saveDraft();
   });
 
+  /* ---------- audio slot ---------- */
+  function updateAudioUI() {
+    var pick = $("audio-pick"), loaded = $("audio-loaded");
+    var player = $("audio-player"), pickText = $("audio-pick-text");
+    if (audioName) {
+      pick.hidden = true; loaded.hidden = false;
+      $("audio-fn").textContent = audioName;
+      if (audioURL) {
+        if (!player.firstChild) { player.innerHTML = BOTAudio.html(audioURL); BOTAudio.wire(player); }
+        else { BOTAudio.setSrc(player.firstChild, audioURL); }
+      } else { player.innerHTML = ""; }
+    } else {
+      pick.hidden = false; loaded.hidden = true;
+      pickText.textContent = "Add an audio file";
+      player.innerHTML = "";
+    }
+  }
+  function clearAudio() {
+    if (audioURL) { try { URL.revokeObjectURL(audioURL); } catch (e) {} }
+    audioName = ""; audioURL = ""; fAudio.value = "";
+    updateAudioUI();
+  }
+  $("audio-pick").addEventListener("click", function () { fAudio.click(); });
+  fAudio.addEventListener("change", function () {
+    var file = fAudio.files && fAudio.files[0];
+    if (!file) return;
+    if (audioURL) { try { URL.revokeObjectURL(audioURL); } catch (e) {} }
+    audioName = file.name;
+    audioURL = URL.createObjectURL(file);
+    updateAudioUI();
+    render();
+    saveDraft();
+  });
+  $("audio-remove").addEventListener("click", function () {
+    clearAudio();
+    render();
+    saveDraft();
+  });
+
+  /* Expose audio state to the publish module (separate IIFE). */
+  window.__suzuriAudioState = function () {
+    return { file: (fAudio.files && fAudio.files[0]) || null, name: audioName, url: audioURL };
+  };
+
   [fTitle, fDate, fSub, fBody].forEach(function (el) {
     el.addEventListener("input", function () { render(); saveDraft(); });
+  });
+
+  /* ---------- formatting toolbar ---------- */
+  function afterEdit(selStart, selEnd) {
+    fBody.focus();
+    fBody.selectionStart = selStart;
+    fBody.selectionEnd = (selEnd == null ? selStart : selEnd);
+    render();
+    saveDraft();
+  }
+
+  // Wrap the selection with inline marks (bold / italic).
+  function wrapInline(mark) {
+    var v = fBody.value, s = fBody.selectionStart, e = fBody.selectionEnd;
+    var sel = v.slice(s, e);
+    if (sel) {
+      // Toggle off if already wrapped.
+      if (v.slice(s - mark.length, s) === mark && v.slice(e, e + mark.length) === mark) {
+        fBody.value = v.slice(0, s - mark.length) + sel + v.slice(e + mark.length);
+        return afterEdit(s - mark.length, e - mark.length);
+      }
+      fBody.value = v.slice(0, s) + mark + sel + mark + v.slice(e);
+      return afterEdit(s + mark.length, e + mark.length);
+    }
+    var ph = mark === "**" ? "bold text" : "italic text";
+    fBody.value = v.slice(0, s) + mark + ph + mark + v.slice(s);
+    afterEdit(s + mark.length, s + mark.length + ph.length);
+  }
+
+  // Toggle a line-start mark (heading / quote) on each selected line.
+  function toggleLinePrefix(prefix) {
+    var v = fBody.value, s = fBody.selectionStart, e = fBody.selectionEnd;
+    var start = v.lastIndexOf("\n", s - 1) + 1;
+    var end = v.indexOf("\n", e); if (end === -1) end = v.length;
+    var block = v.slice(start, end);
+    var lines = block.split("\n");
+    var allHave = lines.every(function (l) { return l.indexOf(prefix) === 0; });
+    var out = lines.map(function (l) {
+      if (allHave) return l.slice(prefix.length);
+      return prefix + l.replace(/^(##\s+|>\s+)/, ""); // swap any existing block mark
+    }).join("\n");
+    fBody.value = v.slice(0, start) + out + v.slice(end);
+    afterEdit(start, start + out.length);
+  }
+
+  // Insert a standalone block (divider) on its own line.
+  function insertDivider() {
+    var v = fBody.value, s = fBody.selectionStart;
+    var before = v.slice(0, s), after = v.slice(fBody.selectionEnd);
+    var pre = before === "" ? "" : (/\n\n$/.test(before) ? "" : (/\n$/.test(before) ? "\n" : "\n\n"));
+    var post = after === "" ? "" : (/^\n\n/.test(after) ? "" : (/^\n/.test(after) ? "\n" : "\n\n"));
+    var ins = pre + "---" + post;
+    fBody.value = before + ins + after;
+    var caret = before.length + ins.length;
+    afterEdit(caret, caret);
+  }
+
+  // Insert a link, using any selection as the link text and pre-selecting the url.
+  function insertLink() {
+    var v = fBody.value, s = fBody.selectionStart, e = fBody.selectionEnd;
+    var text = v.slice(s, e) || "link text";
+    var url = "https://";
+    var snippet = "[" + text + "](" + url + ")";
+    fBody.value = v.slice(0, s) + snippet + v.slice(e);
+    var urlStart = s + 1 + text.length + 2;
+    afterEdit(urlStart, urlStart + url.length);
+  }
+
+  var FMT = {
+    heading: function () { toggleLinePrefix("## "); },
+    quote:   function () { toggleLinePrefix("> "); },
+    bold:    function () { wrapInline("**"); },
+    italic:  function () { wrapInline("*"); },
+    link:    insertLink,
+    divider: insertDivider
+  };
+
+  document.querySelectorAll(".fmt-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var fn = FMT[btn.getAttribute("data-fmt")];
+      if (fn) fn();
+    });
+  });
+
+  // Keyboard shortcuts inside the essay field.
+  fBody.addEventListener("keydown", function (ev) {
+    if (!(ev.metaKey || ev.ctrlKey) || ev.altKey) return;
+    var k = ev.key.toLowerCase();
+    if (k === "b") { ev.preventDefault(); wrapInline("**"); }
+    else if (k === "i") { ev.preventDefault(); wrapInline("*"); }
+    else if (k === "k") { ev.preventDefault(); insertLink(); }
   });
 
   /* ---------- init ---------- */
   fDate.value = todayISO();
   loadDraft();
+  updateAudioUI();
+  /* Editing an existing essay from the Essays page? Load it over any draft. */
+  try {
+    var ed = JSON.parse(localStorage.getItem("suzuri-edit-v1") || "null");
+    if (ed) {
+      localStorage.removeItem("suzuri-edit-v1");
+      fTitle.value = ed.title || "";
+      fDate.value = ed.date || todayISO();
+      fSub.value = ed.subtitle || ed.sub || "";
+      fBody.value = ed.body || "";
+      if (ed.audio) { audioName = ed.audioName || ed.audio.split("/").pop() || "audio"; audioURL = ed.audio; updateAudioUI(); }
+      if (ed.slug) { window.__suzuriEditingSlug = ed.slug; window.__suzuriEditingTitle = ed.title || ed.slug; }
+      fileTouched = false;
+      saveDraft();
+    }
+  } catch (e) {}
   render();
+})();
+</script>
+
+<script>
+/* ---------- Publish to site (login-only) ----------
+   Writes the essay straight into the Firestore `essays` collection, keyed by
+   slug so re-publishing the same title updates it. The Essays page reads this
+   collection, so a published essay appears with no upload step. */
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var pubBtn   = $("b-publish");
+  var statusEl = $("pub-status");
+  var acctEl   = $("nav-acct");
+  var acctLbl  = $("nav-acct-label");
+  var shelfTitle = $("shelf-title");
+  var shelfBody  = $("shelf-body");
+
+  function slugify(s) {
+    return String(s || "").toLowerCase()
+      .replace(/['’]/g, "")
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60);
+  }
+  function status(msg, kind) {
+    statusEl.className = "pub-status" + (kind ? " " + kind : "");
+    statusEl.innerHTML = msg || "";
+  }
+  function db() {
+    if (!window.firebase || !firebase.firestore) return null;
+    try { if (!firebase.apps.length && window.FIREBASE_CONFIG) firebase.initializeApp(window.FIREBASE_CONFIG); } catch (e) {}
+    return firebase.firestore();
+  }
+  function storage() {
+    if (!window.firebase || !firebase.storage) return null;
+    try { if (!firebase.apps.length && window.FIREBASE_CONFIG) firebase.initializeApp(window.FIREBASE_CONFIG); } catch (e) {}
+    return firebase.storage();
+  }
+  /* Upload a freshly-picked audio file to Storage; preserve an existing URL on
+     edit; or clear it when the slot is empty. Returns {audio, audioName}. */
+  function resolveAudio(slug) {
+    var st = (window.__suzuriAudioState && window.__suzuriAudioState()) || { file: null, name: "", url: "" };
+    if (st.file) {
+      var s = storage();
+      if (!s) return Promise.reject({ code: "no-storage" });
+      var ext = (st.name.match(/\.[a-z0-9]+$/i) || [".audio"])[0].toLowerCase();
+      var sref = s.ref().child("essays-audio/" + slug + ext);
+      status("Uploading audio\u2026");
+      return sref.put(st.file, { contentType: st.file.type || "audio/mpeg" })
+        .then(function (snap) { return snap.ref.getDownloadURL(); })
+        .then(function (url) { return { audio: url, audioName: st.name }; });
+    }
+    if (st.url) return Promise.resolve({ audio: st.url, audioName: st.name });
+    return Promise.resolve({ audio: "", audioName: "" });
+  }
+
+  var signedIn = false;
+
+  function applyAuthState(user) {
+    signedIn = !!user;
+    if (signedIn) {
+      acctEl.classList.add("in");
+      acctLbl.textContent = user.username || "Owner";
+      acctEl.removeAttribute("href");
+      pubBtn.classList.remove("locked");
+      pubBtn.textContent = "Publish to site";
+      shelfTitle.textContent = "Publishing";
+      shelfBody.innerHTML = '<span class="n">↗</span><span><strong>Publish to site</strong> sends this essay straight to the Essays page — instantly, no upload.</span>';
+    } else {
+      acctEl.classList.remove("in");
+      acctLbl.textContent = "Log in";
+      acctEl.setAttribute("href", "index.html");
+      pubBtn.classList.add("locked");
+      pubBtn.textContent = "Log in to publish";
+      shelfTitle.textContent = "Publishing";
+      shelfBody.innerHTML = '<span class="n">↗</span><span><a class="shelf-link" href="#" onclick="if(window.BOTAccount)BOTAccount.openLogin();return false;">Log in</a> to publish straight to the Essays page — or download the file and upload it to the repo manually.</span>';
+    }
+  }
+
+  function publish() {
+    if (!signedIn) { if (window.BOTAccount) BOTAccount.openLogin({ reason: "Log in to publish this essay straight to the Essays page." }); return; }
+
+    var title = ($("f-title").value || "").trim();
+    var body  = ($("f-body").value || "").replace(/\r\n/g, "\n").trim();
+    if (!title) { status("Add a title before publishing.", "err"); return; }
+    if (!body)  { status("Write the essay before publishing.", "err"); return; }
+
+    var d = db();
+    if (!d) { status("Publishing isn't available yet — Firestore isn't loaded.", "err"); return; }
+
+    var user = window.BOTAuth && BOTAuth.current();
+    var slug = window.__suzuriEditingSlug || slugify(title);
+    if (!slug) { status("That title can't be made into a web address — add some letters.", "err"); return; }
+
+    var words = body.split(/\s+/).filter(Boolean).length;
+    var ref = d.collection("essays").doc(slug);
+
+    pubBtn.disabled = true;
+    status("Publishing…");
+
+    resolveAudio(slug).then(function (au) {
+     return ref.get().then(function (snap) {
+      var payload = {
+        slug: slug,
+        title: title,
+        subtitle: ($("f-sub").value || "").trim(),
+        date: $("f-date").value || "",
+        body: body,
+        words: words,
+        audio: au.audio,
+        audioName: au.audioName,
+        uid: (user && user.uid) || null,
+        author: (user && user.username) || "",
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      if (!snap.exists) payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      if (!snap.exists) payload.private = false;
+      return ref.set(payload, { merge: true }).then(function () { return snap.exists; });
+     });
+    }).then(function (existed) {
+      var url = "Essays.html#/" + encodeURIComponent(slug);
+      status((existed ? "Updated ✓ — " : "Published ✓ — ") +
+        '<a href="' + url + '">view it on the Essays page</a>', "ok");
+    }).catch(function (err) {
+      status(mapPublishError(err), "err");
+    }).then(function () {
+      pubBtn.disabled = false;
+    });
+  }
+
+  function mapPublishError(err) {
+    var code = (err && err.code) || "";
+    if (code === "no-storage")
+      return "Audio upload needs Firebase Storage — enable Storage in the Firebase console, then try again.";
+    if (code === "storage/unauthorized")
+      return "Storage denied the upload — publish Storage rules that allow signed-in writes to essays-audio/.";
+    if (code === "permission-denied")
+      return "Permission denied — your Firestore rules don't allow this account to write. Allow writes for signed-in users on the essays collection.";
+    if (code === "unavailable" || code === "failed-precondition")
+      return "Couldn't reach the database — create a Firestore database in the Firebase console (Build → Firestore Database → Create), then try again.";
+    if (code === "unauthenticated")
+      return "Your session expired — log in again from the home page.";
+    return (err && err.message) || "Something went wrong publishing. Try again.";
+  }
+
+  pubBtn.addEventListener("click", publish);
+
+  /* Editing-an-existing-essay banner (set by the Essays page). */
+  var banner = $("edit-banner");
+  if (window.__suzuriEditingSlug && banner) {
+    $("edit-banner-title").textContent = "\u201c" + (window.__suzuriEditingTitle || window.__suzuriEditingSlug) + "\u201d";
+    banner.hidden = false;
+    var cancel = $("edit-cancel");
+    if (cancel) cancel.addEventListener("click", function () {
+      window.__suzuriEditingSlug = null;
+      window.__suzuriEditingTitle = null;
+      banner.hidden = true;
+      status("");
+    });
+  }
+
+  if (window.BOTAuth) {
+    BOTAuth.onChange(applyAuthState);
+  } else {
+    applyAuthState(null);
+  }
 })();
 </script>
 </body>

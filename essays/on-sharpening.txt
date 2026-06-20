@@ -1,6 +1,7 @@
 On Sharpening
 date: 2026-05-21
 subtitle: A second sample, to show how the index sorts
+audio: audio/on-sharpening.wav
 
 Two essays are enough to see the index in motion: newest first, each with its date, a short excerpt, and an estimated reading time.
 

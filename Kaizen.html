@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kaizen — Blade of Takumi</title>
+<link rel="icon" type="image/png" href="assets/logo-line.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Spectral:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-soft: #0e0d0b;
+    --surface: #121110;
+    --surface-2: #161412;
+    --line: #211f1b;
+    --line-soft: #1a1815;
+    --ink: #e9e4d8;
+    --ink-dim: #9a948a;
+    --ink-faint: #6b665d;
+    --accent: #b4965a;
+    --accent-soft: rgba(180,150,90,0.14);
+    --good: #7f9a6a;
+    --warn: #b07a52;
+    --font-head: 'Instrument Serif', Georgia, serif;
+    --font-body: 'Spectral', Georgia, serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  /* minimal scrollbar */
+  * { scrollbar-width: thin; scrollbar-color: #2a2620 transparent; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2620; border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent, #b4965a); background-clip: padding-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  a { color: inherit; text-decoration: none; }
+
+  .mono {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    font-size: 0.72rem;
+  }
+  .wrap { width: min(1180px, 92vw); margin: 0 auto; }
+
+  /* ---------- NAV ---------- */
+  nav.site {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(10,10,10,0.78);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  nav.site .wrap {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 68px;
+  }
+  .logo {
+    font-family: var(--font-head);
+    color: var(--accent);
+    font-size: 1.18rem;
+    letter-spacing: 0.04em;
+  }
+  .navlinks { display: flex; gap: clamp(1.4rem, 3vw, 2.8rem); }
+  .navlinks a { color: var(--ink-dim); transition: color 0.3s ease; position: relative; }
+  .navlinks a::after {
+    content: ""; position: absolute; left: 0; bottom: -6px;
+    width: 100%; height: 1px; background: var(--accent);
+    transform: scaleX(0); transform-origin: left; transition: transform 0.35s ease;
+  }
+  .navlinks a:hover { color: var(--ink); }
+  .navlinks a:hover::after { transform: scaleX(1); }
+
+  /* ---------- PAGE HEAD ---------- */
+  .page-head { padding: clamp(3rem, 7vh, 5rem) 0 0; }
+  .sec-head { display: flex; align-items: center; gap: 1.6rem; }
+  .sec-head .label { color: var(--accent); white-space: nowrap; }
+  .sec-head .rule { height: 1px; background: linear-gradient(90deg, var(--accent), var(--line)); flex: 1; opacity: 0.6; }
+  .page-title {
+    font-family: var(--font-head);
+    font-weight: 400;
+    font-size: clamp(2.4rem, 5vw, 3.8rem);
+    line-height: 1;
+    margin: 2rem 0 0;
+    letter-spacing: 0.01em;
+  }
+  .page-dek {
+    font-style: italic;
+    color: var(--ink-dim);
+    font-size: 1.15rem;
+    margin: 1rem 0 0;
+    max-width: 52ch;
+    line-height: 1.5;
+  }
+
+  /* ---------- WORKBENCH ---------- */
+  .bench {
+    display: grid;
+    grid-template-columns: minmax(360px, 5fr) 7fr;
+    gap: clamp(1.5rem, 3vw, 3rem);
+    align-items: start;
+    padding: clamp(2.5rem, 6vh, 4rem) 0 clamp(5rem, 10vh, 7rem);
+  }
+
+  /* form column */
+  .composer {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    padding: 2rem 1.8rem;
+    display: flex; flex-direction: column; gap: 1.5rem;
+    position: sticky; top: 92px;
+  }
+  .field { display: flex; flex-direction: column; gap: 0.55rem; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .field label {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+  }
+  .field label em { color: var(--ink-faint); font-style: normal; text-transform: none; letter-spacing: 0.1em; }
+  .field input {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1.05rem;
+    line-height: 1.6;
+    padding: 0.7rem 0.85rem;
+    outline: none;
+    border-radius: 0;
+    transition: border-color 0.3s ease;
+    width: 100%;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .field input::placeholder { color: var(--ink-faint); font-style: italic; }
+  .field input[type="date"] { color-scheme: dark; font-family: var(--font-mono); font-size: 0.92rem; }
+  .field input[type="number"] { font-family: var(--font-mono); }
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"] { -moz-appearance: textfield; }
+
+  .hint {
+    color: var(--ink-faint);
+    font-size: 0.85rem;
+    font-style: italic;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* unit suggestion chips */
+  .chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .chip {
+    appearance: none;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    padding: 0.4rem 0.65rem;
+    cursor: pointer;
+    transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  }
+  .chip:hover { color: var(--accent); border-color: var(--accent); }
+  .chip[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+
+  .actions { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+  .btn {
+    appearance: none;
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: #0a0a0a;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    padding: 0.85rem 1.3rem;
+    cursor: pointer;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  .btn:hover { background: #c5a76b; border-color: #c5a76b; }
+  .btn.ghost { background: transparent; color: var(--ink-dim); border-color: var(--line); }
+  .btn.ghost:hover { color: var(--accent); border-color: var(--accent); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ---------- LEDGER (right column) ---------- */
+  .ledger {
+    border: 1px solid var(--line);
+    background: var(--bg-soft);
+    padding: clamp(1.6rem, 3vw, 2.6rem);
+    min-height: 70vh;
+  }
+  .pv-tag { color: var(--ink-faint); font-size: 0.6rem; margin-bottom: 1.8rem; display: flex; align-items: center; gap: 1.2rem; }
+  .pv-tag .rule { height: 1px; background: var(--line); flex: 1; }
+
+  /* overall summary strip */
+  .summary {
+    display: flex; flex-wrap: wrap; gap: 1.6rem 2.4rem;
+    align-items: baseline;
+    padding-bottom: 1.6rem;
+    margin-bottom: 1.8rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .summary.empty { display: none; }
+  .sum-item { display: flex; flex-direction: column; gap: 0.3rem; }
+  .sum-num { font-family: var(--font-head); font-size: 2rem; line-height: 1; color: var(--ink); }
+  .sum-num .u { font-size: 0.9rem; color: var(--ink-faint); }
+  .sum-label { font-family: var(--font-mono); font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.2em; color: var(--ink-faint); }
+
+  .goals { display: flex; flex-direction: column; gap: 1.2rem; }
+
+  .goal-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 132px 1fr;
+    gap: clamp(1.2rem, 2.5vw, 2rem);
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 2px solid var(--line);
+    padding: 1.5rem 1.6rem;
+    transition: border-left-color 0.4s ease, background 0.3s ease;
+  }
+  .goal-card:hover { border-left-color: var(--accent); background: var(--surface-2); }
+  .goal-card.done { border-left-color: var(--good); }
+
+  /* progress ring */
+  .ring { position: relative; width: 132px; height: 132px; }
+  .ring svg { width: 132px; height: 132px; transform: rotate(-90deg); display: block; }
+  .ring .track { stroke: var(--line); stroke-width: 7; fill: none; }
+  .ring .fill {
+    stroke: var(--accent); stroke-width: 7; fill: none; stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s cubic-bezier(.2,.7,.2,1), stroke 0.4s ease;
+  }
+  .goal-card.done .ring .fill { stroke: var(--good); }
+  .ring .pct {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .ring .pct b {
+    font-family: var(--font-head); font-weight: 400;
+    font-size: 2.1rem; line-height: 1; color: var(--ink);
+  }
+  .ring .pct span { font-family: var(--font-mono); font-size: 0.5rem; letter-spacing: 0.2em; color: var(--ink-faint); margin-top: 0.3rem; }
+
+  .gc-body { min-width: 0; display: flex; flex-direction: column; gap: 0.55rem; }
+  .gc-focus {
+    font-family: var(--font-head); font-weight: 400;
+    font-size: 1.5rem; line-height: 1.1; color: var(--ink);
+    margin: 0; text-wrap: pretty;
+  }
+  .gc-meta { display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); }
+  .gc-meta .v { color: var(--ink-dim); }
+
+  /* progress stepper */
+  .gc-log { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem; }
+  .step {
+    appearance: none;
+    width: 30px; height: 34px;
+    background: var(--bg); border: 1px solid var(--line); color: var(--ink-dim);
+    font-family: var(--font-mono); font-size: 1rem; line-height: 1; cursor: pointer;
+    transition: color 0.25s ease, border-color 0.25s ease;
+  }
+  .step:hover { color: var(--accent); border-color: var(--accent); }
+  .gc-log .cur {
+    width: 84px; height: 34px;
+    background: var(--bg); border: 1px solid var(--line); color: var(--ink);
+    font-family: var(--font-mono); font-size: 0.95rem; text-align: center;
+    outline: none; transition: border-color 0.25s ease;
+  }
+  .gc-log .cur:focus { border-color: var(--accent); }
+  .gc-log .of { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; color: var(--ink-faint); white-space: nowrap; }
+
+  /* pace bar */
+  .pace { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.3rem; }
+  .pace-track { position: relative; height: 4px; background: var(--line); }
+  .pace-done { position: absolute; inset: 0 auto 0 0; background: var(--accent); transition: width 0.6s cubic-bezier(.2,.7,.2,1); }
+  .goal-card.done .pace-done { background: var(--good); }
+  .pace-marker { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--ink-dim); }
+  .pace-marker::after {
+    content: ""; position: absolute; top: -3px; left: -2px; width: 5px; height: 5px;
+    background: var(--ink-dim); transform: rotate(45deg);
+  }
+  .pace-note { font-family: var(--font-mono); font-size: 0.56rem; letter-spacing: 0.14em; text-transform: uppercase; }
+  .pace-note .lead { color: var(--good); }
+  .pace-note .lag { color: var(--warn); }
+  .pace-note .neutral { color: var(--ink-faint); }
+
+  .gc-del {
+    position: absolute; top: 0.9rem; right: 0.9rem;
+    appearance: none; background: transparent; border: none;
+    color: var(--ink-faint); cursor: pointer; padding: 0.3rem; line-height: 0;
+    opacity: 0; transition: opacity 0.25s ease, color 0.25s ease;
+  }
+  .goal-card:hover .gc-del { opacity: 1; }
+  .gc-del:hover { color: var(--warn); }
+  .gc-del svg { width: 15px; height: 15px; }
+
+  /* empty state */
+  .empty-state {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: clamp(3rem, 12vh, 7rem) 1rem; gap: 1rem;
+  }
+  .empty-state .ico { color: var(--line); }
+  .empty-state .ico svg { width: 54px; height: 54px; }
+  .empty-state h3 { font-family: var(--font-head); font-weight: 400; font-size: 1.6rem; color: var(--ink-dim); margin: 0; }
+  .empty-state p { color: var(--ink-faint); font-style: italic; max-width: 38ch; margin: 0; line-height: 1.5; }
+
+  /* ---------- ACCOUNT CHIP ---------- */
+  .nav-acct { display:inline-flex; align-items:center; gap:0.5rem; color: var(--ink-faint) !important; }
+  .nav-acct::after { display:none !important; }
+  .nav-acct .dot { width:6px; height:6px; border-radius:50%; background:var(--accent); display:none; }
+  .nav-acct.in { color: var(--ink-dim) !important; }
+  .nav-acct.in .dot { display:inline-block; }
+
+  /* sync state in ledger tag */
+  .pv-tag .sync-state { color: var(--ink-faint); font-family: var(--font-mono); letter-spacing:0.14em; text-transform:uppercase; font-size:0.56rem; white-space:nowrap; }
+  .pv-tag .sync-state.ok { color: var(--good); }
+  .pv-tag .sync-state.err { color: var(--warn); }
+
+  /* hours logged row */
+  .gc-hours { display:flex; align-items:center; gap:0.5rem; margin-top:0.55rem; flex-wrap:wrap; }
+  .gc-hours .hl-label { font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--accent); margin-right:0.1rem; }
+  .gc-hours .hstep { appearance:none; width:28px; height:30px; background:var(--bg); border:1px solid var(--line); color:var(--ink-dim); font-family:var(--font-mono); font-size:0.95rem; line-height:1; cursor:pointer; transition:color .25s ease,border-color .25s ease; }
+  .gc-hours .hstep:hover { color:var(--accent); border-color:var(--accent); }
+  .gc-hours .hcur { width:64px; height:30px; background:var(--bg); border:1px solid var(--line); color:var(--ink); font-family:var(--font-mono); font-size:0.9rem; text-align:center; outline:none; transition:border-color .25s ease; }
+  .gc-hours .hcur:focus { border-color:var(--accent); }
+  .gc-hours .hl-unit { font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.1em; color:var(--ink-faint); }
+
+  /* card actions (un-focus) */
+  .gc-actions { display:flex; gap:1.2rem; margin-top:0.55rem; }
+  .link-act { appearance:none; background:transparent; border:none; padding:0 0 1px; cursor:pointer; font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); border-bottom:1px solid transparent; transition:color .25s ease,border-color .25s ease; }
+  .link-act:hover { color:var(--accent); border-color:var(--accent); }
+
+  /* un-focus inline form */
+  .unfocus-form { display:flex; flex-wrap:wrap; align-items:center; gap:0.6rem; margin-top:0.6rem; padding:0.7rem 0.8rem; background:var(--bg); border:1px solid var(--line); }
+  .unfocus-form .uf-label { font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.16em; text-transform:uppercase; color:var(--ink-dim); }
+  .unfocus-form input[type="date"] { background:var(--surface); border:1px solid var(--line); color:var(--ink); color-scheme:dark; font-family:var(--font-mono); font-size:0.82rem; padding:0.4rem 0.5rem; outline:none; }
+  .unfocus-form input[type="date"]:focus { border-color:var(--accent); }
+  .uf-btn { appearance:none; cursor:pointer; font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.16em; text-transform:uppercase; padding:0.45rem 0.7rem; border:1px solid var(--accent); background:var(--accent); color:#0a0a0a; }
+  .uf-btn.ghost { background:transparent; color:var(--ink-dim); border-color:var(--line); }
+  .uf-btn.ghost:hover { color:var(--accent); border-color:var(--accent); }
+
+  /* resting (un-focused) section */
+  .resting { margin-top:2.2rem; }
+  .rest-head { display:flex; align-items:center; gap:1rem; font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:1rem; }
+  .rest-head .rule { height:1px; background:var(--line); flex:1; }
+  .rest-card { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:0.7rem 1.2rem; background:var(--bg-soft); border:1px solid var(--line-soft); border-left:2px solid var(--ink-faint); padding:1rem 1.2rem; margin-bottom:0.7rem; }
+  .rest-card .rc-focus { font-family:var(--font-head); font-size:1.2rem; color:var(--ink-dim); }
+  .rest-card .rc-meta { font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint); }
+  .rest-card .rc-meta b { color:var(--accent); font-weight:400; }
+  .rest-card .rc-actions { display:flex; gap:1.2rem; }
+
+  /* ---------- EYE / PUBLIC PROGRESS ---------- */
+  .eye-btn { appearance:none; cursor:pointer; display:inline-flex; align-items:center; gap:0.5rem; background:transparent; border:1px solid var(--line); color:var(--ink-dim); font-family:var(--font-mono); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.2em; padding:0.5rem 0.8rem; white-space:nowrap; transition:color .25s ease,border-color .25s ease; }
+  .eye-btn svg { width:15px; height:15px; }
+  .eye-btn:hover { color:var(--accent); border-color:var(--accent); }
+
+  .progress-overlay { position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; padding:1.5rem; }
+  .progress-overlay[hidden] { display:none; }
+  .progress-backdrop { position:absolute; inset:0; background:rgba(5,5,5,0.72); backdrop-filter:blur(4px); }
+  .progress-panel { position:relative; width:min(560px,94vw); max-height:86vh; overflow:auto; background:var(--surface); border:1px solid var(--line); padding:clamp(1.8rem,4vw,2.6rem); }
+  .progress-close { position:absolute; top:1rem; right:1rem; appearance:none; background:transparent; border:none; color:var(--ink-faint); font-size:1.5rem; line-height:1; cursor:pointer; transition:color .25s ease; }
+  .progress-close:hover { color:var(--accent); }
+  .progress-head .label { color:var(--accent); }
+  .progress-head h2 { font-family:var(--font-head); font-weight:400; font-size:clamp(1.6rem,4vw,2.2rem); margin:0.6rem 0 0; color:var(--ink); }
+  .progress-head p { color:var(--ink-faint); font-style:italic; margin:0.5rem 0 0; font-size:0.95rem; }
+  .progress-body { margin-top:1.8rem; display:flex; flex-direction:column; gap:1.5rem; }
+  .pgrow { display:flex; flex-direction:column; gap:0.55rem; }
+  .pg-top { display:flex; align-items:baseline; justify-content:space-between; gap:1rem; }
+  .pg-focus { font-family:var(--font-head); font-size:1.3rem; color:var(--ink); }
+  .pg-pct { font-family:var(--font-head); font-size:1.55rem; color:var(--accent); line-height:1; }
+  .pg-pct i { font-style:normal; font-size:0.9rem; color:var(--ink-faint); margin-left:1px; }
+  .pg-bar { height:4px; background:var(--line); position:relative; }
+  .pg-fill { position:absolute; inset:0 auto 0 0; background:var(--accent); }
+  .pg-foot { display:flex; align-items:center; justify-content:space-between; gap:1rem; font-family:var(--font-mono); font-size:0.58rem; letter-spacing:0.12em; text-transform:uppercase; }
+  .pg-pace { color:var(--ink-faint); }
+  .pg-pace.lead { color:var(--good); }
+  .pg-pace.lag { color:var(--warn); }
+  .pg-hrs { color:var(--ink-dim); }
+  .progress-empty { color:var(--ink-faint); font-style:italic; text-align:center; padding:2rem 0; }
+  .progress-foot { margin-top:1.8rem; padding-top:1.2rem; border-top:1px solid var(--line); color:var(--ink-faint); font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.16em; text-transform:uppercase; }
+
+  /* ---------- FOOTER ---------- */
+  footer.site {
+    border-top: 1px solid var(--line-soft);
+    padding: 2.4rem 0;
+    background: var(--bg-soft);
+  }
+  footer.site .wrap { display: flex; align-items: center; justify-content: space-between; }
+  footer .f-brand { font-family: var(--font-head); color: var(--accent); font-size: 1rem; letter-spacing: 0.04em; }
+  footer .f-copy { color: var(--ink-faint); font-size: 0.64rem; }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 980px) {
+    .bench { grid-template-columns: 1fr; }
+    .composer { position: static; }
+  }
+  @media (max-width: 860px) {
+    .navlinks { gap: 1.2rem; }
+    .navlinks a { font-size: 0.62rem; letter-spacing: 0.18em; }
+  }
+  @media (max-width: 560px) {
+    nav.site .wrap { height: 58px; }
+    .logo { font-size: 1rem; }
+    .navlinks a:nth-child(1) { display: none; }
+    .field-row { grid-template-columns: 1fr; }
+    .goal-card { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .gc-body { align-items: center; }
+    .gc-meta, .gc-log { justify-content: center; }
+    footer.site .wrap { flex-direction: column; gap: 0.8rem; align-items: flex-start; }
+  }
+</style>
+</head>
+<body data-screen-label="Kaizen — goal monitor">
+<nav class="site">
+  <div class="wrap">
+    <a href="index.html" class="logo">Blade of Takumi</a>
+    <div class="navlinks">
+      <a class="mono" href="index.html#presence">Presence</a>
+      <a class="mono" href="index.html#tools">Tools</a>
+      <a class="mono" href="Essays.html">Essays</a>
+      <a class="mono" href="https://www.instagram.com/bladeoftakumi" target="_blank" rel="noopener noreferrer">Connect</a>
+      <a class="mono nav-acct" id="nav-acct" href="index.html" title="Account"><span class="dot"></span><span id="nav-acct-label">Log in</span></a>
+    </div>
+  </div>
+</nav>
+
+<header class="page-head">
+  <div class="wrap">
+    <div class="sec-head"><span class="label mono">Kaizen · Goal Monitor</span><span class="rule"></span><button class="eye-btn" id="eye-btn" type="button" title="Public progress view" aria-label="Public progress view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg> Progress</button></div>
+  </div>
+</header>
+
+<main class="bench wrap">
+  <section class="composer" aria-label="New goal form">
+    <div class="field">
+      <label for="f-focus">Focus</label>
+      <input id="f-focus" type="text" placeholder="e.g. Read deeply" autocomplete="off" />
+    </div>
+
+    <div class="field">
+      <label for="f-unit">Unit of measure</label>
+      <input id="f-unit" type="text" placeholder="e.g. minutes, books, pages" autocomplete="off" />
+      <div class="chips" id="unit-chips" role="group" aria-label="Common units">
+        <button class="chip" type="button" data-unit="minutes">Minutes</button>
+        <button class="chip" type="button" data-unit="hours">Hours</button>
+        <button class="chip" type="button" data-unit="pages">Pages</button>
+        <button class="chip" type="button" data-unit="books">Books</button>
+        <button class="chip" type="button" data-unit="sessions">Sessions</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="f-target">Target <em>(total to reach)</em></label>
+      <input id="f-target" type="number" min="1" step="1" placeholder="e.g. 1200" inputmode="numeric" />
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="f-start">Start</label>
+        <input id="f-start" type="date" />
+      </div>
+      <div class="field">
+        <label for="f-end">End</label>
+        <input id="f-end" type="date" />
+      </div>
+    </div>
+
+    <p class="hint" id="form-hint">Each goal tracks one focus over a window of days. Log progress on its card anytime.</p>
+
+    <div class="actions">
+      <button class="btn" id="b-add" type="button">Add goal</button>
+      <button class="btn ghost" id="b-reset" type="button">Reset form</button>
+    </div>
+  </section>
+
+  <section class="ledger" aria-label="Goals">
+    <div class="pv-tag mono"><span>Your goals</span><span class="rule"></span><span class="sync-state" id="sync-state">Saved on this device</span></div>
+
+    <div class="summary empty" id="summary">
+      <div class="sum-item"><span class="sum-num" id="s-active">0</span><span class="sum-label">Active goals</span></div>
+      <div class="sum-item"><span class="sum-num" id="s-avg">0<span class="u">%</span></span><span class="sum-label">Avg. completion</span></div>
+      <div class="sum-item"><span class="sum-num" id="s-done">0</span><span class="sum-label">Completed</span></div>
+      <div class="sum-item"><span class="sum-num" id="s-hours">0<span class="u">h</span></span><span class="sum-label">Hours logged</span></div>
+    </div>
+
+    <div class="goals" id="goals"></div>
+  </section>
+</main>
+
+<div class="progress-overlay" id="progress-overlay" hidden="">
+  <div class="progress-backdrop" data-act="close-progress"></div>
+  <div class="progress-panel" role="dialog" aria-modal="true" aria-label="Blade of Takumi progress">
+    <button class="progress-close" type="button" data-act="close-progress" aria-label="Close">×</button>
+    <div class="progress-head">
+      <span class="label mono">Blade of Takumi</span>
+    </div>
+    <div class="progress-body" id="progress-body"></div>
+    <div class="progress-foot" id="progress-foot"></div>
+  </div>
+</div>
+
+<footer class="site">
+  <div class="wrap">
+    <span class="f-brand">Blade of Takumi</span>
+    <span class="f-copy mono">© 2026 — All rights reserved</span>
+  </div>
+</footer>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="botakumi-auth.js"></script>
+<script src="botakumi-account.js"></script>
+
+<script>
+(function () {
+  var STORE_KEY = "kaizen-goals-v1";
+  var $ = function (id) { return document.getElementById(id); };
+  var fFocus = $("f-focus"), fUnit = $("f-unit"), fTarget = $("f-target"),
+      fStart = $("f-start"), fEnd = $("f-end");
+
+  var goals = [];
+
+  /* ---------- helpers ---------- */
+  function uid() { return "g" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+  function esc(s) {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+  function todayISO() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function plusDaysISO(days) {
+    var d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function dayNum(iso) {
+    if (!iso) return null;
+    var d = new Date(iso + "T00:00:00");
+    return isNaN(d) ? null : Math.floor(d.getTime() / 86400000);
+  }
+  function fmtShort(iso) {
+    if (!iso) return "—";
+    var d = new Date(iso + "T12:00:00");
+    if (isNaN(d)) return "—";
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+  function niceNum(n) {
+    if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+    return String(Math.round(n * 10) / 10);
+  }
+
+  /* ---------- persistence (device cache + cloud when logged in) ---------- */
+  var owner = null;          // signed-in user, or null
+  var unfocusEditing = {};   // transient: goal ids showing the rest-date form
+
+  function byId(id) { return goals.filter(function (x) { return x.id === id; })[0]; }
+
+  function db() {
+    if (!(window.firebase && firebase.firestore)) return null;
+    try { if (!firebase.apps.length && window.FIREBASE_CONFIG) firebase.initializeApp(window.FIREBASE_CONFIG); } catch (e) {}
+    return firebase.firestore();
+  }
+
+  function localSave() { try { localStorage.setItem(STORE_KEY, JSON.stringify(goals)); } catch (e) {} }
+  function localLoad() {
+    try { var d = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); return Array.isArray(d) ? d : []; }
+    catch (e) { return []; }
+  }
+
+  var cloudTimer = null;
+  function save() {
+    localSave();                       // always keep a device cache
+    if (!owner) { setSync("local"); return; }
+    var d = db(); if (!d) return;
+    setSync("saving");
+    clearTimeout(cloudTimer);
+    cloudTimer = setTimeout(function () {
+      d.collection("kaizen").doc(owner.uid).set({
+        goals: goals,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(function () { setSync("ok"); }).catch(function () { setSync("err"); });
+      // curated, public mirror so brand followers can see progress (no detail)
+      d.collection("public").doc("progress").set({
+        goals: publicSummary(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).catch(function () {});
+    }, 600);
+  }
+
+  function setSync(state) {
+    var el = $("sync-state"); if (!el) return;
+    el.className = "sync-state" + (state === "ok" ? " ok" : state === "err" ? " err" : "");
+    el.textContent =
+      state === "ok"     ? "Synced to your account" :
+      state === "saving" ? "Saving\u2026" :
+      state === "err"    ? "Sync error \u2014 saved on device" :
+      owner              ? "Synced to your account" :
+                           "Saved on this device";
+  }
+
+  /* auto-resume any goal whose rest date has passed */
+  function autoResume() {
+    var t = dayNum(todayISO()), changed = false;
+    goals.forEach(function (g) {
+      if (g.unfocusUntil && dayNum(g.unfocusUntil) <= t) { g.unfocusUntil = null; changed = true; }
+    });
+    return changed;
+  }
+  function isDormant(g) {
+    return !!(g.unfocusUntil && dayNum(g.unfocusUntil) > dayNum(todayISO()));
+  }
+
+  /* load goals for the current auth state */
+  function boot(user) {
+    owner = user || null;
+    if (owner) {
+      var d = db();
+      if (d) {
+        setSync("saving");
+        d.collection("kaizen").doc(owner.uid).get().then(function (snap) {
+          var cloud = snap.exists ? (snap.data() || {}).goals : null;
+          if (Array.isArray(cloud)) {
+            goals = cloud;
+          } else {
+            goals = localLoad();           // first cloud session: lift device goals up
+            if (goals.length) { save(); }
+          }
+          if (autoResume()) save();
+          setSync("ok");
+          render();
+        }).catch(function () {
+          goals = localLoad(); autoResume(); setSync("err"); render();
+        });
+        return;
+      }
+    }
+    goals = localLoad();
+    autoResume();
+    setSync("local");
+    render();
+  }
+
+  /* ---------- ring geometry ---------- */
+  var R = 59, C = 2 * Math.PI * R;
+
+  function ringSVG(pct) {
+    var off = C * (1 - pct / 100);
+    return '<svg viewBox="0 0 132 132" aria-hidden="true">' +
+      '<circle class="track" cx="66" cy="66" r="' + R + '"></circle>' +
+      '<circle class="fill" cx="66" cy="66" r="' + R + '" stroke-dasharray="' + C.toFixed(1) +
+      '" stroke-dashoffset="' + off.toFixed(1) + '"></circle></svg>';
+  }
+
+  /* ---------- compute per-goal status ---------- */
+  function statusOf(g) {
+    var pct = g.target > 0 ? Math.min(100, (g.current / g.target) * 100) : 0;
+    var done = pct >= 100;
+
+    // time window
+    var ds = dayNum(g.start), de = dayNum(g.end), dt = dayNum(todayISO());
+    var totalDays = (ds != null && de != null) ? Math.max(1, de - ds) : null;
+    var elapsed = (ds != null) ? (dt - ds) : null;
+    var timePct = null, daysLeft = null;
+    if (totalDays != null) {
+      timePct = Math.max(0, Math.min(100, (elapsed / totalDays) * 100));
+      daysLeft = de - dt;
+    }
+
+    // pace verdict
+    var pace = { cls: "neutral", text: "" };
+    if (done) {
+      pace = { cls: "lead", text: "Goal reached" };
+    } else if (timePct != null) {
+      if (daysLeft < 0) {
+        pace = { cls: "lag", text: "Window closed · " + niceNum(g.target - g.current) + " " + g.unit + " short" };
+      } else {
+        var delta = pct - timePct;
+        var left = daysLeft + " day" + (daysLeft === 1 ? "" : "s") + " left";
+        if (delta >= 5) pace = { cls: "lead", text: "Ahead of pace · " + left };
+        else if (delta <= -5) pace = { cls: "lag", text: "Behind pace · " + left };
+        else pace = { cls: "neutral", text: "On pace · " + left };
+      }
+    }
+    return { pct: pct, done: done, timePct: timePct, daysLeft: daysLeft, pace: pace };
+  }
+
+  /* ---------- render ---------- */
+  function render() {
+    var box = $("goals");
+    var active = goals.filter(function (g) { return !isDormant(g); });
+    var resting = goals.filter(isDormant);
+
+    if (!goals.length) {
+      $("summary").classList.add("empty");
+      box.innerHTML =
+        '<div class="empty-state">' +
+          '<span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 12 L12 6 M12 12 L16 14"></path></svg></span>' +
+          '<h3>No goals yet</h3>' +
+          '<p>Name a focus, give it a target and a window of days, then add it. Progress rings appear here.</p>' +
+        '</div>';
+      return;
+    }
+
+    // summary
+    var doneCount = 0, sumPct = 0, hoursTotal = 0;
+    active.forEach(function (g) { var s = statusOf(g); sumPct += s.pct; if (s.done) doneCount++; });
+    goals.forEach(function (g) { hoursTotal += (+g.hours || 0); });
+    $("summary").classList.remove("empty");
+    $("s-active").textContent = active.length - doneCount;
+    $("s-avg").innerHTML = (active.length ? Math.round(sumPct / active.length) : 0) + '<span class="u">%</span>';
+    $("s-done").textContent = doneCount;
+    $("s-hours").innerHTML = niceNum(hoursTotal) + '<span class="u">h</span>';
+
+    var activeHTML = active.map(activeCard).join("");
+    if (!active.length) {
+      activeHTML = '<p class="hint" style="text-align:center;padding:2rem 0;">Every goal is resting right now. Resume one below, or add a new focus.</p>';
+    }
+
+    var restHTML = "";
+    if (resting.length) {
+      restHTML =
+        '<div class="resting">' +
+          '<div class="rest-head"><span>Un-focused \u00b7 ' + resting.length + '</span><span class="rule"></span></div>' +
+          resting.map(restCard).join("") +
+        '</div>';
+    }
+
+    box.innerHTML = activeHTML + restHTML;
+  }
+
+  function activeCard(g) {
+    var s = statusOf(g);
+    var pctTxt = niceNum(s.pct);
+    var meta = [];
+    meta.push('<span>Target&nbsp;<span class="v">' + niceNum(g.target) + " " + esc(g.unit) + '</span></span>');
+    meta.push('<span>' + fmtShort(g.start) + ' &ndash; ' + fmtShort(g.end) + '</span>');
+    if (+g.hours > 0) meta.push('<span><span class="v">' + niceNum(g.hours) + '</span> hrs in</span>');
+
+    var paceBlock = "";
+    if (s.timePct != null) {
+      paceBlock =
+        '<div class="pace">' +
+          '<div class="pace-track">' +
+            '<div class="pace-done" style="width:' + s.pct.toFixed(1) + '%"></div>' +
+            (s.done ? "" : '<div class="pace-marker" style="left:' + s.timePct.toFixed(1) + '%"></div>') +
+          '</div>' +
+          '<div class="pace-note"><span class="' + s.pace.cls + '">' + esc(s.pace.text) + '</span></div>' +
+        '</div>';
+    } else if (s.pace.text) {
+      paceBlock = '<div class="pace"><div class="pace-note"><span class="' + s.pace.cls + '">' + esc(s.pace.text) + '</span></div></div>';
+    }
+
+    var actionBlock = unfocusEditing[g.id]
+      ? '<div class="unfocus-form">' +
+          '<span class="uf-label">Rest until</span>' +
+          '<input type="date" data-act="unfocus-date" value="' + plusDaysISO(14) + '" min="' + plusDaysISO(1) + '" />' +
+          '<button class="uf-btn" type="button" data-act="unfocus-confirm">Rest</button>' +
+          '<button class="uf-btn ghost" type="button" data-act="unfocus-cancel">Cancel</button>' +
+        '</div>'
+      : '<div class="gc-actions">' +
+          '<button class="link-act" type="button" data-act="unfocus">Un-focus temporarily</button>' +
+        '</div>';
+
+    return '' +
+      '<article class="goal-card' + (s.done ? " done" : "") + '" data-id="' + g.id + '">' +
+        '<button class="gc-del" type="button" data-act="del" title="Remove goal" aria-label="Remove goal">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6 L18 18 M18 6 L6 18"></path></svg>' +
+        '</button>' +
+        '<div class="ring">' + ringSVG(s.pct) +
+          '<div class="pct"><b>' + pctTxt + '<span style="font-size:1rem">%</span></b><span>Complete</span></div>' +
+        '</div>' +
+        '<div class="gc-body">' +
+          '<h3 class="gc-focus">' + esc(g.focus) + '</h3>' +
+          '<div class="gc-meta">' + meta.join("") + '</div>' +
+          '<div class="gc-log">' +
+            '<button class="step" type="button" data-act="dec" aria-label="Decrease">&minus;</button>' +
+            '<input class="cur" type="number" data-act="set" value="' + niceNum(g.current) + '" min="0" inputmode="numeric" aria-label="Logged ' + esc(g.unit) + '" />' +
+            '<button class="step" type="button" data-act="inc" aria-label="Increase">+</button>' +
+            '<span class="of">/ ' + niceNum(g.target) + ' ' + esc(g.unit) + '</span>' +
+          '</div>' +
+          '<div class="gc-hours">' +
+            '<span class="hl-label">Hours</span>' +
+            '<button class="hstep" type="button" data-act="hdec" aria-label="Subtract half hour">&minus;</button>' +
+            '<input class="hcur" type="number" data-act="hset" value="' + niceNum(g.hours || 0) + '" min="0" step="0.5" inputmode="decimal" aria-label="Hours logged" />' +
+            '<button class="hstep" type="button" data-act="hinc" aria-label="Add half hour">+</button>' +
+            '<span class="hl-unit">hrs logged</span>' +
+          '</div>' +
+          paceBlock +
+          actionBlock +
+        '</div>' +
+      '</article>';
+  }
+
+  function restCard(g) {
+    var left = dayNum(g.unfocusUntil) - dayNum(todayISO());
+    var when = left + " day" + (left === 1 ? "" : "s");
+    return '' +
+      '<div class="rest-card" data-id="' + g.id + '">' +
+        '<span class="rc-focus">' + esc(g.focus) + '</span>' +
+        '<span class="rc-meta">Returns <b>' + fmtShort(g.unfocusUntil) + '</b> \u00b7 in ' + when + '</span>' +
+        '<span class="rc-actions">' +
+          '<button class="link-act" type="button" data-act="resume">Resume now</button>' +
+          '<button class="link-act" type="button" data-act="del">Remove</button>' +
+        '</span>' +
+      '</div>';
+  }
+
+  /* ---------- step size heuristic ---------- */
+  function stepFor(g) {
+    var u = (g.unit || "").toLowerCase();
+    if (/min/.test(u)) return 15;
+    if (/hour|hr/.test(u)) return 1;
+    if (/page/.test(u)) return 10;
+    return 1;
+  }
+
+  /* ---------- events: ledger ---------- */
+  $("goals").addEventListener("click", function (ev) {
+    var actEl = ev.target.closest("[data-act]");
+    var holder = ev.target.closest("[data-id]");
+    if (!holder) return;
+    var id = holder.getAttribute("data-id");
+    var g = byId(id);
+    if (!g) return;
+    var act = actEl && actEl.getAttribute("data-act");
+    if (!act) return;
+
+    if (act === "del") {
+      goals = goals.filter(function (x) { return x.id !== id; });
+      delete unfocusEditing[id];
+      save(); render();
+    } else if (act === "inc" || act === "dec") {
+      var st = stepFor(g);
+      g.current = Math.max(0, (g.current || 0) + (act === "inc" ? st : -st));
+      save(); render();
+    } else if (act === "hinc" || act === "hdec") {
+      g.hours = Math.max(0, Math.round(((+g.hours || 0) + (act === "hinc" ? 0.5 : -0.5)) * 10) / 10);
+      save(); render();
+    } else if (act === "unfocus") {
+      unfocusEditing[id] = true; render();
+    } else if (act === "unfocus-cancel") {
+      delete unfocusEditing[id]; render();
+    } else if (act === "unfocus-confirm") {
+      var inp = holder.querySelector('[data-act="unfocus-date"]');
+      var v = inp && inp.value;
+      if (v && dayNum(v) > dayNum(todayISO())) {
+        g.unfocusUntil = v; delete unfocusEditing[id]; save(); render();
+      } else if (inp) { inp.focus(); }
+    } else if (act === "resume") {
+      g.unfocusUntil = null; save(); render();
+    }
+  });
+
+  $("goals").addEventListener("change", function (ev) {
+    var t = ev.target;
+    var holder = t.closest("[data-id]");
+    if (!holder) return;
+    var g = byId(holder.getAttribute("data-id"));
+    if (!g) return;
+    if (t.matches('[data-act="set"]')) {
+      var v = parseFloat(t.value);
+      g.current = isNaN(v) ? 0 : Math.max(0, v);
+      save(); render();
+    } else if (t.matches('[data-act="hset"]')) {
+      var h = parseFloat(t.value);
+      g.hours = isNaN(h) ? 0 : Math.max(0, h);
+      save(); render();
+    }
+  });
+
+  /* ---------- events: form ---------- */
+  var unitChips = $("unit-chips");
+  function syncChips() {
+    var u = fUnit.value.trim().toLowerCase();
+    unitChips.querySelectorAll(".chip").forEach(function (c) {
+      c.setAttribute("aria-pressed", c.getAttribute("data-unit") === u ? "true" : "false");
+    });
+  }
+  unitChips.addEventListener("click", function (ev) {
+    var c = ev.target.closest(".chip");
+    if (!c) return;
+    fUnit.value = c.getAttribute("data-unit");
+    syncChips();
+    fTarget.focus();
+  });
+  fUnit.addEventListener("input", syncChips);
+
+  function validate() {
+    var ok = fFocus.value.trim() && fUnit.value.trim() && parseFloat(fTarget.value) > 0;
+    $("b-add").disabled = !ok;
+    return ok;
+  }
+  [fFocus, fUnit, fTarget, fStart, fEnd].forEach(function (el) {
+    el.addEventListener("input", validate);
+  });
+
+  function resetForm() {
+    fFocus.value = ""; fUnit.value = ""; fTarget.value = "";
+    fStart.value = todayISO(); fEnd.value = plusDaysISO(30);
+    syncChips(); validate(); fFocus.focus();
+  }
+
+  $("b-add").addEventListener("click", function () {
+    if (!validate()) return;
+    var g = {
+      id: uid(),
+      focus: fFocus.value.trim(),
+      unit: fUnit.value.trim(),
+      target: Math.max(1, parseFloat(fTarget.value) || 1),
+      current: 0,
+      hours: 0,
+      unfocusUntil: null,
+      start: fStart.value || todayISO(),
+      end: fEnd.value || plusDaysISO(30),
+      created: Date.now()
+    };
+    // guard: end before start -> swap
+    if (dayNum(g.end) < dayNum(g.start)) { var t = g.start; g.start = g.end; g.end = t; }
+    goals.push(g);
+    save();
+    resetForm();
+    render();
+  });
+
+  $("b-reset").addEventListener("click", resetForm);
+
+  /* keyboard: Enter in target adds */
+  fTarget.addEventListener("keydown", function (ev) {
+    if (ev.key === "Enter") { ev.preventDefault(); $("b-add").click(); }
+  });
+
+  /* ---------- public progress view (eye button) ---------- */
+  function publicSummary() {
+    return goals.filter(function (g) { return !isDormant(g); }).map(function (g) {
+      var s = statusOf(g);
+      return { focus: g.focus, pct: Math.round(s.pct), hours: +g.hours || 0, paceCls: s.pace.cls, paceText: s.pace.text };
+    });
+  }
+
+  function renderProgress(items, opts) {
+    opts = opts || {};
+    var body = $("progress-body"), foot = $("progress-foot");
+    if (!items || !items.length) {
+      body.innerHTML = '<p class="progress-empty">' +
+        (opts.message || "No focuses to show yet.") + '</p>';
+      foot.textContent = "";
+      return;
+    }
+    body.innerHTML = items.map(function (it) {
+      var pct = Math.max(0, Math.min(100, +it.pct || 0));
+      return '<div class="pgrow">' +
+          '<div class="pg-top"><span class="pg-focus">' + esc(it.focus) + '</span>' +
+            '<span class="pg-pct">' + pct + '<i>%</i></span></div>' +
+          '<div class="pg-bar"><div class="pg-fill" style="width:' + pct + '%"></div></div>' +
+          '<div class="pg-foot"><span class="pg-pace ' + (it.paceCls || "neutral") + '">' + esc(it.paceText || "") + '</span>' +
+            '<span class="pg-hrs">' + niceNum(it.hours || 0) + ' hrs</span></div>' +
+        '</div>';
+    }).join("");
+    foot.textContent = items.length + " focus" + (items.length === 1 ? "" : "es") + " in progress";
+  }
+
+  function openProgress() {
+    $("progress-overlay").hidden = false;
+    if (owner) { renderProgress(publicSummary()); return; }   // owner: live data
+    var d = db();
+    if (!d) { renderProgress([], { message: "Progress is offline right now \u2014 can\u2019t reach the server." }); return; }
+    $("progress-body").innerHTML = '<p class="progress-empty">Loading\u2026</p>';
+    d.collection("public").doc("progress").get().then(function (snap) {
+      var items = snap.exists ? (snap.data() || {}).goals : [];
+      renderProgress(Array.isArray(items) ? items : [], {
+        message: snap.exists ? "No focuses being tracked publicly yet." : "Nothing published yet \u2014 check back soon."
+      });
+    }).catch(function (e) {
+      var denied = e && e.code === "permission-denied";
+      renderProgress([], {
+        message: denied
+          ? "Public progress isn\u2019t available yet \u2014 check back soon."
+          : "Couldn\u2019t load progress right now. Please try again later."
+      });
+    });
+  }
+
+  function closeProgress() { $("progress-overlay").hidden = true; }
+
+  /* ---------- init ---------- */
+  fStart.value = todayISO();
+  fEnd.value = plusDaysISO(30);
+  validate();
+
+  $("eye-btn").addEventListener("click", openProgress);
+  $("progress-overlay").addEventListener("click", function (ev) {
+    if (ev.target.closest('[data-act="close-progress"]')) closeProgress();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && !$("progress-overlay").hidden) closeProgress();
+  });
+
+  function updateAcct(u) {
+    var el = $("nav-acct"), lbl = $("nav-acct-label");
+    if (!el) return;
+    if (u) { el.classList.add("in"); lbl.textContent = u.username || "Owner"; el.removeAttribute("href"); }
+    else { el.classList.remove("in"); lbl.textContent = "Log in"; el.setAttribute("href", "index.html"); }
+  }
+
+  var booted = false;
+  var authReady = (window.BOTAuth && BOTAuth.ready) ? BOTAuth.ready : Promise.resolve(null);
+  authReady.then(function (u) { updateAcct(u); boot(u); booted = true; });
+  if (window.BOTAuth && BOTAuth.onChange) {
+    BOTAuth.onChange(function (u) {
+      if (!booted) return;                 // ignore the immediate pre-ready fire
+      var was = owner && owner.uid, now = u && u.uid;
+      if (was === now) return;             // no real change
+      updateAcct(u); boot(u);
+    });
+  }
+})();
+</script>
+</body>
+</html>

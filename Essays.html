@@ -26,6 +26,14 @@
   }
 
   * { box-sizing: border-box; }
+
+  /* minimal scrollbar */
+  * { scrollbar-width: thin; scrollbar-color: #2a2620 transparent; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2620; border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent, #b4965a); background-clip: padding-box; }
+
   html { scroll-behavior: smooth; }
   body {
     margin: 0;
@@ -80,6 +88,19 @@
   .sec-head { display: flex; align-items: center; gap: 1.6rem; }
   .sec-head .label { color: var(--accent); white-space: nowrap; }
   .sec-head .rule { height: 1px; background: linear-gradient(90deg, var(--accent), var(--line)); flex: 1; opacity: 0.6; }
+  .edit-toggle {
+    appearance: none; cursor: pointer; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: transparent; border: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-family: var(--font-mono); font-size: 0.6rem;
+    text-transform: uppercase; letter-spacing: 0.2em;
+    padding: 0.5rem 0.8rem;
+    transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  }
+  .edit-toggle svg { width: 14px; height: 14px; }
+  .edit-toggle:hover { color: var(--accent); border-color: var(--accent); }
+  .edit-toggle.on { color: #0a0a0a; background: var(--accent); border-color: var(--accent); }
   .page-title {
     font-family: var(--font-head);
     font-weight: 400;
@@ -100,15 +121,36 @@
   /* ---------- INDEX ---------- */
   .essay-list { padding: clamp(3rem, 7vh, 5rem) 0 clamp(5rem, 11vh, 8rem); }
   .essay-row {
-    display: grid;
-    grid-template-columns: 180px 1fr auto;
-    gap: 2rem;
-    align-items: baseline;
     padding: 2.4rem 0;
     border-bottom: 1px solid var(--line-soft);
     transition: background 0.3s ease;
   }
   .essay-row:first-child { border-top: 1px solid var(--line-soft); }
+  .er-link {
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    gap: 2rem;
+    align-items: baseline;
+  }
+  .essay-row.is-private { opacity: 0.6; }
+  .er-priv {
+    font-family: var(--font-mono); font-size: 0.56rem;
+    text-transform: uppercase; letter-spacing: 0.24em;
+    color: var(--accent); margin-left: 0.7rem;
+  }
+  .er-tools { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.2rem 0 0; padding-left: 200px; }
+  .er-btn {
+    appearance: none; cursor: pointer; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    background: var(--surface); border: 1px solid var(--line);
+    color: var(--ink-dim);
+    font-family: var(--font-mono); font-size: 0.58rem;
+    text-transform: uppercase; letter-spacing: 0.16em;
+    padding: 0.5rem 0.8rem;
+    transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  }
+  .er-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--bg); }
+  .er-btn:disabled { opacity: 0.5; cursor: default; }
   .er-date { color: var(--ink-faint); font-size: 0.66rem; }
   .er-main { min-width: 0; }
   .er-title {
@@ -188,6 +230,16 @@
     background: linear-gradient(90deg, var(--accent), var(--line));
     opacity: 0.6;
   }
+  .reader-audio { margin: 2.4rem 0 0; }
+  .reader-audio audio { width: 100%; height: 44px; }
+  .reader-audio .ra-tag {
+    display: flex; align-items: center; gap: 0.7rem;
+    color: var(--ink-faint);
+    font-family: var(--font-mono); font-size: 0.58rem;
+    text-transform: uppercase; letter-spacing: 0.24em;
+    margin: 0 0 0.7rem;
+  }
+  .reader-audio .ra-tag .gl { color: var(--accent); font-size: 0.9rem; letter-spacing: 0; }
   .reader-body p {
     font-size: 1.22rem;
     line-height: 1.75;
@@ -219,6 +271,14 @@
     margin: 3em auto;
     background: var(--line);
   }
+  .reader-body a {
+    color: var(--accent);
+    border-bottom: 1px solid var(--accent-soft);
+    transition: border-color 0.3s ease;
+  }
+  .reader-body a:hover { border-color: var(--accent); }
+  .reader-body strong { font-weight: 600; color: var(--ink); }
+  .reader-body em { font-style: italic; }
   .reader-end {
     display: flex; justify-content: center;
     color: var(--accent); opacity: 0.7;
@@ -238,8 +298,9 @@
 
   /* ---------- RESPONSIVE ---------- */
   @media (max-width: 860px) {
-    .essay-row { grid-template-columns: 1fr; gap: 0.7rem; }
+    .er-link { grid-template-columns: 1fr; gap: 0.7rem; }
     .er-side { display: none; }
+    .er-tools { padding-left: 0; }
     .navlinks { gap: 1.2rem; }
     .navlinks a { font-size: 0.62rem; letter-spacing: 0.18em; }
   }
@@ -273,12 +334,22 @@
   </div>
 </footer>
 
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="botakumi-auth.js"></script>
+<script src="botakumi-account.js"></script>
+<script src="audio-player.js"></script>
+
 <script>
 (function () {
   var MANIFEST = "essays/essays.txt";
   var view = document.getElementById("view");
-  var essays = [];   // { slug, file, title, subtitle, date(Date|null), body(lines), words }
+  var essays = [];   // { slug, file, title, subtitle, date(Date|null), body(lines), words, private, source }
   var loaded = false;
+  var isOwner = false;
+  var editMode = false;
 
   /* ---------- helpers ---------- */
   function esc(s) {
@@ -288,8 +359,19 @@
     if (!d) return "Undated";
     return d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   }
+  function toISO(d) {
+    if (!d) return "";
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
   function readTime(words) {
     return Math.max(1, Math.round(words / 220)) + " min read";
+  }
+  function iconPencil() {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg>';
+  }
+  function findBySlug(s) {
+    for (var i = 0; i < essays.length; i++) if (essays[i].slug === s) return essays[i];
+    return null;
   }
 
   /* ---------- parsing ---------- */
@@ -300,7 +382,7 @@
     var title = (lines[i] || file).trim();
     i++;
     var meta = {};
-    while (i < lines.length && /^(date|subtitle)\s*:/i.test(lines[i])) {
+    while (i < lines.length && /^(date|subtitle|audio)\s*:/i.test(lines[i])) {
       var m = lines[i].match(/^(\w+)\s*:\s*(.*)$/);
       if (m) meta[m[1].toLowerCase()] = m[2].trim();
       i++;
@@ -318,6 +400,8 @@
     }
 
     var words = bodyLines.join(" ").split(/\s+/).filter(Boolean).length;
+    var audio = "";
+    if (meta.audio) audio = /^https?:\/\//i.test(meta.audio) ? meta.audio : "essays/" + meta.audio.replace(/^\/+/, "");
     return {
       slug: file.replace(/\.txt$/i, ""),
       file: file,
@@ -325,7 +409,8 @@
       subtitle: meta.subtitle || "",
       date: date,
       body: bodyLines,
-      words: words
+      words: words,
+      audio: audio
     };
   }
 
@@ -337,8 +422,25 @@
       if (/^##\s/.test(l) || /^>\s/.test(l) || l === "---") { if (para.length) break; else continue; }
       para.push(l);
     }
-    var s = para.join(" ");
+    var s = stripInline(para.join(" "));
     if (s.length > 190) s = s.slice(0, 190).replace(/\s+\S*$/, "") + "…";
+    return s;
+  }
+
+  function stripInline(s) {
+    return s
+      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, "$1")
+      .replace(/\*\*([^*]+)\*\*/g, "$1")
+      .replace(/\*([^*]+)\*/g, "$1");
+  }
+
+  function inline(s) {
+    s = esc(s);
+    s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, function (_, t, u) {
+      return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + t + '</a>';
+    });
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/\*([^*]+)\*/g, '<em>$1</em>');
     return s;
   }
 
@@ -346,14 +448,14 @@
     var html = [];
     var para = [];
     function flush() {
-      if (para.length) { html.push("<p>" + esc(para.join(" ")) + "</p>"); para = []; }
+      if (para.length) { html.push("<p>" + inline(para.join(" ")) + "</p>"); para = []; }
     }
     for (var i = 0; i < body.length; i++) {
       var l = body[i].trim();
       if (l === "") { flush(); continue; }
       if (l === "---") { flush(); html.push("<hr />"); continue; }
-      if (/^##\s/.test(l)) { flush(); html.push("<h2>" + esc(l.replace(/^##\s+/, "")) + "</h2>"); continue; }
-      if (/^>\s/.test(l)) { flush(); html.push("<blockquote>" + esc(l.replace(/^>\s+/, "")) + "</blockquote>"); continue; }
+      if (/^##\s/.test(l)) { flush(); html.push("<h2>" + inline(l.replace(/^##\s+/, "")) + "</h2>"); continue; }
+      if (/^>\s/.test(l)) { flush(); html.push("<blockquote>" + inline(l.replace(/^>\s+/, "")) + "</blockquote>"); continue; }
       para.push(l);
     }
     flush();
@@ -363,23 +465,34 @@
   /* ---------- views ---------- */
   function renderIndex() {
     document.title = "Essays — Blade of Takumi";
-    var rows = essays.map(function (e) {
-      return '<a class="essay-row" href="#/' + encodeURIComponent(e.slug) + '">' +
-        '<span class="er-date mono">' + esc(fmtDate(e.date)) + '</span>' +
-        '<span class="er-main">' +
-          '<h2 class="er-title">' + esc(e.title) + '</h2>' +
-          (firstParagraph(e.body) ? '<p class="er-excerpt">' + esc(firstParagraph(e.body)) + '</p>' : '') +
-        '</span>' +
-        '<span class="er-side">' + readTime(e.words) +
-          ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"></path><path d="M13 6l6 6-6 6"></path></svg>' +
-        '</span>' +
-      '</a>';
+    var visible = essays.filter(function (e) { return isOwner || !e.private; });
+    var rows = visible.map(function (e) {
+      return '<div class="essay-row' + (e.private ? ' is-private' : '') + '" data-slug="' + esc(e.slug) + '">' +
+        '<a class="er-link" href="#/' + encodeURIComponent(e.slug) + '">' +
+          '<span class="er-date mono">' + esc(fmtDate(e.date)) + (e.private ? '<span class="er-priv">Private</span>' : '') + '</span>' +
+          '<span class="er-main">' +
+            '<h2 class="er-title">' + esc(e.title) + '</h2>' +
+            (firstParagraph(e.body) ? '<p class="er-excerpt">' + esc(firstParagraph(e.body)) + '</p>' : '') +
+          '</span>' +
+          '<span class="er-side">' + readTime(e.words) +
+            ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"></path><path d="M13 6l6 6-6 6"></path></svg>' +
+          '</span>' +
+        '</a>' +
+        (isOwner && editMode ?
+          '<div class="er-tools">' +
+            '<button class="er-btn" data-act="edit" data-slug="' + esc(e.slug) + '">' + iconPencil() + ' Edit text</button>' +
+            '<button class="er-btn" data-act="private" data-slug="' + esc(e.slug) + '">' + (e.private ? 'Make public' : 'Make private') + '</button>' +
+          '</div>' : '') +
+      '</div>';
     }).join("");
+
+    var ownerBar = isOwner ?
+      '<button class="edit-toggle' + (editMode ? ' on' : '') + '" id="edit-toggle">' + iconPencil() + (editMode ? ' Done' : ' Manage') + '</button>' : '';
 
     view.innerHTML =
       '<div data-screen-label="Essay index">' +
         '<header class="page-head"><div class="wrap">' +
-          '<div class="sec-head"><span class="label mono">Essays</span><span class="rule"></span></div>' +
+          '<div class="sec-head"><span class="label mono">Essays</span><span class="rule"></span>' + ownerBar + '</div>' +
           '<h1 class="page-title">Written by hand,<br />read slowly.</h1>' +
         '</div></header>' +
         '<section class="essay-list"><div class="wrap">' +
@@ -393,19 +506,23 @@
     var e = null;
     for (var i = 0; i < essays.length; i++) if (essays[i].slug === slug) e = essays[i];
     if (!e) { renderIndex(); return; }
+    if (e.private && !isOwner) { location.hash = ""; renderIndex(); return; }
     document.title = e.title + " — Blade of Takumi";
     view.innerHTML =
       '<article class="reader" data-screen-label="Essay: ' + esc(e.title) + '"><div class="reader-col">' +
         '<a class="back-link" href="#">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H6"></path><path d="M11 18l-6-6 6-6"></path></svg>' +
           ' All essays</a>' +
-        '<div class="reader-meta mono"><span>' + esc(fmtDate(e.date)) + '</span><span>' + readTime(e.words) + '</span></div>' +
+        '<div class="reader-meta mono"><span>' + esc(fmtDate(e.date)) + '</span><span>' + readTime(e.words) + '</span>' +
+          (e.private ? '<span class="er-priv">Private</span>' : '') + '</div>' +
         '<h1 class="reader-title">' + esc(e.title) + '</h1>' +
         (e.subtitle ? '<p class="reader-sub">' + esc(e.subtitle) + '</p>' : '') +
+        (e.audio ? '<div class="reader-audio"><p class="ra-tag"><span class="gl">♪</span> Listen</p>' + (window.BOTAudio ? BOTAudio.html(e.audio) : '<audio controls src="' + esc(e.audio) + '"></audio>') + '</div>' : '') +
         '<div class="reader-rule"></div>' +
         '<div class="reader-body">' + bodyToHtml(e.body) + '</div>' +
         '<div class="reader-end">⸻</div>' +
       '</div></article>';
+    if (window.BOTAudio) BOTAudio.wire(view);
     window.scrollTo(0, 0);
   }
 
@@ -457,6 +574,44 @@
       .catch(function () { return []; });
   }
 
+  /* Published essays live in Firestore (written by Suzuri's Publish button).
+     They take priority over file-based essays of the same slug. */
+  function listFirestoreEssays() {
+    if (!(window.FIREBASE_READY && window.firebase && firebase.firestore)) return Promise.resolve([]);
+    try { if (!firebase.apps.length && window.FIREBASE_CONFIG) firebase.initializeApp(window.FIREBASE_CONFIG); } catch (e) {}
+    var col = firebase.firestore().collection("essays");
+    /* Logged out, only public essays are even requested — private docs are
+       blocked by security rules, so asking for them would error. Owner gets all. */
+    var q = isOwner ? col : col.where("private", "==", false);
+    return q.get()
+      .then(function (qs) {
+        var out = [];
+        qs.forEach(function (doc) {
+          var d = doc.data() || {};
+          var bodyLines = String(d.body || "").replace(/\r\n/g, "\n").split("\n");
+          var date = null;
+          if (d.date) { var p = new Date(d.date + "T12:00:00"); if (!isNaN(p)) date = p; }
+          if (!date && d.updatedAt && d.updatedAt.toDate) { try { date = d.updatedAt.toDate(); } catch (e) {} }
+          var words = d.words || bodyLines.join(" ").split(/\s+/).filter(Boolean).length;
+          out.push({
+            slug: d.slug || doc.id,
+            file: null,
+            title: d.title || doc.id,
+            subtitle: d.subtitle || "",
+            date: date,
+            body: bodyLines,
+            words: words,
+            audio: d.audio || "",
+            audioName: d.audioName || "",
+            private: !!d.private,
+            source: "firestore"
+          });
+        });
+        return out;
+      })
+      .catch(function () { return []; });
+  }
+
   function fetchEssay(f) {
     return fetch("essays/" + f, { cache: "no-store" })
       .then(function (r) {
@@ -476,7 +631,7 @@
       });
   }
 
-  Promise.all([listFromGitHub(), listFromManifest()])
+  var fileEssaysP = Promise.all([listFromGitHub(), listFromManifest()])
     .then(function (lists) {
       var seen = {}, files = [];
       lists[0].concat(lists[1]).forEach(function (f) {
@@ -485,20 +640,117 @@
       });
       return Promise.all(files.map(fetchEssay));
     })
-    .then(function (list) {
-      essays = list.filter(Boolean).sort(function (a, b) {
-        var ta = a.date ? a.date.getTime() : 0;
-        var tb = b.date ? b.date.getTime() : 0;
-        return tb - ta;
+    .then(function (l) { return l.filter(Boolean); })
+    .catch(function () { return []; });
+
+  function loadAll() {
+    return Promise.all([fileEssaysP, listFirestoreEssays()])
+      .then(function (groups) {
+        var bySlug = {};
+        groups[0].forEach(function (e) { bySlug[e.slug] = e; });
+        groups[1].forEach(function (e) { bySlug[e.slug] = e; }); // published essays win
+        essays = Object.keys(bySlug).map(function (k) { return bySlug[k]; }).sort(function (a, b) {
+          var ta = a.date ? a.date.getTime() : 0;
+          var tb = b.date ? b.date.getTime() : 0;
+          return tb - ta;
+        });
+        loaded = true;
+        route();
+      })
+      .catch(function () {
+        loaded = true;
+        essays = [];
+        route();
       });
-      loaded = true;
-      route();
-    })
-    .catch(function () {
-      loaded = true;
-      essays = [];
-      route();
+  }
+
+  /* Know the owner before first paint so private essays + tools resolve right. */
+  var authReady = (window.BOTAuth && window.BOTAuth.ready) ? window.BOTAuth.ready : Promise.resolve(null);
+  authReady.then(function (u) { isOwner = !!u; loadAll(); });
+
+  /* React to login / logout while the page is open. */
+  if (window.BOTAuth && window.BOTAuth.onChange) {
+    window.BOTAuth.onChange(function (u) {
+      var was = isOwner;
+      isOwner = !!u;
+      if (loaded && was !== isOwner) { editMode = false; route(); }
     });
+  }
+
+  /* ---------- owner actions (edit mode) ---------- */
+  function db() {
+    if (!(window.firebase && firebase.firestore)) return null;
+    try { if (!firebase.apps.length && window.FIREBASE_CONFIG) firebase.initializeApp(window.FIREBASE_CONFIG); } catch (e) {}
+    return firebase.firestore();
+  }
+
+  function editEssay(e) {
+    try {
+      localStorage.setItem("suzuri-edit-v1", JSON.stringify({
+        slug: e.slug,
+        title: e.title,
+        subtitle: e.subtitle || "",
+        date: toISO(e.date),
+        body: (e.body || []).join("\n"),
+        audio: e.audio || "",
+        audioName: e.audioName || ""
+      }));
+    } catch (err) {}
+    window.location.href = "Suzuri.html";
+  }
+
+  function togglePrivate(e, btn) {
+    var d = db();
+    if (!d) { return; }
+    var owner = window.BOTAuth && window.BOTAuth.current();
+    var makePrivate = !e.private;
+    var ref = d.collection("essays").doc(e.slug);
+    var payload = {
+      private: makePrivate,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    /* If this essay only exists as a repo .txt, materialise it into Firestore so
+       the flag (and its content) persist and override the public file. */
+    if (e.source !== "firestore") {
+      payload.slug = e.slug;
+      payload.title = e.title;
+      payload.subtitle = e.subtitle || "";
+      payload.date = toISO(e.date);
+      payload.body = (e.body || []).join("\n");
+      payload.words = e.words || 0;
+      payload.audio = e.audio || "";
+      payload.audioName = e.audioName || "";
+      payload.author = (owner && owner.username) || "";
+      payload.uid = (owner && owner.uid) || null;
+      payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+    }
+    var label = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Saving…";
+    ref.set(payload, { merge: true }).then(function () {
+      e.private = makePrivate;
+      e.source = "firestore";
+      renderIndex();
+    }).catch(function () {
+      btn.disabled = false;
+      btn.textContent = "Try again";
+      setTimeout(function () { if (btn) btn.textContent = label; }, 1800);
+    });
+  }
+
+  view.addEventListener("click", function (ev) {
+    var toggle = ev.target.closest && ev.target.closest("#edit-toggle");
+    if (toggle) { editMode = !editMode; renderIndex(); return; }
+    var btn = ev.target.closest && ev.target.closest(".er-btn");
+    if (btn) {
+      ev.preventDefault();
+      var e = findBySlug(btn.getAttribute("data-slug"));
+      if (!e) return;
+      var act = btn.getAttribute("data-act");
+      if (act === "edit") editEssay(e);
+      else if (act === "private") togglePrivate(e, btn);
+    }
+  });
 
   window.addEventListener("hashchange", route);
 })();

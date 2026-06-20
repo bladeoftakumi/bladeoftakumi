@@ -1,0 +1,27 @@
+# ── Secrets & billable keys — NEVER commit these ──────────────────────────
+# Firebase Admin / service-account credentials (server-side, highly sensitive)
+*serviceAccount*.json
+*service-account*.json
+firebase-adminsdk*.json
+google-credentials*.json
+
+# Environment / secret files
+.env
+.env.*
+*.secret
+secrets.*
+
+# Anything holding a real Google Maps / Cloud API key.
+# (In this project the Maps key is entered at runtime and lives only in the
+#  browser's localStorage — it is NOT stored in any file. This block is a
+#  guardrail in case a key file is ever added.)
+maps-key*
+*.apikey
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+
+# NOTE: firebase-config.js is intentionally NOT ignored — the Firebase *web*
+# config it contains is a public project identifier, safe to commit. Security
+# comes from Firestore/Storage rules + App Check + plan limits, not secrecy.
