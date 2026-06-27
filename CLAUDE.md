@@ -10,7 +10,11 @@ GitHub repo. No build step — plain HTML + inline React (Babel) + vanilla JS. F
 - **Cut filler copy.** No explanatory subheadings under tool titles — the user removes
   these on sight. Keep live-data lines (counts, "saved" status), drop instructional prose.
 - Single **owner** account (the user). Username/password via Firebase Auth; the site maps
-  username → `<username>@bladeoftakumi.app` behind the scenes. No email/reset flow.
+  username → `<username>@bladeoftakumi.app` behind the scenes. The account email is now the
+  **real, verified** `bladeoftakumi@gmail.com` (migrated 2026-06 so native MFA could enroll);
+  username login still works (real email tried first, legacy synthetic email as fallback).
+  **SMS two-factor is live** (phone enrolled): login = username + password → texted 6-digit
+  code. **Trust-this-device + Lock** added — see auth layer below.
 
 ## Files (live site = project root + Rihla/)
 - `index.html` + `app.jsx` — landing page / tool launcher.
@@ -36,6 +40,30 @@ GitHub repo. No build step — plain HTML + inline React (Babel) + vanilla JS. F
   hidden from the logged-in nav — do NOT delete it.
 - `botakumi-auth.js` — shared site-wide auth layer (`window.BOTAuth`: `.ready`, `.onChange`,
   `.current()`). `firebase-config.js` — public Firebase web config (safe in public repo).
+  **Auth/MFA additions (2026-06, compat SDK 10.12.5 — NOT modular):**
+  - `signIn` tries real email `bladeoftakumi@gmail.com` first, falls back to legacy
+    `<user>@bladeoftakumi.app`; catches `auth/multi-factor-auth-required` and surfaces
+    `err.hints`. `mfa.{sendSms,resolvePhone,cancel,hints}` resolve the SMS challenge.
+  - `enroll.*` is the temporary owner setup API (email verify + SMS enroll/remove +
+    `reauth`). Surfaced via the **"Two-factor setup"** panel in the home account menu —
+    **the user wants this enroll UI STRIPPED now that the phone is enrolled** (leave the
+    login code-challenge). `SecurityModal` + the menu item in `app.jsx` are the temp bits.
+  - **Trust this device:** `isTrusted()/setTrusted(bool)` switch Firebase persistence
+    LOCAL (trusted, stay signed in → no code on future visits) vs SESSION (untrusted,
+    drop on browser close). `TrustPrompt` shows after each interactive sign-in. Native
+    Firebase MFA CANNOT skip the code per-device at a real sign-in; "no MFA every login"
+    works purely because the trusted session persists (only a full Log out forces a new
+    code). A true post-logout skip would need a Cloud Function (Admin custom token) —
+    declined for cost/security.
+  - **Lock:** account menu is **Two-factor setup · Lock · Log out**. Lock = `LockScreen`
+    veil, persisted via `localStorage["botakumi_locked"]="1"` (survives reload). Unlock
+    with **password only, NO code** — `verifyPassword()` reauths and treats
+    `multi-factor-auth-required` as success (reaching MFA stage proves pw correct; no SMS
+    sent unless resolver is called). ⚠️ **Lock is home-page (index.html) only** right now —
+    does NOT veil the individual tools; extending site-wide is a pending follow-up the user
+    may ask for (each page reads the same lock flag).
+  - reCAPTCHA gotcha (compat): `new firebase.auth.RecaptchaVerifier(containerId,
+    {size:"invisible"})` — do NOT pass auth as a 3rd arg (throws `auth/invalid-api-key`).
 - Backups in `site/`, `BladeOfTakumi/`, `uploads/` are NOT live — don't edit them.
 
 ## Rihla — Mozi Mode (route planner mode toggle: "Around an area" vs "Mozi Mode")
@@ -62,6 +90,24 @@ spread** (Auto/Manual). Dwell fixed at 20 min/stop.
 - `public/progress` — curated Kaizen progress mirror for brand followers.
 
 ## ⚠️ Pending user (console) actions — NOT done by code
+> **Note (2026-06-19):** this in-environment copy of `CLAUDE.md` is the MOST RECENT
+> version — it's slightly ahead of GitHub (items #1 and #3 were confirmed live and marked
+> done here but not yet re-pushed). Trust this copy over the repo's on the rules status.
+0. **SMS-MFA console state (2026-06-27):** Phone enabled as a 2nd factor; **SMS region
+   policy = US-only ✅ set**; account email verified ✅; phone factor enrolled ✅;
+   `bladeoftakumi.com` added to Authorized domains ✅. **STILL TODO (user):** create a
+   **Billing budget + alert** (GCP → Billing → Budgets & alerts; ~$5/mo, 50/90/100%
+   email thresholds) — notify-only toll-fraud insurance, realistically ~$0. Also: the
+   **temporary enroll panel should be removed from code** (see auth layer notes) once the
+   user confirms a real login on the live site, and the 2FA code changes still need to be
+   **deployed** (changed files: `botakumi-auth.js`, `app.jsx`, `index.html`).
+   - **Recommended sequence for stripping the enroll panel:** (1) deploy the 3 changed
+     files, (2) do ONE real username+password+SMS-code login on the live `bladeoftakumi.com`
+     to confirm the whole flow works end-to-end, (3) THEN have Claude strip the temporary
+     "Two-factor setup" UI (`SecurityModal` + its `app.jsx` account-menu item + the
+     `#recaptcha-enroll` container), leaving only the login code-challenge + Trust/Lock.
+     Do NOT strip before a confirmed live login — the panel is the recovery/re-enroll path
+     if anything's off. Factors can also always be managed from the Firebase console.
 1. **Publish Firestore rules** (full ruleset — replace everything in Firestore → Rules):
    ```
    rules_version = '2';
@@ -74,6 +120,12 @@ spread** (Auto/Manual). Dwell fixed at 20 min/stop.
        match /kaizen/{uid} {
          allow read, write: if request.auth != null && request.auth.uid == uid;
        }
+       match /crm/{uid} {
+         allow read, write: if request.auth != null && request.auth.uid == uid;
+       }
+       match /rihla/{uid} {
+         allow read, write: if request.auth != null && request.auth.uid == uid;
+       }
        match /public/{doc} {
          allow read:  if true;
          allow write: if request.auth != null;
@@ -82,18 +134,25 @@ spread** (Auto/Manual). Dwell fixed at 20 min/stop.
      }
    }
    ```
-   **⚠️ Not yet published** — confirmed live: a logged-out read of `public/progress`
-   returns `permission-denied`, so Kaizen's public Progress view shows the "not
-   available yet" empty state for visitors. Publishing the ruleset above (it already
-   has `match /public/{doc} { allow read: if true; }`) fixes it. After publishing,
-   open Kaizen **logged in and save once** so the `public/progress` mirror doc exists
-   — until a save happens there is nothing for visitors to load.
+   **✅ Published & confirmed live (2026-06-19; `crm` + `rihla` blocks added &
+   published by user 2026-06-27)** — verified from an unauthenticated client:
+   logged-out reads of `public/progress` and public essays are ALLOWED, and a
+   logged-out read of `kaizen/{uid}` returns `permission-denied` (correct). The
+   `public/progress` mirror doc also exists, so Kaizen's public Progress view works
+   for visitors. **`rihla/{uid}` was missing until 2026-06-27** — that's why Rihla
+   saved itineraries / Directory / Maps key never synced to the cloud (writes hit the
+   catch-all `if false` and `RihlaCloud.push()` swallowed the `permission-denied`).
+   Now covered. Nothing left to do on this item.
 2. **Mozi Mode has never been run against the live Google API key** — UI + logic verified,
    real corridor search untested. On first real run, sanity-check the wedge splay feel and
    call volume.
-3. **Enable Firebase Storage + publish Storage rules** (for Suzuri essay audio). In the
-   Firebase console: Build → Storage → Get started. Then publish rules allowing public
-   reads and signed-in writes to the audio folder:
+3. **Suzuri essay audio — live upload test still pending.** Firebase Storage is
+   **✅ enabled and the rules are confirmed live (2026-06-19)**: verified from an
+   unauthenticated client that reads/`listAll` on `essays-audio/**` are ALLOWED
+   (`object-not-found` on a missing file, not `unauthorized`) — so `allow read: if true`
+   is published. The folder is currently **empty (0 files)**, so the only thing untested
+   is the end-to-end *write* path: publish one essay with audio from Suzuri (logged in)
+   and confirm the upload + playback work. Rules already in place:
    ```
    rules_version = '2';
    service firebase.storage {

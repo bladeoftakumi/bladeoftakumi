@@ -1,0 +1,7 @@
+On Sharpening
+date: 2026-05-21
+subtitle: A second sample, to show how the index sorts
+
+Two essays are enough to see the index in motion: newest first, each with its date, a short excerpt, and an estimated reading time.
+
+Replace both samples whenever you're ready. The page will hold whatever you give it.

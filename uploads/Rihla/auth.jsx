@@ -16,56 +16,67 @@
 const { useState: useAuState, useEffect: useAuEffect, useContext: useAuContext,
         createContext: createAuContext, useCallback: useAuCallback, useRef: useAuRef } = React;
 
-/* Real accounts now live in FIREBASE via the shared window.BOTAuth layer
-   (botakumi-auth.js), so a login on the Blade of Takumi home page carries
-   straight through here on the same origin. The DEMO account stays fully
-   local — it's a throwaway sandbox that reseeds sample data each time. */
-const DEMO_KEY = "botakumi_demo_v1";
-function _readDemo() { try { return JSON.parse(localStorage.getItem(DEMO_KEY)) || {}; } catch (e) { return {}; } }
-function _writeDemo(d) { localStorage.setItem(DEMO_KEY, JSON.stringify(d)); }
+const AUTH_KEY = "rihla_auth_v1";
+
+function _readAuth() { try { return JSON.parse(localStorage.getItem(AUTH_KEY)) || {}; } catch (e) { return {}; } }
+function _writeAuth(s) { localStorage.setItem(AUTH_KEY, JSON.stringify(s)); }
+function _salt() { return Math.random().toString(36).slice(2, 10); }
+function _hash(pw, salt) {
+  // djb2 — adequate for a local prototype only, NOT production security.
+  let h = 5381; const s = salt + "::" + pw;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return String(h >>> 0);
+}
 
 const AuthStore = {
-  isFirebase() { return !!window.BOTAuth.isFirebase; },
-  hasAccount() { return window.BOTAuth.hasAccount(); },
-  ownerName() { return window.BOTAuth.ownerName(); },
-  isDemo() { return !!_readDemo().on; },
-
-  // real accounts -> Firebase (Promises)
-  signUp(creds) { return window.BOTAuth.signUp(creds); },
-  signIn(creds) { return window.BOTAuth.signIn(creds); },
-
-  // demo -> local sandbox, reseeded fresh every time
+  hasAccount() { return !!_readAuth().account; },
+  ownerName() { const a = _readAuth().account; return a ? a.username : null; },
+  signUp({ username, password }) {
+    const s = _readAuth();
+    if (s.account) throw new Error("An owner account already exists on this device.");
+    const salt = _salt();
+    s.account = { username: username.trim(), salt, hash: _hash(password, salt), profile: { apiKey: "" } };
+    s.session = true; _writeAuth(s);
+    return { username: s.account.username, ...s.account.profile };
+  },
+  signIn({ username, password }) {
+    const s = _readAuth(); const a = s.account;
+    if (!a) throw new Error("No account yet — create one first.");
+    if (username.trim().toLowerCase() !== a.username.toLowerCase() || _hash(password, a.salt) !== a.hash)
+      throw new Error("That username or password doesn't match.");
+    s.session = true; _writeAuth(s);
+    return { username: a.username, ...a.profile };
+  },
   signInDemo() {
-    _writeDemo({ on: true, profile: { apiKey: "" } });
+    const s = _readAuth();
+    s.demoSession = true; s.demoProfile = { apiKey: "" };
+    _writeAuth(s);
+    // always a fresh showcase: reseed sample routes + visit history
     if (typeof seedDemoLibrary === "function") seedDemoLibrary(true);
     return AuthStore.current();
   },
-
   signOut() {
-    var wasDemo = AuthStore.isDemo();
-    localStorage.removeItem(DEMO_KEY);
-    if (wasDemo) {
-      if (typeof resetDemoLibrary === "function") resetDemoLibrary();
-      if (typeof resetDemoDirectory === "function") resetDemoDirectory();
-      return Promise.resolve();
-    }
-    return window.BOTAuth.signOut();
+    const s = _readAuth();
+    const wasDemo = !!s.demoSession;
+    s.session = false; s.demoSession = false; s.demoProfile = null;
+    _writeAuth(s);
+    // demo auto-reverts: wipe the sandbox so the next demo login starts from the original sample data
+    if (wasDemo && typeof resetDemoLibrary === "function") resetDemoLibrary();
+    if (wasDemo && typeof resetDemoDirectory === "function") resetDemoDirectory();
   },
-
   current() {
-    if (AuthStore.isDemo()) {
-      var d = _readDemo();
-      return Object.assign({ username: "Demo", demo: true }, d.profile || { apiKey: "" });
-    }
-    return window.BOTAuth.current();
+    const s = _readAuth();
+    if (s.demoSession) return { username: "Demo", demo: true, ...(s.demoProfile || { apiKey: "" }) };
+    if (!s.account || !s.session) return null;
+    return { username: s.account.username, ...(s.account.profile || {}) };
   },
-
   saveProfile(patch) {
-    if (AuthStore.isDemo()) {
-      var d = _readDemo(); d.profile = Object.assign({}, d.profile || {}, patch); _writeDemo(d);
-      return Promise.resolve(AuthStore.current());
-    }
-    return window.BOTAuth.saveProfile(patch);
+    const s = _readAuth();
+    if (s.demoSession) { s.demoProfile = { ...(s.demoProfile || {}), ...patch }; _writeAuth(s); return AuthStore.current(); }
+    if (!s.account) return null;
+    s.account.profile = { ...(s.account.profile || {}), ...patch };
+    _writeAuth(s);
+    return { username: s.account.username, ...s.account.profile };
   },
 };
 
@@ -73,19 +84,11 @@ const AuthCtx = createAuContext(null);
 
 function AuthProvider({ children }) {
   const [user, setUser] = useAuState(() => AuthStore.current());
-  // keep React in step with the shared Firebase auth state (restore + changes)
-  useAuEffect(() => {
-    const off = window.BOTAuth.onChange((u) => {
-      if (AuthStore.isDemo()) return; // demo session overrides until logged out
-      setUser(u);
-    });
-    return off;
-  }, []);
-  const signUp = useAuCallback(async (c) => { const u = await AuthStore.signUp(c); setUser(u); return u; }, []);
-  const signIn = useAuCallback(async (c) => { const u = await AuthStore.signIn(c); setUser(u); return u; }, []);
+  const signUp = useAuCallback((c) => { const u = AuthStore.signUp(c); setUser(u); return u; }, []);
+  const signIn = useAuCallback((c) => { const u = AuthStore.signIn(c); setUser(u); return u; }, []);
   const signInDemo = useAuCallback(() => { const u = AuthStore.signInDemo(); setUser(u); return u; }, []);
-  const signOut = useAuCallback(async () => { await AuthStore.signOut(); setUser(AuthStore.current()); }, []);
-  const saveApiKey = useAuCallback(async (apiKey) => { const u = await AuthStore.saveProfile({ apiKey }); setUser(u); if (window.RihlaCloud) window.RihlaCloud.push("apiKey", apiKey); return u; }, []);
+  const signOut = useAuCallback(() => { AuthStore.signOut(); setUser(null); }, []);
+  const saveApiKey = useAuCallback((apiKey) => { const u = AuthStore.saveProfile({ apiKey }); setUser(u); return u; }, []);
   const value = {
     user, signUp, signIn, signInDemo, signOut, saveApiKey,
     hasAccount: AuthStore.hasAccount(), ownerName: AuthStore.ownerName(),
@@ -97,9 +100,7 @@ function useAuth() { return useAuContext(AuthCtx); }
 /* ---------- login / create modal ---------- */
 function AuthModal({ onClose, onDemo }) {
   const { hasAccount, signIn, signUp, signInDemo } = useAuth();
-  const [mode, setMode] = useAuState(hasAccount ? "login" : "create");
-  const creating = mode === "create";
-  const [busy, setBusy] = useAuState(false);
+  const creating = !hasAccount;
   const [username, setUsername] = useAuState("");
   const [password, setPassword] = useAuState("");
   const [confirm, setConfirm] = useAuState("");
@@ -115,7 +116,7 @@ function AuthModal({ onClose, onDemo }) {
     setTimeout(() => { setDemoBusy(false); enterDemo(); }, 900);
   };
 
-  const submit = async (e) => {
+  const submit = (e) => {
     e.preventDefault(); setErr("");
     try {
       // typing the demo credentials by hand works too
@@ -124,19 +125,11 @@ function AuthModal({ onClose, onDemo }) {
         enterDemo(); return;
       }
       if (!username.trim()) throw new Error("Choose a username.");
-      if (creating && password.length < 6) throw new Error("Use a password of at least 6 characters.");
-      if (!password) throw new Error("Enter your password.");
+      if (password.length < 4) throw new Error("Use a password of at least 4 characters.");
       if (creating && password !== confirm) throw new Error("Passwords don't match.");
-      setBusy(true);
-      if (creating) await signUp({ username, password }); else await signIn({ username, password });
+      if (creating) signUp({ username, password }); else signIn({ username, password });
       onClose();
-    } catch (e2) {
-      const code = e2 && e2.code;
-      setErr(window.BOTAuth.mapError ? window.BOTAuth.mapError(e2) : e2.message);
-      if (code === "auth/email-already-in-use") setMode("login");
-      if (code === "auth/user-not-found") setMode("create");
-      setBusy(false);
-    }
+    } catch (e2) { setErr(e2.message); }
   };
 
   return (
@@ -175,8 +168,8 @@ function AuthModal({ onClose, onDemo }) {
             </div>
           )}
           {err && <div className="banner banner-danger"><span className="banner-icon"><IconWarn size={16} /></span><span>{err}</span></div>}
-          <button type="submit" className="btn btn-primary btn-lg btn-block" style={{ marginTop: 4 }} disabled={busy}>
-            <IconLock size={16} /> {busy ? (creating ? "Creating\u2026" : "Logging in\u2026") : (creating ? "Create account" : "Log in")}
+          <button type="submit" className="btn btn-primary btn-lg btn-block" style={{ marginTop: 4 }}>
+            <IconLock size={16} /> {creating ? "Create account" : "Log in"}
           </button>
         </form>
         <div className="divider-or" style={{ margin: "18px 0 14px" }}>or</div>
@@ -188,19 +181,12 @@ function AuthModal({ onClose, onDemo }) {
           saved routes, visit history and all. Reverts to the original sample data when you log out.
         </p>
         <div className="auth-switch">
-          {creating
-            ? <span>Already set up? <button type="button" onClick={() => { setErr(""); setMode("login"); }}>Log in</button></span>
-            : <span>Need to create it? <button type="button" onClick={() => { setErr(""); setMode("create"); }}>Create account</button></span>}
-        </div>
-        <div className="auth-switch">
           <button type="button" onClick={onClose}>Continue without an account →</button>
         </div>
         <p className="auth-note">
-          {window.BOTAuth.isFirebase
-            ? "Secured by Firebase — your login works on any device. The demo stays local to this browser."
-            : (creating
-              ? "Single-owner: only this one account can be created here. Stored in this browser for now."
-              : "Stored in this browser. Forgot it? Clearing this site's data resets the owner account.")}
+          {creating
+            ? "Single-owner: only this one account can be created here. Stored in this browser for now."
+            : "Stored in this browser. Forgot it? Clearing this site's data resets the owner account."}
         </p>
       </div>
     </div>
@@ -243,7 +229,7 @@ function AccountPanel({ onDone, onHome }) {
   const [key, setKey] = useAuState(user.apiKey || "");
   const [show, setShow] = useAuState(false);
   const [saved, setSaved] = useAuState(false);
-  const save = async () => { await saveApiKey(key.trim()); setSaved(true); setTimeout(() => setSaved(false), 1600); };
+  const save = () => { saveApiKey(key.trim()); setSaved(true); setTimeout(() => setSaved(false), 1600); };
   return (
     <div className="page">
       {onHome && (
@@ -253,7 +239,7 @@ function AccountPanel({ onDone, onHome }) {
       )}
       <div className="page-head">
         <h1 className="page-title">Account</h1>
-        <p className="page-desc">Signed in as <b>{user.username}</b>.</p>
+        <p className="page-desc">Signed in as <b>{user.username}</b>. Save your Google Maps API key once and the planner and rerouting fill it in automatically.</p>
       </div>
       <div className="card card-pad">
         <div className="field field-full">

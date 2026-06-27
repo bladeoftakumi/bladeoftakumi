@@ -1,0 +1,15 @@
+The Weight of Finished Things
+date: 2026-06-08
+subtitle: A sample essay — replace me with your own writing
+
+This is a sample essay so you can see how the page works. Delete this file, remove its line from essays.txt, and add your own.
+
+Anything you write between blank lines becomes a paragraph, set in a comfortable reading column. There is nothing to format and no tools to learn — the page takes plain text and gives it shape.
+
+## Headings work too
+
+Start a line with two hash marks and a space to break an essay into sections. Use them sparingly; most short essays don't need any.
+
+> A line that starts with an angle bracket becomes a pulled quote, like this one.
+
+That is the whole system. Write, save, add one line to the manifest, and it appears.

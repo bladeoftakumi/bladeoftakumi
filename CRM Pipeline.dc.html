@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+
+<!-- Firebase + shared site auth (owner-only gate, Firestore-backed data) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="botakumi-auth.js"></script>
+</head>
+<body>
+
+<!-- Owner-only access gate: covers the page until a logged-in account is confirmed. -->
+<div id="auth-gate" style="position:fixed;inset:0;z-index:9999;background:#f6f5f2;display:flex;align-items:center;justify-content:center;font-family:'Hanken Grotesk',system-ui,sans-serif">
+  <div style="color:#8a857c;font-size:13px;letter-spacing:.02em">Checking access&hellip;</div>
+</div>
+<script>
+  (function () {
+    function guard() {
+      if (!window.BOTAuth) { window.location.replace("index.html"); return; }
+      window.BOTAuth.ready.then(function () {
+        if (window.BOTAuth.current()) {
+          var g = document.getElementById("auth-gate");
+          if (g) g.remove();
+        } else {
+          window.location.replace("index.html");
+        }
+      });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", guard);
+    else guard();
+  })();
+</script>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{font-family:'Hanken Grotesk',system-ui,sans-serif;background:#f6f5f2;color:#1c1a17;-webkit-font-smoothing:antialiased}
+    ::-webkit-scrollbar{height:10px;width:10px}
+    ::-webkit-scrollbar-thumb{background:#d8d5cf;border-radius:8px;border:2px solid #f6f5f2}
+    ::-webkit-scrollbar-thumb:hover{background:#c4c0b8}
+    @keyframes fade{from{opacity:0}to{opacity:1}}
+    @keyframes rise{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
+    input::placeholder,textarea::placeholder{color:#a8a39a}
+    textarea{font-family:inherit}
+    .fld{font-family:inherit;font-size:14px;padding:10px 12px;border:1.5px solid #e0ddd6;border-radius:9px;background:#faf9f6;outline:none;width:100%;color:#1c1a17}
+    .fld:focus{border-color:#1c1a17;background:#fff}
+  </style>
+</helmet>
+<div style="display:flex;flex-direction:column;height:100vh;overflow:hidden">
+
+  <header style="display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:#fffefb;border-bottom:1px solid #e8e5df;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:30px;height:30px;border-radius:8px;background:#1c1a17;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px">縁</div>
+      <div>
+        <div style="font-size:17px;font-weight:700;letter-spacing:-.01em">En</div>
+        <div style="font-size:12px;color:#8a857c;font-weight:500">{{ totalContacts }} contacts &middot; {{ totalStudents }} students across pipeline</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:9px">
+      <a href="index.html" title="Back to Blade of Takumi" style="display:flex;align-items:center;gap:7px;background:#f0eee9;color:#33302a;border-radius:9px;padding:10px 13px;font-family:inherit;font-size:13.5px;font-weight:600;text-decoration:none">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"></path><path d="M6 9.5V20h12V9.5"></path></svg>
+        Home
+      </a>
+      <div id="crm-acct" style="position:relative"></div>
+      <span style="width:1px;height:22px;background:#e3e0d9"></span>
+      <button onClick="{{ openStages }}" style="display:flex;align-items:center;gap:7px;background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 14px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#e6e3dc">Edit stages</button>
+      <button onClick="{{ openNew }}" style="display:flex;align-items:center;gap:7px;background:#1c1a17;color:#fff;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#33302a">
+        <span style="font-size:16px;line-height:1;margin-top:-1px">+</span> New contact
+      </button>
+    </div>
+  </header>
+
+  <div style="flex:1;overflow-x:auto;overflow-y:hidden;padding:20px">
+    <div style="display:flex;gap:14px;height:100%;align-items:stretch;min-width:min-content">
+      <sc-for list="{{ columns }}" as="col" hint-placeholder-count="6">
+        <div onDragOver="{{ col.onDragOver }}" onDrop="{{ col.onDrop }}" style="width:266px;flex-shrink:0;display:flex;flex-direction:column;background:#efede8;border-radius:14px;border:1.5px solid {{ col.borderColor }};transition:border-color .12s">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px 11px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="width:9px;height:9px;border-radius:50%;background:{{ col.dot }}"></span>
+              <span style="font-size:13px;font-weight:700;letter-spacing:-.005em">{{ col.name }}</span>
+              <span style="font-size:11.5px;font-weight:600;color:#a39e94;background:#e3e0d9;border-radius:20px;padding:1px 7px">{{ col.count }}</span>
+            </div>
+            <span style="font-size:11.5px;font-weight:600;color:#8a857c">{{ col.total }}</span>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:2px 10px 12px;display:flex;flex-direction:column;gap:9px">
+            <sc-for list="{{ col.contacts }}" as="c" hint-placeholder-count="0">
+              <div draggable="true" onDragStart="{{ c.onDragStart }}" onDragEnd="{{ c.onDragEnd }}" onClick="{{ c.onOpen }}" style="background:#fffefb;border:1px solid #e8e5df;border-radius:11px;padding:12px 13px;cursor:pointer;box-shadow:0 1px 2px rgba(28,26,23,.04);position:relative" style-hover="border-color:#d2cec6;box-shadow:0 2px 8px rgba(28,26,23,.07)">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+                  <div style="font-size:14px;font-weight:600;letter-spacing:-.01em;line-height:1.25">{{ c.name }}</div>
+                  <button onClick="{{ c.onDelete }}" title="Remove" style="background:none;border:none;color:#c4c0b8;cursor:pointer;font-size:15px;line-height:1;padding:0;flex-shrink:0" style-hover="color:#c0392b">&times;</button>
+                </div>
+                <sc-if value="{{ c.focusName }}" hint-placeholder-val="{{ true }}">
+                  <div style="font-size:12.5px;color:#8a857c;margin-top:2px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.focusName }}</div>
+                </sc-if>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;gap:8px">
+                  <span style="font-size:11.5px;color:#a39e94;font-weight:500">{{ c.instLabel }}</span>
+                  <span style="font-size:12px;font-weight:700;color:#1c1a17;background:#f0eee9;border-radius:6px;padding:2px 8px;flex-shrink:0">{{ c.students }}</span>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ col.empty }}" hint-placeholder-val="{{ false }}">
+              <div style="border:1.5px dashed #d8d5cf;border-radius:11px;padding:18px 12px;text-align:center;font-size:12px;color:#b0aba1;font-weight:500">Drop here</div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <!-- ============ DETAIL / EDIT MODAL ============ -->
+  <sc-if value="{{ detailOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ cancelDetail }}" style="position:fixed;inset:0;background:rgba(28,26,23,.34);display:flex;align-items:center;justify-content:center;z-index:50;animation:fade .14s ease both;backdrop-filter:blur(2px);padding:24px">
+      <div onClick="{{ stop }}" style="background:#fffefb;width:780px;max-width:96vw;max-height:90vh;border-radius:18px;box-shadow:0 28px 70px rgba(28,26,23,.26);animation:rise .2s ease both;display:flex;flex-direction:column;overflow:hidden">
+
+        <div style="display:flex;align-items:flex-start;gap:14px;padding:22px 24px 16px;border-bottom:1px solid #eceae4">
+          <div style="flex:1;min-width:0">
+            <input value="{{ dName }}" onInput="{{ onDName }}" placeholder="Contact name" style="font-family:inherit;font-size:21px;font-weight:700;letter-spacing:-.015em;border:none;background:none;outline:none;width:100%;color:#1c1a17;padding:0" />
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <input value="{{ dRole }}" onInput="{{ onDRole }}" placeholder="Role (e.g. Principal)" style="font-family:inherit;font-size:13px;font-weight:500;color:#8a857c;border:none;background:none;outline:none;padding:0;width:42%" />
+              <span style="color:#d8d5cf">&middot;</span>
+              <input value="{{ dOrg }}" onInput="{{ onDOrg }}" placeholder="Organization / district" style="font-family:inherit;font-size:13px;font-weight:500;color:#8a857c;border:none;background:none;outline:none;padding:0;flex:1" />
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+            <select value="{{ dStage }}" onChange="{{ onDStage }}" style="font-family:inherit;font-size:12.5px;font-weight:600;padding:7px 10px;border:1.5px solid #e0ddd6;border-radius:8px;background:#faf9f6;outline:none;cursor:pointer">
+              <sc-for list="{{ stages }}" as="s" hint-placeholder-count="4">
+                <option value="{{ s.id }}">{{ s.name }}</option>
+              </sc-for>
+            </select>
+            <button onClick="{{ cancelDetail }}" style="background:none;border:none;color:#a8a39a;cursor:pointer;font-size:22px;line-height:1;padding:0" style-hover="color:#1c1a17">&times;</button>
+          </div>
+        </div>
+
+        <div style="flex:1;overflow-y:auto;display:flex;gap:0">
+          <!-- LEFT: contact + institutions -->
+          <div style="width:42%;flex-shrink:0;padding:20px 22px;border-right:1px solid #eceae4;display:flex;flex-direction:column;gap:18px">
+            <div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94;margin-bottom:9px">Contact info</div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                    <span style="font-size:12px;color:#8a857c;font-weight:600">Emails</span>
+                    <button onClick="{{ addEmail }}" style="background:#f0eee9;border:none;border-radius:6px;color:#33302a;font-family:inherit;font-size:11.5px;font-weight:600;padding:3px 9px;cursor:pointer" style-hover="background:#e6e3dc">+ Add</button>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <sc-for list="{{ emails }}" as="em" hint-placeholder-count="1">
+                      <div style="display:flex;align-items:center;gap:6px">
+                        <input value="{{ em.value }}" onInput="{{ em.onChange }}" placeholder="name@school.edu" class="fld" style="font-size:13px;padding:8px 11px" />
+                        <button onClick="{{ em.onRemove }}" title="Remove" style="background:none;border:none;color:#c4c0b8;cursor:pointer;font-size:15px;line-height:1;padding:0;flex-shrink:0" style-hover="color:#c0392b">&times;</button>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ noEmails }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:12px;color:#b0aba1;font-style:italic">No email yet.</div>
+                    </sc-if>
+                  </div>
+                </div>
+                <div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                    <span style="font-size:12px;color:#8a857c;font-weight:600">Phone numbers</span>
+                    <button onClick="{{ addPhone }}" style="background:#f0eee9;border:none;border-radius:6px;color:#33302a;font-family:inherit;font-size:11.5px;font-weight:600;padding:3px 9px;cursor:pointer" style-hover="background:#e6e3dc">+ Add</button>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <sc-for list="{{ phones }}" as="ph" hint-placeholder-count="1">
+                      <div style="display:flex;align-items:center;gap:6px">
+                        <input value="{{ ph.value }}" onInput="{{ ph.onChange }}" placeholder="+1 (555) 000-0000" class="fld" style="font-size:13px;padding:8px 11px" />
+                        <button onClick="{{ ph.onRemove }}" title="Remove" style="background:none;border:none;color:#c4c0b8;cursor:pointer;font-size:15px;line-height:1;padding:0;flex-shrink:0" style-hover="color:#c0392b">&times;</button>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ noPhones }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:12px;color:#b0aba1;font-style:italic">No phone yet.</div>
+                    </sc-if>
+                  </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span style="font-size:12.5px;color:#8a857c;font-weight:600;flex-shrink:0">Prefers</span>
+                  <select value="{{ dPref }}" onChange="{{ onDPref }}" class="fld" style="cursor:pointer">
+                    <sc-for list="{{ contactMethods }}" as="m" hint-placeholder-count="4">
+                      <option value="{{ m }}">{{ m }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94">Related institutions</span>
+                <button onClick="{{ addInst }}" style="background:#f0eee9;border:none;border-radius:6px;color:#33302a;font-family:inherit;font-size:11.5px;font-weight:600;padding:3px 9px;cursor:pointer" style-hover="background:#e6e3dc">+ Add</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ insts }}" as="it" hint-placeholder-count="2">
+                  <div style="border:1.5px solid {{ it.border }};border-radius:10px;padding:10px 11px;background:{{ it.bg }}">
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <input value="{{ it.name }}" onInput="{{ it.onName }}" placeholder="Institution name" style="font-family:inherit;font-size:13.5px;font-weight:600;border:none;background:none;outline:none;flex:1;min-width:0;color:#1c1a17;padding:0" />
+                      <button onClick="{{ it.onRemove }}" title="Remove" style="background:none;border:none;color:#c4c0b8;cursor:pointer;font-size:14px;line-height:1;padding:0" style-hover="color:#c0392b">&times;</button>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px">
+                      <div style="display:flex;align-items:center;gap:5px">
+                        <input value="{{ it.students }}" onInput="{{ it.onStudents }}" inputmode="numeric" style="font-family:inherit;font-size:13px;font-weight:600;width:64px;border:1.5px solid #e0ddd6;border-radius:6px;background:#fff;outline:none;padding:4px 7px;color:#1c1a17" />
+                        <span style="font-size:11.5px;color:#8a857c;font-weight:500">students</span>
+                      </div>
+                      <button onClick="{{ it.onFocus }}" style="background:{{ it.focusBg }};border:none;border-radius:20px;color:{{ it.focusColor }};font-family:inherit;font-size:11px;font-weight:600;padding:3px 9px;cursor:pointer;display:flex;align-items:center;gap:4px">
+                        <span style="font-size:10px">{{ it.star }}</span> {{ it.focusLabel }}
+                      </button>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ noInsts }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12px;color:#b0aba1;font-style:italic">No institutions yet — add one above.</div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: status + notes -->
+          <div style="flex:1;min-width:0;padding:20px 22px;display:flex;flex-direction:column;gap:18px">
+            <div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94;margin-bottom:9px">Where we are</div>
+              <textarea value="{{ dStatus }}" onInput="{{ onDStatus }}" placeholder="Key status — what stage of the conversation, blockers, next steps, decision-makers, pricing discussed…" rows="4" class="fld" style="resize:vertical;line-height:1.5"></textarea>
+            </div>
+
+            <div style="display:flex;flex-direction:column;flex:1;min-height:0">
+              <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94;margin-bottom:9px">Notes &amp; activity</div>
+              <div style="display:flex;gap:7px;margin-bottom:12px">
+                <input value="{{ noteDraft }}" onInput="{{ onNoteInput }}" onKeyDown="{{ onNoteKey }}" placeholder="Add a note…" class="fld" style="font-size:13px;padding:9px 11px" />
+                <button onClick="{{ addNote }}" style="background:#1c1a17;color:#fff;border:none;border-radius:9px;padding:0 15px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0" style-hover="background:#33302a">Add</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:10px;overflow-y:auto">
+                <sc-for list="{{ notes }}" as="n" hint-placeholder-count="2">
+                  <div style="display:flex;gap:10px">
+                    <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;padding-top:3px">
+                      <span style="width:7px;height:7px;border-radius:50%;background:#c4c0b8"></span>
+                      <span style="flex:1;width:1.5px;background:#eceae4;margin-top:4px"></span>
+                    </div>
+                    <div style="flex:1;padding-bottom:4px">
+                      <div style="font-size:13px;line-height:1.45;color:#33302a">{{ n.text }}</div>
+                      <div style="display:flex;align-items:center;gap:8px;margin-top:3px">
+                        <span style="font-size:11px;color:#a39e94;font-weight:500">{{ n.date }}</span>
+                        <button onClick="{{ n.onDelete }}" style="background:none;border:none;color:#c4c0b8;font-family:inherit;font-size:11px;cursor:pointer;padding:0" style-hover="color:#c0392b">delete</button>
+                      </div>
+                    </div>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ noNotes }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12.5px;color:#b0aba1;font-style:italic">No notes yet. Track every touchpoint here.</div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-top:1px solid #eceae4;background:#faf9f6">
+          <button onClick="{{ deleteDetail }}" style="background:none;border:none;color:#bd8a82;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer" style-hover="color:#c0392b">Delete contact</button>
+          <div style="display:flex;gap:10px">
+            <button onClick="{{ cancelDetail }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#e6e3dc">Cancel</button>
+            <button onClick="{{ saveDetail }}" style="background:#1c1a17;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#33302a">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ NEW CONTACT MODAL ============ -->
+  <sc-if value="{{ showNew }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeNew }}" style="position:fixed;inset:0;background:rgba(28,26,23,.32);display:flex;align-items:center;justify-content:center;z-index:50;animation:fade .14s ease both;backdrop-filter:blur(2px)">
+      <div onClick="{{ stop }}" style="background:#fffefb;width:430px;max-width:92vw;border-radius:18px;padding:26px;box-shadow:0 24px 60px rgba(28,26,23,.22);animation:rise .2s ease both">
+        <div style="font-size:18px;font-weight:700;letter-spacing:-.01em;margin-bottom:18px">New contact</div>
+        <div style="display:flex;flex-direction:column;gap:13px">
+          <label style="display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:12px;font-weight:600;color:#6e6a62">Name</span>
+            <input value="{{ nName }}" onInput="{{ onNName }}" placeholder="Jane Cooper" class="fld" />
+          </label>
+          <div style="display:flex;gap:11px">
+            <label style="display:flex;flex-direction:column;gap:5px;flex:1">
+              <span style="font-size:12px;font-weight:600;color:#6e6a62">Role</span>
+              <input value="{{ nRole }}" onInput="{{ onNRole }}" placeholder="Principal" class="fld" />
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;flex:1">
+              <span style="font-size:12px;font-weight:600;color:#6e6a62">Stage</span>
+              <select value="{{ nStage }}" onChange="{{ onNStage }}" class="fld" style="cursor:pointer">
+                <sc-for list="{{ stages }}" as="s" hint-placeholder-count="4">
+                  <option value="{{ s.id }}">{{ s.name }}</option>
+                </sc-for>
+              </select>
+            </label>
+          </div>
+          <label style="display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:12px;font-weight:600;color:#6e6a62">Institution / school</span>
+            <input value="{{ nOrg }}" onInput="{{ onNOrg }}" placeholder="Westfield Academy" class="fld" />
+          </label>
+          <div style="display:flex;gap:11px">
+            <label style="display:flex;flex-direction:column;gap:5px;flex:1">
+              <span style="font-size:12px;font-weight:600;color:#6e6a62">Email</span>
+              <input value="{{ nEmail }}" onInput="{{ onNEmail }}" placeholder="jane@school.edu" class="fld" />
+            </label>
+            <label style="display:flex;flex-direction:column;gap:5px;width:130px">
+              <span style="font-size:12px;font-weight:600;color:#6e6a62"># Students</span>
+              <input value="{{ nStudents }}" onInput="{{ onNStudents }}" placeholder="0" inputmode="numeric" class="fld" />
+            </label>
+          </div>
+          <label style="display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:12px;font-weight:600;color:#6e6a62">Preferred contact method</span>
+            <select value="{{ nPref }}" onChange="{{ onNPref }}" class="fld" style="cursor:pointer">
+              <sc-for list="{{ contactMethods }}" as="m" hint-placeholder-count="4">
+                <option value="{{ m }}">{{ m }}</option>
+              </sc-for>
+            </select>
+          </label>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:22px;justify-content:flex-end">
+          <button onClick="{{ closeNew }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#e6e3dc">Cancel</button>
+          <button onClick="{{ saveNew }}" style="background:#1c1a17;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#33302a">Add contact</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ============ EDIT STAGES MODAL ============ -->
+  <sc-if value="{{ showStages }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeStages }}" style="position:fixed;inset:0;background:rgba(28,26,23,.32);display:flex;align-items:center;justify-content:center;z-index:50;animation:fade .14s ease both;backdrop-filter:blur(2px)">
+      <div onClick="{{ stop }}" style="background:#fffefb;width:440px;max-width:92vw;max-height:88vh;border-radius:18px;box-shadow:0 24px 60px rgba(28,26,23,.22);animation:rise .2s ease both;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:24px 24px 6px">
+          <div style="font-size:18px;font-weight:700;letter-spacing:-.01em">Edit stages</div>
+          <div style="font-size:12.5px;color:#8a857c;font-weight:500;margin-top:3px">Rename, reorder, recolor or add stages to your journey. Tap a dot to change its color.</div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:14px 24px;display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ stageRows }}" as="r" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:9px;background:#faf9f6;border:1.5px solid #eceae4;border-radius:10px;padding:8px 10px">
+              <button onClick="{{ r.onColor }}" title="Change color" style="width:18px;height:18px;border-radius:50%;background:{{ r.dot }};border:2px solid #fff;box-shadow:0 0 0 1.5px #d8d5cf;cursor:pointer;flex-shrink:0;padding:0"></button>
+              <input value="{{ r.name }}" onInput="{{ r.onName }}" placeholder="Stage name" style="font-family:inherit;font-size:13.5px;font-weight:600;border:none;background:none;outline:none;flex:1;min-width:0;color:#1c1a17;padding:4px 0" />
+              <div style="display:flex;align-items:center;gap:2px;flex-shrink:0">
+                <button onClick="{{ r.onUp }}" disabled="{{ r.isFirst }}" title="Move up" style="background:none;border:none;color:{{ r.upColor }};cursor:{{ r.upCursor }};font-size:14px;line-height:1;padding:4px 5px">&uarr;</button>
+                <button onClick="{{ r.onDown }}" disabled="{{ r.isLast }}" title="Move down" style="background:none;border:none;color:{{ r.downColor }};cursor:{{ r.downCursor }};font-size:14px;line-height:1;padding:4px 5px">&darr;</button>
+                <button onClick="{{ r.onRemove }}" title="Delete stage" style="background:none;border:none;color:#c4c0b8;cursor:pointer;font-size:16px;line-height:1;padding:4px 5px" style-hover="color:#c0392b">&times;</button>
+              </div>
+            </div>
+          </sc-for>
+          <button onClick="{{ addStage }}" style="margin-top:4px;background:none;border:1.5px dashed #d8d5cf;border-radius:10px;color:#8a857c;font-family:inherit;font-size:13px;font-weight:600;padding:9px;cursor:pointer" style-hover="border-color:#1c1a17;color:#1c1a17">+ Add stage</button>
+        </div>
+        <div style="display:flex;gap:10px;padding:14px 24px;border-top:1px solid #eceae4;background:#faf9f6;justify-content:flex-end">
+          <button onClick="{{ closeStages }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#e6e3dc">Cancel</button>
+          <button onClick="{{ saveStages }}" style="background:#1c1a17;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#33302a">Save stages</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    contacts: null,
+    stages: [
+      { id: 'new',         name: 'New',         dot: 'oklch(0.62 0.13 255)' },
+      { id: 'contacted',   name: 'Contacted',   dot: 'oklch(0.62 0.13 200)' },
+      { id: 'interested',  name: 'Interested',  dot: 'oklch(0.62 0.13 150)' },
+      { id: 'demo',        name: 'Demo',        dot: 'oklch(0.62 0.13 95)'  },
+      { id: 'trial',       name: 'Trial',       dot: 'oklch(0.62 0.13 70)'  },
+      { id: 'negotiating', name: 'Negotiating', dot: 'oklch(0.62 0.13 45)'  },
+      { id: 'won',         name: 'Won',         dot: 'oklch(0.6 0.14 145)'  },
+      { id: 'lost',        name: 'Not Now',     dot: 'oklch(0.62 0.04 60)'  },
+    ],
+    showNew: false,
+    showStages: false,
+    stageDraft: null,  // editable copy of stages while the stages modal is open
+    dragId: null,
+    dragOver: null,
+    detail: null,      // editable draft of the contact open in the modal
+    noteDraft: '',
+    newForm: { name: '', role: '', org: '', email: '', students: '', stage: 'new', pref: 'Email' },
+  };
+
+  METHODS = ['Email', 'Phone call', 'Text / SMS', 'WhatsApp', 'In person'];
+  PALETTE = [
+    'oklch(0.62 0.13 255)', 'oklch(0.62 0.13 200)', 'oklch(0.62 0.13 150)',
+    'oklch(0.62 0.13 95)', 'oklch(0.62 0.13 70)', 'oklch(0.62 0.13 45)',
+    'oklch(0.6 0.14 145)', 'oklch(0.62 0.13 300)', 'oklch(0.62 0.04 60)',
+  ];
+
+  uid(p) { return (p || 'id') + Math.random().toString(36).slice(2, 8) + Date.now().toString(36); }
+
+  // Upgrade older single email/phone records to arrays.
+  normalize(c) {
+    const emails = Array.isArray(c.emails) ? c.emails : (c.email ? [c.email] : []);
+    const phones = Array.isArray(c.phones) ? c.phones : (c.phone ? [c.phone] : []);
+    return { ...c, emails, phones };
+  }
+
+  seed() {
+    const now = Date.now(), day = 86400000;
+    return [
+      { id: 'c1', name: 'Brian Halligan', role: 'Principal', org: 'Westfield Academy',
+        emails: ['brian@westfield.edu', 'b.halligan@westfield.edu'], phones: ['+1 (555) 0142'], pref: 'Email', stage: 'demo', focusId: 'i1',
+        institutions: [
+          { id: 'i1', name: 'Westfield Academy', students: 1240 },
+          { id: 'i2', name: 'Westfield Junior School', students: 480 },
+        ],
+        status: 'Ran the first demo with the leadership team — strong interest in the analytics dashboard. Open question is seat pricing for ~1,200 students.',
+        notes: [
+          { id: 'n1', ts: now - day * 6, text: 'Intro call — they are replacing a legacy LMS this term.' },
+          { id: 'n2', ts: now - day * 2, text: 'Demo delivered. Head of academics loved the gradebook.' },
+        ] },
+      { id: 'c2', name: 'Maya Lin', role: 'Director of IT', org: 'Northwind School District',
+        emails: ['maya@northwind.org'], phones: ['+1 (555) 0177', '+1 (555) 0178'], pref: 'Phone call', stage: 'interested', focusId: 'i3',
+        institutions: [{ id: 'i3', name: 'Northwind High', students: 820 }],
+        status: 'Evaluating 3 vendors. Wants SSO + roster sync. Decision by end of term.',
+        notes: [{ id: 'n3', ts: now - day * 4, text: 'Asked for security & data-residency docs.' }] },
+      { id: 'c3', name: 'Dharmesh Shah', role: 'Owner', org: 'Acme Learning Group',
+        emails: ['d@acmelearning.io'], phones: ['+1 (555) 0199'], pref: 'WhatsApp', stage: 'contacted', focusId: 'i4',
+        institutions: [
+          { id: 'i4', name: 'Acme Online Campus', students: 2100 },
+          { id: 'i5', name: 'Acme Prep', students: 360 },
+        ],
+        status: 'Cold outreach replied. Booking a discovery call next week.',
+        notes: [] },
+    ];
+  }
+
+  async componentDidMount() {
+    try {
+      const mod = await import('./crm-store.js');
+      this.store = mod.createStore();
+    } catch (e) {
+      const KEY = 'crm_lms_v1', SKEY = 'crm_lms_stages_v1';
+      this.store = {
+        async load() { try { const v = JSON.parse(localStorage.getItem(KEY)); return Array.isArray(v) ? v : null; } catch (x) { return null; } },
+        async save(c) { try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (x) {} },
+        async loadStages() { try { const v = JSON.parse(localStorage.getItem(SKEY)); return Array.isArray(v) ? v : null; } catch (x) { return null; } },
+        async saveStages(s) { try { localStorage.setItem(SKEY, JSON.stringify(s)); } catch (x) {} },
+        subscribe() { return () => {}; },
+      };
+    }
+    let data = null;
+    try { data = await this.store.load(); } catch (e) {}
+    if (data && data.length) {
+      this.setState({ contacts: data.map(c => this.normalize(c)) });
+    } else {
+      const s = this.seed().map(c => this.normalize(c));
+      this.setState({ contacts: s });
+      this.store.save(s);
+    }
+    // Load saved pipeline stages (falls back to the defaults in state).
+    if (this.store.loadStages) {
+      try { const st = await this.store.loadStages(); if (st && st.length) this.setState({ stages: st }); } catch (e) {}
+    }
+    // Live updates (Firebase): if the store streams snapshots, apply them.
+    if (this.store.subscribe) {
+      try { this._unsub = this.store.subscribe((rows) => { if (Array.isArray(rows)) this.setState({ contacts: rows }); }); } catch (e) {}
+    }
+  }
+
+  componentWillUnmount() { if (this._unsub) try { this._unsub(); } catch (e) {} }
+
+  commit(contacts) {
+    this.setState({ contacts });
+    if (this.store) this.store.save(contacts);
+  }
+
+  commitStages(stages, contacts) {
+    this.setState({ stages });
+    if (this.store && this.store.saveStages) this.store.saveStages(stages);
+    if (contacts) this.commit(contacts);
+  }
+
+  fmtNum(n) { return (Number(n) || 0).toLocaleString(); }
+
+  fmtDate(ts) {
+    try { return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }); }
+    catch (e) { return ''; }
+  }
+
+  studentsOf(c) { return (c.institutions || []).reduce((a, i) => a + (Number(i.students) || 0), 0); }
+
+  move(id, stage) {
+    const contacts = this.state.contacts.map(c => c.id === id ? { ...c, stage } : c);
+    this.commit(contacts);
+    this.setState({ dragId: null, dragOver: null });
+  }
+
+  delContact(id) {
+    this.commit(this.state.contacts.filter(c => c.id !== id));
+  }
+
+  // ---- detail draft helpers ----
+  setD(k, v) { this.setState(s => ({ detail: { ...s.detail, [k]: v } })); }
+  setInst(id, patch) {
+    this.setState(s => ({ detail: { ...s.detail, institutions: s.detail.institutions.map(i => i.id === id ? { ...i, ...patch } : i) } }));
+  }
+
+  addNoteNow = () => {
+    const t = this.state.noteDraft.trim();
+    if (!t) return;
+    this.setState(s => ({
+      detail: { ...s.detail, notes: [...(s.detail.notes || []), { id: this.uid('n'), ts: Date.now(), text: t }] },
+      noteDraft: '',
+    }));
+  };
+
+  saveNew = () => {
+    const f = this.state.newForm;
+    if (!f.name.trim()) return;
+    const instId = this.uid('i');
+    const contact = {
+      id: this.uid('c'),
+      name: f.name.trim(), role: f.role.trim(), org: f.org.trim(),
+      emails: f.email.trim() ? [f.email.trim()] : [], phones: [], stage: f.stage,
+      institutions: f.org.trim() ? [{ id: instId, name: f.org.trim(), students: parseInt(String(f.students).replace(/[^0-9]/g, ''), 10) || 0 }] : [],
+      focusId: f.org.trim() ? instId : null,
+      pref: f.pref || 'Email',
+      status: '', notes: [],
+    };
+    this.commit([...this.state.contacts, contact]);
+    this.setState({ showNew: false, newForm: { name: '', role: '', org: '', email: '', students: '', stage: (this.state.stages[0] || {}).id || 'new', pref: 'Email' } });
+  };
+
+  setNF(k, v) { this.setState(s => ({ newForm: { ...s.newForm, [k]: v } })); }
+
+  renderVals() {
+    const contacts = this.state.contacts || [];
+    const stageName = (id) => (this.state.stages.find(s => s.id === id) || {}).name || '';
+
+    const columns = this.state.stages.map(st => {
+      const list = contacts.filter(c => c.stage === st.id);
+      const sum = list.reduce((a, c) => a + this.studentsOf(c), 0);
+      return {
+        id: st.id, name: st.name, dot: st.dot,
+        count: list.length,
+        total: this.fmtNum(sum),
+        empty: list.length === 0,
+        borderColor: this.state.dragOver === st.id ? '#1c1a17' : 'transparent',
+        onDragOver: (e) => { e.preventDefault(); if (this.state.dragOver !== st.id) this.setState({ dragOver: st.id }); },
+        onDrop: (e) => { e.preventDefault(); if (this.state.dragId) this.move(this.state.dragId, st.id); },
+        contacts: list.map(c => {
+          const focus = (c.institutions || []).find(i => i.id === c.focusId) || (c.institutions || [])[0];
+          const more = (c.institutions || []).length - 1;
+          return {
+            id: c.id,
+            name: c.name,
+            focusName: focus ? focus.name : c.org,
+            instLabel: more > 0 ? ('+' + more + ' more institution' + (more > 1 ? 's' : '')) : (c.role || ''),
+            students: this.fmtNum(this.studentsOf(c)) + ' students',
+            onOpen: () => this.setState({ detail: JSON.parse(JSON.stringify(c)), noteDraft: '' }),
+            onDragStart: (e) => { this.setState({ dragId: c.id }); try { e.dataTransfer.effectAllowed = 'move'; } catch (x) {} },
+            onDragEnd: () => this.setState({ dragId: null, dragOver: null }),
+            onDelete: (e) => { e.stopPropagation(); this.delContact(c.id); },
+          };
+        }),
+      };
+    });
+
+    const out = {
+      columns,
+      stages: this.state.stages,
+      totalContacts: contacts.length,
+      totalStudents: this.fmtNum(contacts.reduce((a, c) => a + this.studentsOf(c), 0)),
+      stop: (e) => e.stopPropagation(),
+      contactMethods: this.METHODS,
+      // new contact
+      showNew: this.state.showNew,
+      openNew: () => this.setState({ showNew: true, newForm: { name: '', role: '', org: '', email: '', students: '', stage: (this.state.stages[0] || {}).id || 'new', pref: 'Email' } }),
+      closeNew: () => this.setState({ showNew: false }),
+      saveNew: this.saveNew,
+      nName: this.state.newForm.name, nRole: this.state.newForm.role, nOrg: this.state.newForm.org,
+      nEmail: this.state.newForm.email, nStudents: this.state.newForm.students, nStage: this.state.newForm.stage,
+      nPref: this.state.newForm.pref,
+      onNName: (e) => this.setNF('name', e.target.value),
+      onNRole: (e) => this.setNF('role', e.target.value),
+      onNOrg: (e) => this.setNF('org', e.target.value),
+      onNEmail: (e) => this.setNF('email', e.target.value),
+      onNStudents: (e) => this.setNF('students', e.target.value),
+      onNStage: (e) => this.setNF('stage', e.target.value),
+      onNPref: (e) => this.setNF('pref', e.target.value),
+      // detail defaults (so template paints during stream)
+      detailOpen: false,
+      dName: '', dRole: '', dOrg: '', dPref: 'Email', dStage: 'new', dStatus: '',
+      emails: [], noEmails: false, phones: [], noPhones: false,
+      insts: [], noInsts: false, notes: [], noNotes: false, noteDraft: '',
+      // edit stages
+      showStages: this.state.showStages,
+      openStages: () => this.setState({ showStages: true, stageDraft: JSON.parse(JSON.stringify(this.state.stages)) }),
+      closeStages: () => this.setState({ showStages: false, stageDraft: null }),
+      addStage: () => this.setState(s => {
+        const used = (s.stageDraft || []).map(x => x.dot);
+        const dot = this.PALETTE.find(c => !used.includes(c)) || this.PALETTE[(s.stageDraft || []).length % this.PALETTE.length];
+        return { stageDraft: [...(s.stageDraft || []), { id: this.uid('s'), name: 'New stage', dot }] };
+      }),
+      saveStages: () => {
+        const draft = (this.state.stageDraft || []).filter(s => s.name.trim()).map(s => ({ ...s, name: s.name.trim() }));
+        if (!draft.length) { this.setState({ showStages: false, stageDraft: null }); return; }
+        const validIds = draft.map(s => s.id);
+        const fallback = draft[0].id;
+        const contacts = this.state.contacts.map(c => validIds.includes(c.stage) ? c : { ...c, stage: fallback });
+        this.commitStages(draft, contacts);
+        this.setState({ showStages: false, stageDraft: null });
+      },
+      stageRows: [],
+    };
+
+    const sd = this.state.stageDraft;
+    if (this.state.showStages && sd) {
+      out.stageRows = sd.map((st, idx) => ({
+        id: st.id, name: st.name, dot: st.dot,
+        isFirst: idx === 0, isLast: idx === sd.length - 1,
+        upColor: idx === 0 ? '#d8d5cf' : '#8a857c', downColor: idx === sd.length - 1 ? '#d8d5cf' : '#8a857c',
+        upCursor: idx === 0 ? 'default' : 'pointer', downCursor: idx === sd.length - 1 ? 'default' : 'pointer',
+        onName: (e) => { const v = e.target.value; this.setState(s => ({ stageDraft: s.stageDraft.map(x => x.id === st.id ? { ...x, name: v } : x) })); },
+        onColor: () => this.setState(s => ({ stageDraft: s.stageDraft.map(x => { if (x.id !== st.id) return x; const i = this.PALETTE.indexOf(x.dot); return { ...x, dot: this.PALETTE[(i + 1) % this.PALETTE.length] }; }) })),
+        onUp: () => { if (idx === 0) return; this.setState(s => { const a = [...s.stageDraft]; [a[idx - 1], a[idx]] = [a[idx], a[idx - 1]]; return { stageDraft: a }; }); },
+        onDown: () => { this.setState(s => { if (idx >= s.stageDraft.length - 1) return {}; const a = [...s.stageDraft]; [a[idx + 1], a[idx]] = [a[idx], a[idx + 1]]; return { stageDraft: a }; }); },
+        onRemove: () => this.setState(s => (s.stageDraft.length <= 1 ? {} : { stageDraft: s.stageDraft.filter(x => x.id !== st.id) })),
+      }));
+    }
+
+    const d = this.state.detail;
+    if (d) {
+      out.detailOpen = true;
+      out.dName = d.name || ''; out.dRole = d.role || ''; out.dOrg = d.org || '';
+      out.dStage = d.stage || 'new';
+      out.dPref = d.pref || 'Email';
+      out.onDPref = (e) => this.setD('pref', e.target.value);
+      out.dStatus = d.status || '';
+
+      const emails = d.emails || [];
+      out.noEmails = emails.length === 0;
+      out.emails = emails.map((val, i) => ({
+        value: val,
+        onChange: (e) => { const v = e.target.value; this.setState(s => ({ detail: { ...s.detail, emails: s.detail.emails.map((x, j) => j === i ? v : x) } })); },
+        onRemove: () => this.setState(s => ({ detail: { ...s.detail, emails: s.detail.emails.filter((_, j) => j !== i) } })),
+      }));
+      out.addEmail = () => this.setState(s => ({ detail: { ...s.detail, emails: [...(s.detail.emails || []), ''] } }));
+
+      const phones = d.phones || [];
+      out.noPhones = phones.length === 0;
+      out.phones = phones.map((val, i) => ({
+        value: val,
+        onChange: (e) => { const v = e.target.value; this.setState(s => ({ detail: { ...s.detail, phones: s.detail.phones.map((x, j) => j === i ? v : x) } })); },
+        onRemove: () => this.setState(s => ({ detail: { ...s.detail, phones: s.detail.phones.filter((_, j) => j !== i) } })),
+      }));
+      out.addPhone = () => this.setState(s => ({ detail: { ...s.detail, phones: [...(s.detail.phones || []), ''] } }));
+      out.onDName = (e) => this.setD('name', e.target.value);
+      out.onDRole = (e) => this.setD('role', e.target.value);
+      out.onDOrg = (e) => this.setD('org', e.target.value);
+      out.onDStatus = (e) => this.setD('status', e.target.value);
+      out.onDStage = (e) => this.setD('stage', e.target.value);
+
+      const insts = d.institutions || [];
+      out.noInsts = insts.length === 0;
+      out.insts = insts.map(it => {
+        const isFocus = it.id === d.focusId;
+        return {
+          id: it.id, name: it.name, students: it.students,
+          border: isFocus ? '#1c1a17' : '#e8e5df',
+          bg: isFocus ? '#fbfaf7' : '#fff',
+          star: isFocus ? '\u2605' : '\u2606',
+          focusLabel: isFocus ? 'Current focus' : 'Set focus',
+          focusBg: isFocus ? '#1c1a17' : '#f0eee9',
+          focusColor: isFocus ? '#fff' : '#8a857c',
+          onName: (e) => this.setInst(it.id, { name: e.target.value }),
+          onStudents: (e) => this.setInst(it.id, { students: parseInt(String(e.target.value).replace(/[^0-9]/g, ''), 10) || 0 }),
+          onRemove: () => this.setState(s => {
+            const left = s.detail.institutions.filter(x => x.id !== it.id);
+            return { detail: { ...s.detail, institutions: left, focusId: s.detail.focusId === it.id ? (left[0] ? left[0].id : null) : s.detail.focusId } };
+          }),
+          onFocus: () => this.setD('focusId', it.id),
+        };
+      });
+
+      out.addInst = () => this.setState(s => {
+        const nid = this.uid('i');
+        const list = [...(s.detail.institutions || []), { id: nid, name: '', students: 0 }];
+        return { detail: { ...s.detail, institutions: list, focusId: s.detail.focusId || nid } };
+      });
+
+      const notes = [...(d.notes || [])].sort((a, b) => b.ts - a.ts);
+      out.noNotes = notes.length === 0;
+      out.notes = notes.map(n => ({
+        id: n.id, text: n.text, date: this.fmtDate(n.ts),
+        onDelete: () => this.setState(s => ({ detail: { ...s.detail, notes: s.detail.notes.filter(x => x.id !== n.id) } })),
+      }));
+      out.noteDraft = this.state.noteDraft;
+      out.onNoteInput = (e) => this.setState({ noteDraft: e.target.value });
+      out.onNoteKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); this.addNoteNow(); } };
+      out.addNote = this.addNoteNow;
+
+      out.cancelDetail = () => this.setState({ detail: null, noteDraft: '' });
+      out.saveDetail = () => {
+        const contacts = this.state.contacts.map(c => c.id === d.id ? d : c);
+        this.commit(contacts);
+        this.setState({ detail: null, noteDraft: '' });
+      };
+      out.deleteDetail = () => { this.delContact(d.id); this.setState({ detail: null, noteDraft: '' }); };
+    }
+
+    return out;
+  }
+}
+</script>
+
+<!-- Account chip (light-theme, owner-only) — wired to the shared site auth.
+     #crm-acct lives in the DC-runtime-managed <header>, which can be re-mounted,
+     so we re-query the host fresh on every paint and re-paint via a MutationObserver. -->
+<script>
+  (function () {
+    if (!window.BOTAuth) return;
+    var currentUser = null, openMenu = false, outside = null;
+
+    function close(host) {
+      openMenu = false;
+      var m = host && host.querySelector(".acct-menu");
+      if (m) m.style.display = "none";
+      if (outside) { document.removeEventListener("mousedown", outside); outside = null; }
+    }
+
+    function paint() {
+      var host = document.getElementById("crm-acct");
+      if (!host) return;
+      if (!currentUser) { host.innerHTML = ""; return; }
+      // Already populated for this user? leave it (avoids clobbering an open menu).
+      if (host.dataset.acctFor === currentUser.username && host.firstChild) return;
+      host.dataset.acctFor = currentUser.username;
+      var name = currentUser.username || "Owner";
+      var initial = name.slice(0, 1).toUpperCase();
+      host.innerHTML =
+        '<button type="button" class="acct-btn" style="display:flex;align-items:center;gap:8px;background:#f0eee9;border:none;border-radius:9px;padding:6px 10px 6px 6px;font-family:inherit;cursor:pointer">' +
+          '<span style="width:26px;height:26px;border-radius:7px;background:#1c1a17;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">' + initial + '</span>' +
+          '<span style="font-size:13px;font-weight:600;color:#33302a;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + name + '</span>' +
+        '</button>' +
+        '<div class="acct-menu" style="display:none;position:absolute;right:0;top:calc(100% + 7px);min-width:180px;background:#fffefb;border:1px solid #e8e5df;border-radius:11px;box-shadow:0 16px 40px rgba(0,0,0,.12);padding:5px;z-index:50">' +
+          '<div style="padding:9px 11px 7px;font-size:11px;color:#a39e94;font-weight:600;letter-spacing:.04em;text-transform:uppercase">Signed in as ' + name + '</div>' +
+          '<button type="button" class="acct-out" style="width:100%;text-align:left;display:flex;align-items:center;gap:9px;background:none;border:none;border-radius:8px;padding:9px 11px;font-family:inherit;font-size:13.5px;font-weight:600;color:#b4543a;cursor:pointer">' +
+            '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-3"></path><path d="M10 17l-5-5 5-5"></path><path d="M5 12h11"></path></svg>' +
+            'Log out</button>' +
+        '</div>';
+      var btn = host.querySelector(".acct-btn");
+      var menu = host.querySelector(".acct-menu");
+      btn.addEventListener("mouseenter", function () { btn.style.background = "#e6e3dc"; });
+      btn.addEventListener("mouseleave", function () { btn.style.background = "#f0eee9"; });
+      btn.addEventListener("click", function () {
+        openMenu = !openMenu;
+        menu.style.display = openMenu ? "block" : "none";
+        if (openMenu) {
+          outside = function (e) { if (!host.contains(e.target)) close(host); };
+          document.addEventListener("mousedown", outside);
+        } else if (outside) {
+          document.removeEventListener("mousedown", outside); outside = null;
+        }
+      });
+      host.querySelector(".acct-out").addEventListener("click", function () {
+        close(host);
+        if (window.BOTAuth.signOut) window.BOTAuth.signOut();
+      });
+    }
+
+    function onUser(u) { currentUser = u; paint(); }
+    if (window.BOTAuth.onChange) window.BOTAuth.onChange(onUser);
+    else window.BOTAuth.ready.then(function () { onUser(window.BOTAuth.current()); });
+
+    // DC may (re)mount the header after the auth emit — repaint whenever the
+    // host (re)appears empty. Observer + a couple of settle-time fallbacks.
+    var mo = new MutationObserver(function () { paint(); });
+    mo.observe(document.body, { childList: true, subtree: true });
+    [120, 400, 1000].forEach(function (t) { setTimeout(paint, t); });
+  })();
+</script>
+</body>
+</html>

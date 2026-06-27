@@ -16,12 +16,7 @@ function _dirStoreKey() {
   catch (e) { return DIR_KEY; }
 }
 function _readDir() { try { return JSON.parse(localStorage.getItem(_dirStoreKey())) || { places: [] }; } catch (e) { return { places: [] }; } }
-function _writeDir(s) {
-  const key = _dirStoreKey();
-  localStorage.setItem(key, JSON.stringify(s));
-  // mirror real (non-demo) data to Firestore when logged in
-  if (key === DIR_KEY && window.RihlaCloud) window.RihlaCloud.push("directory", s);
-}
+function _writeDir(s) { localStorage.setItem(_dirStoreKey(), JSON.stringify(s)); }
 function resetDemoDirectory() { try { localStorage.removeItem(DIR_DEMO_KEY); } catch (e) { /* noop */ } }
 const _dUid = (p = "p") => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const _today = () => new Date().toISOString().slice(0, 10);
@@ -316,18 +311,7 @@ function Directory({ apiKey, onNeedKey, onHome }) {
   const [routeErr, setRouteErr] = useDState("");
   const [toast, setToast] = useDState("");
 
-  const firstDirWrite = React.useRef(true);
-  useDEffect(() => {
-    // skip the mount echo so we never push an empty list over freshly-hydrated cloud data
-    if (firstDirWrite.current) { firstDirWrite.current = false; return; }
-    _writeDir({ places });
-  }, [places]);
-  // re-read after a cloud hydrate writes fresh data into localStorage
-  useDEffect(() => {
-    const h = () => setPlaces(_readDir().places);
-    window.addEventListener("rihla-cloud-sync", h);
-    return () => window.removeEventListener("rihla-cloud-sync", h);
-  }, []);
+  useDEffect(() => { _writeDir({ places }); }, [places]);
 
   const mutate = (id, fn) => setPlaces((ps) => ps.map((p) => (p.id === id ? fn({ ...p }) : p)));
   const api = {
@@ -407,7 +391,7 @@ function Directory({ apiKey, onNeedKey, onHome }) {
           <div>
             <h1 className="page-title" style={{ marginBottom: 2 }}>Directory</h1>
             <p className="page-desc" style={{ margin: 0 }}>
-              {places.length} place{places.length !== 1 ? "s" : ""}
+              {places.length} place{places.length !== 1 ? "s" : ""} · one record for every mosque, school and contact — your single source of truth.
             </p>
           </div>
           <div className="org-top-actions">

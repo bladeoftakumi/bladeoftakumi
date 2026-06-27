@@ -1,0 +1,42 @@
+HOW TO ADD AN ESSAY
+===================
+
+Drop a .txt file into this folder and commit it — that's the whole step.
+The Essays page lists this folder automatically via GitHub
+(repo: bladeoftakumi/bladeoftakumi). Tip: write it in Suzuri
+(Suzuri.html on the site) and it hands you a correctly formatted file.
+
+essays.txt is an optional fallback list: if GitHub's API is ever
+unreachable, the page falls back to the filenames listed there. Adding
+your file to it is nice insurance, but not required.
+
+(essays.txt and HOW-TO.txt themselves are never shown as essays.)
+
+FILE FORMAT
+-----------
+First line            = the essay title
+"date: YYYY-MM-DD"    = optional, on its own line right after the title.
+                        If omitted, the page uses the file's last-modified
+                        date when available.
+"subtitle: ..."       = optional one-line dek shown under the title.
+
+Then a blank line, then the body. Formatting in the body:
+
+  - Blank lines separate paragraphs.
+  - A line starting with "## " becomes a section heading.
+  - A line starting with "> " becomes a pulled quote.
+  - A line containing only "---" becomes a small divider.
+
+EXAMPLE
+-------
+The Shape of Attention
+date: 2026-06-11
+subtitle: Notes on noticing
+
+The first paragraph begins here...
+
+## A heading
+
+Another paragraph.
+
+> A line worth pulling out.

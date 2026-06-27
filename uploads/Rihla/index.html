@@ -6,35 +6,33 @@
 <title>Rihla — Outreach Route Planner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   :root {
-    /* Blade of Takumi design language — warm near-black, gold accent, editorial serif */
-    --bg: #0a0a0a;
-    --bg-soft: #0e0d0b;
-    --surface: #121110;
-    --surface-2: #161412;
-    --ink: #e9e4d8;
-    --ink-2: #9a948a;
-    --ink-3: #6b665d;
-    --line: #211f1b;
-    --line-2: #1a1815;
-    --accent: #b4965a;
-    --accent-ink: #c5a76b;
-    --accent-soft: rgba(180,150,90,.14);
-    --warn: #cf9a4e;
-    --warn-soft: rgba(180,150,90,.12);
-    --danger: #c98b6a;
-    --danger-soft: rgba(201,139,106,.12);
-    --ok: #9aa06a;
-    --radius: 0px;
-    --radius-sm: 0px;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,.5);
-    --shadow-md: 0 10px 30px rgba(0,0,0,.55);
-    --shadow-lg: 0 30px 80px rgba(0,0,0,.7);
-    --font: "Spectral", Georgia, serif;
-    --font-head: "Instrument Serif", Georgia, serif;
-    --mono: "Space Mono", ui-monospace, monospace;
+    /* dark mode — slate ground, brightened teal accent */
+    --bg: #0e1416;
+    --surface: #151c1f;
+    --surface-2: #1a2327;
+    --ink: #e8edee;
+    --ink-2: #98a5a9;
+    --ink-3: #687579;
+    --line: #253034;
+    --line-2: #1d2629;
+    --accent: #2dd4bf;
+    --accent-ink: #66e0d0;
+    --accent-soft: rgba(45,212,191,.13);
+    --warn: #e0a34a;
+    --warn-soft: rgba(200,150,70,.12);
+    --danger: #f0726a;
+    --danger-soft: rgba(220,90,80,.12);
+    --ok: #4ec98a;
+    --radius: 11px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.4), 0 1px 1px rgba(0,0,0,.3);
+    --shadow-md: 0 8px 26px rgba(0,0,0,.5), 0 1px 3px rgba(0,0,0,.4);
+    --shadow-lg: 0 24px 60px rgba(0,0,0,.6), 0 6px 16px rgba(0,0,0,.5);
+    --font: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
   }
 
   * { box-sizing: border-box; }
@@ -70,7 +68,6 @@
     text-transform: uppercase; color: var(--ink-3); margin-top: 1px;
   }
   .nav-right { display: flex; align-items: center; gap: 14px; }
-  .site-home { text-decoration: none; }
   .nav-user { font-size: 13px; color: var(--ink-2); font-family: var(--mono); }
 
   /* ---------- Buttons ---------- */
@@ -157,44 +154,6 @@
 
   .divider-or { display: flex; align-items: center; gap: 12px; margin: 30px 0; color: var(--ink-3); font-size: 12px; font-family: var(--mono); text-transform: uppercase; letter-spacing: .1em; }
   .divider-or::before, .divider-or::after { content: ""; height: 1px; background: var(--line); flex: 1; }
-
-  /* ---------- Mode switch + Mozi ---------- */
-  .mode-switch { display: inline-flex; padding: 4px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 999px; margin-bottom: 14px; gap: 2px; }
-  .mode-tab { appearance: none; cursor: pointer; font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--ink-2); background: transparent; border: none; border-radius: 999px; padding: 9px 18px; display: inline-flex; align-items: center; gap: 8px; transition: background .14s, color .14s; white-space: nowrap; }
-  .mode-tab svg { color: var(--ink-3); transition: color .14s; }
-  .mode-tab:hover { color: var(--ink); }
-  .mode-tab.on { background: var(--accent); color: #0b1112; }
-  .mode-tab.on svg { color: #0b1112; }
-  .mode-blurb { font-size: 14px; color: var(--ink-2); margin: 0 0 18px; max-width: 64ch; line-height: 1.5; }
-
-  .mozi-dir { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
-  .mozi-dir-note { flex: 1; min-width: 220px; }
-
-  .compass { flex: none; }
-  .compass-rose { position: relative; width: 168px; height: 168px; border-radius: 50%; background: radial-gradient(circle at 50% 50%, var(--surface-2), var(--surface)); border: 1px solid var(--line); box-shadow: var(--shadow-sm), inset 0 0 0 8px color-mix(in oklab, var(--surface) 70%, transparent); }
-  .compass-rose::after { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; border-radius: 50%; background: var(--ink-3); transform: translate(-50%, -50%); z-index: 3; }
-  .compass-needle { position: absolute; left: 50%; top: 50%; width: 0; height: 0; transition: transform .25s cubic-bezier(.2,.7,.3,1); z-index: 2; }
-  .compass-needle-n, .compass-needle-s { position: absolute; left: 50%; bottom: 0; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; transform: translateX(-50%); }
-  .compass-needle-n { border-bottom: 58px solid var(--accent); bottom: 0; }
-  .compass-needle-s { border-top: 58px solid var(--ink-3); top: 0; }
-  .compass-pt { position: absolute; appearance: none; cursor: pointer; font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; transition: all .14s; z-index: 4; }
-  .compass-pt:hover { color: var(--ink); border-color: var(--ink-3); }
-  .compass-pt.on { background: var(--accent); color: #0b1112; border-color: var(--accent); }
-  .compass-N  { top: -2px;  left: 50%; transform: translateX(-50%); }
-  .compass-S  { bottom: -2px; left: 50%; transform: translateX(-50%); }
-  .compass-E  { right: -2px; top: 50%; transform: translateY(-50%); }
-  .compass-W  { left: -2px;  top: 50%; transform: translateY(-50%); }
-  .compass-NE { top: 22px; right: 22px; }
-  .compass-SE { bottom: 22px; right: 22px; }
-  .compass-SW { bottom: 22px; left: 22px; }
-  .compass-NW { top: 22px; left: 22px; }
-
-  .stop-return { padding-left: 60px; color: var(--accent-ink); }
-  .stop-return svg { color: var(--accent-ink); }
-
-  .splay-row { display: flex; align-items: center; gap: 14px; }
-  .splay-slider { flex: 1; accent-color: var(--accent); height: 4px; cursor: pointer; }
-  .splay-slider:disabled { opacity: 0.4; cursor: default; }
 
   /* ---------- Banners ---------- */
   .banner { display: flex; gap: 11px; padding: 13px 15px; border-radius: var(--radius-sm); font-size: 13.5px; align-items: flex-start; line-height: 1.45; }
@@ -609,62 +568,8 @@
   @media (max-width: 760px) {
     .home-choice { grid-template-columns: 1fr; }
   }
-  /* ============================================================
-     BLADE OF TAKUMI OVERRIDE LAYER
-     Re-skin only — same components, same class names, BoT visual language.
-     ============================================================ */
-
-  ::selection { background: var(--accent-soft); color: var(--ink); }
-  body { text-rendering: optimizeLegibility; }
-
-  /* nav / chrome surfaces use the warm near-black */
-  .nav { background: rgba(10,10,10,.8); }
-  .download-bar { background: rgba(14,13,11,.85) !important; }
-
-  /* the wordmark reads like the BoT logo: gold display serif, balanced against a larger squared mark */
-  .brand { gap: 13px; }
-  .brand-mark { width: 42px; height: 42px; border-radius: 0 !important; background: var(--bg) !important; border: 1px solid var(--accent); }
-  .brand-mark svg { stroke: var(--accent); }
-  .brand-name {
-    font-family: var(--font-head); font-weight: 400;
-    color: var(--accent); font-size: 22px; letter-spacing: .02em; line-height: 1.05;
-  }
-  .brand-sub { letter-spacing: .26em; }
-
-  /* display serif for every heading / number, normal weight, easy tracking */
-  .page-title, .landing-title, .home-title, .auth-title, .choice-name,
-  .day-title, .stop-name, .sc-name, .lib-card-name, .reroute-title,
-  .dropzone-title, .lib-empty-title, .excl-title, .results-title,
-  .stat-num, .org-stat-num, .home-stat-num {
-    font-family: var(--font-head); font-weight: 400; letter-spacing: 0;
-  }
-  .landing-title, .home-title { font-size: 44px; line-height: 1.04; }
-  .page-title { font-size: 34px; }
-  .auth-title { font-size: 28px; }
-  .choice-name { font-size: 26px; }
-
-  /* mono micro-labels echo the landing's wide-tracked eyebrows */
-  .stat-label, .org-stat-label, .home-section-label {
-    font-family: var(--mono); text-transform: uppercase; letter-spacing: .22em;
-  }
-
-  /* squared geometry — the landing has no rounded corners.
-     Functional toggles (mode switch, on/off switch) stay pill-shaped. */
-  .card, .btn, .input, .field input, .field textarea, .field select,
-  .dropzone, .org-stat, .school-card, .lib-card, .lib-empty, .reroute-card,
-  .day-card, .auth-card, .choice-card, .home-stat, .acct-menu, .banner,
-  .compass-pt, .visit-btn, .org-filter, .acct-btn, .acct-avatar,
-  .dropzone-icon, .lib-empty-icon, .lib-card-icon, .reroute-icon, .day-badge {
-    border-radius: 0 !important;
-  }
-
-  /* gold avatar with a serif initial, like the landing's account chip */
-  .acct-avatar { font-family: var(--font-head); font-weight: 400; font-size: 15px; }
-
-  /* gold focus rings + accent details */
-  .input:focus, .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
-  .compass-needle-n { border-bottom-color: var(--accent); }
 </style>
+</head>
 <body>
   <div id="root"></div>
 
@@ -673,24 +578,18 @@
   <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
-  <script src="botakumi-auth.js"></script>
-  <script src="rihla-cloud.js"></script>
 
-  <script type="text/babel" src="Rihla/icons.jsx"></script>
-  <script type="text/babel" src="Rihla/api.jsx"></script>
-  <script type="text/babel" src="Rihla/pdf.jsx"></script>
-  <script type="text/babel" src="Rihla/excel.jsx"></script>
-  <script type="text/babel" src="Rihla/planner.jsx"></script>
-  <script type="text/babel" src="Rihla/results.jsx"></script>
-  <script type="text/babel" src="Rihla/school_card.jsx"></script>
-  <script type="text/babel" src="Rihla/organizer.jsx"></script>
-  <script type="text/babel" src="Rihla/auth.jsx"></script>
-  <script type="text/babel" src="Rihla/library.jsx"></script>
-  <script type="text/babel" src="Rihla/directory.jsx"></script>
-  <script type="text/babel" src="Rihla/app.jsx"></script>
+  <script type="text/babel" src="icons.jsx"></script>
+  <script type="text/babel" src="api.jsx"></script>
+  <script type="text/babel" src="pdf.jsx"></script>
+  <script type="text/babel" src="excel.jsx"></script>
+  <script type="text/babel" src="planner.jsx"></script>
+  <script type="text/babel" src="results.jsx"></script>
+  <script type="text/babel" src="school_card.jsx"></script>
+  <script type="text/babel" src="organizer.jsx"></script>
+  <script type="text/babel" src="auth.jsx"></script>
+  <script type="text/babel" src="library.jsx"></script>
+  <script type="text/babel" src="directory.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
 </body>
 </html>

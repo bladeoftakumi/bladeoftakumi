@@ -15,12 +15,7 @@ function _libKey() {
   catch (e) { return LIB_KEY; }
 }
 function _readLib() { try { return JSON.parse(localStorage.getItem(_libKey())) || { items: [] }; } catch (e) { return { items: [] }; } }
-function _writeLib(s) {
-  const key = _libKey();
-  localStorage.setItem(key, JSON.stringify(s));
-  // mirror real (non-demo) data to Firestore when logged in
-  if (key === LIB_KEY && window.RihlaCloud) window.RihlaCloud.push("library", s);
-}
+function _writeLib(s) { localStorage.setItem(_libKey(), JSON.stringify(s)); }
 const _libUid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
 function itineraryFromResult(result, name) {
@@ -101,12 +96,6 @@ const LibraryStore = {
 function useLibrary() {
   const [, setV] = useLState(0);
   const bump = useLCallback(() => setV((x) => x + 1), []);
-  // re-read after a cloud hydrate writes fresh data into localStorage
-  React.useEffect(() => {
-    const h = () => bump();
-    window.addEventListener("rihla-cloud-sync", h);
-    return () => window.removeEventListener("rihla-cloud-sync", h);
-  }, [bump]);
   return {
     items: LibraryStore.list(),
     save: (r, n) => { const it = LibraryStore.save(r, n); bump(); return it; },
@@ -275,7 +264,7 @@ function Library({ lib, apiKey, onNeedKey, onPlanNew, onHome }) {
       <div className="lib-top">
         <div>
           <h1 className="page-title" style={{ marginBottom: 2 }}>My itineraries</h1>
-          <p className="page-desc" style={{ margin: 0 }}>{lib.items.length} saved route{lib.items.length !== 1 ? "s" : ""}</p>
+          <p className="page-desc" style={{ margin: 0 }}>{lib.items.length} saved route{lib.items.length !== 1 ? "s" : ""}. Mark stops visited as you go — they're excluded from new searches and gathered for rerouting.</p>
         </div>
         <button className="btn btn-primary" onClick={onPlanNew}><IconPlus size={16} /> Plan a new route</button>
       </div>
