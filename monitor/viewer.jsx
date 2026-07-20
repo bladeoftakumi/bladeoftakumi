@@ -279,29 +279,23 @@ function MonitorApp() {
   return React.createElement(
     React.Fragment, null,
     React.createElement(
-    "div", { className: "app" },
+    "div", { className: "mwrap" },
     React.createElement(
-      "aside", { className: "sidebar" },
-      React.createElement("div", { className: "brand" },
-        React.createElement("div", { className: "brand__mark" }, monitorGlyph()),
-        React.createElement("div", null,
-          React.createElement("div", { className: "brand__name" }, "Finance Monitor"),
-          React.createElement("div", { className: "brand__sub" }, "Read-only viewer"))),
-      React.createElement("nav", { className: "nav" },
+      "div", { className: "mtoolbar" },
+      React.createElement("nav", { className: "mtabs" },
         navItems.map(function (it) {
           return React.createElement("button", {
-            key: it.id, className: "nav__item" + (view === it.id ? " is-active" : ""),
+            key: it.id, className: "mtab" + (view === it.id ? " is-active" : ""),
             onClick: function () { setView(it.id); }
-          }, React.createElement("span", { className: "nav__dot" }), React.createElement("span", { className: "nav__label" }, it.label));
+          }, it.label);
         })),
-      React.createElement("div", { className: "sidebar__foot" },
-        React.createElement("div", { className: "yearpick" },
+      React.createElement("div", { className: "mtools" },
+        React.createElement("div", { className: "mtools__period" },
           React.createElement("label", { className: "yearpick__label" }, "Period"),
           React.createElement(PeriodPicker, { periods: periods, value: period, onChange: setPeriod })),
-        React.createElement("div", { className: "sidebar__actions" },
-          React.createElement("button", { className: "pdfbtn", onClick: function () { downloadMonitorPdf(PeriodPicker.labelFor(period)); } },
-            pdfGlyph(), React.createElement("span", null, "Download PDF")),
-          React.createElement("button", { className: "ghostbtn", onClick: function () { setData(null); } }, "Load another file")))
+        React.createElement("button", { className: "pdfbtn pdfbtn--inline", onClick: function () { downloadMonitorPdf(PeriodPicker.labelFor(period)); } },
+          pdfGlyph(), React.createElement("span", null, "PDF")),
+        React.createElement("button", { className: "ghostbtn ghostbtn--inline", onClick: function () { setData(null); } }, "Load another"))
     ),
     React.createElement(
       "main", { className: "main" },

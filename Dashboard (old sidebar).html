@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>Dashboard — Blade of Takumi</title>
+<link rel="icon" type="image/png" href="assets/logo-line.png" />
+<style>
+  @font-face {
+    font-family: 'Luxia Display';
+    src: url('fonts/LuxiaDisplay.otf') format('opentype');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'Luxia';
+    src: url('fonts/LuxiaRegular.otf') format('opentype');
+    font-weight: 400 600;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+    --bg: #0a0a0a;
+    --surface: #121110;
+    --surface-2: #161412;
+    --line: #211f1b;
+    --line-soft: #1a1815;
+    --ink: #e9e4d8;
+    --ink-dim: #9a948a;
+    --ink-faint: #6b665d;
+    --accent: #b4965a;
+    --accent-soft: rgba(180,150,90,0.14);
+    --font-head: 'Luxia Display', Georgia, serif;
+    --font-body: 'Luxia', Georgia, serif;
+    --font-mono: 'Luxia', Georgia, serif;
+  }
+  * { box-sizing: border-box; }
+  * { scrollbar-width: thin; scrollbar-color: #2a2620 transparent; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #2a2620; border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  a { color: var(--ink-dim); text-decoration: none; }
+  a:hover { color: var(--ink); }
+
+  .mono {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    font-size: 0.72rem;
+  }
+  .wrap { width: min(1180px, 90vw); margin: 0 auto; }
+  .content .wrap { width: auto; max-width: 1180px; margin: 0 auto; padding: 0 clamp(1.5rem, 4vw, 3rem); }
+
+  /* ---------- LAYOUT + SIDEBAR ---------- */
+  .layout { display: flex; align-items: flex-start; min-height: 100vh; }
+  .content { flex: 1; min-width: 0; }
+
+  .sidebar {
+    position: sticky; top: 0;
+    flex-shrink: 0;
+    width: 236px;
+    height: 100vh;
+    display: flex; flex-direction: column;
+    padding: 1.9rem 1.3rem;
+    background: var(--surface);
+    border-right: 1px solid var(--line-soft);
+  }
+  .side-logo {
+    display: block;
+    font-family: var(--font-head);
+    color: var(--accent);
+    font-size: 1.12rem;
+    letter-spacing: 0.04em;
+    padding: 0 0.6rem;
+    margin-bottom: 2.6rem;
+  }
+  .side-toggle { display: none; }
+  .side-group-label {
+    display: block;
+    color: var(--ink-faint);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+    font-size: 0.56rem;
+    padding: 0 0.6rem;
+    margin: 1.6rem 0 0.55rem;
+  }
+  .side-group-label:first-child { margin-top: 0; }
+  .side-nav { display: flex; flex-direction: column; gap: 0.15rem; }
+  .side-nav a {
+    display: flex; align-items: center; gap: 0.7rem;
+    padding: 0.72rem 0.6rem;
+    color: var(--ink-dim);
+    border-left: 2px solid transparent;
+    transition: color 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+  }
+  .side-nav a svg { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.75; }
+  .side-nav a:hover { color: var(--ink); border-left-color: var(--accent); background: var(--surface-2); }
+  .side-nav a.current { color: var(--accent); border-left-color: var(--accent); background: var(--accent-soft); }
+  .side-foot { margin-top: auto; padding: 0 0.6rem; }
+  .side-foot .nav-user { display: block; color: var(--ink-dim); }
+  .side-foot .role { display: block; color: var(--ink-faint); margin-top: 0.4rem; font-size: 0.6rem; }
+
+  @media (max-width: 860px) {
+    .layout { flex-direction: column; }
+    .sidebar {
+      position: sticky; top: 0; z-index: 50;
+      width: 100%; height: auto;
+      flex-direction: column;
+      padding: 0;
+      border-right: none; border-bottom: 1px solid var(--line-soft);
+      background: rgba(10,10,10,0.92);
+      backdrop-filter: blur(10px);
+    }
+    .side-top { display: flex; align-items: center; justify-content: space-between; padding: 0.85rem clamp(1rem, 5vw, 1.5rem); }
+    .side-logo { margin: 0; padding: 0; font-size: 1.02rem; white-space: nowrap; }
+    .side-toggle {
+      display: flex; align-items: center; justify-content: center;
+      width: 40px; height: 40px; padding: 0;
+      background: none; border: 1px solid var(--line); border-radius: 8px;
+      color: var(--ink-dim); cursor: pointer;
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+    .side-toggle:hover { color: var(--accent); border-color: var(--accent); }
+    .side-toggle svg { width: 20px; height: 20px; }
+    .side-nav { display: none; flex-direction: column; gap: 0.1rem; padding: 0.3rem clamp(0.7rem, 4vw, 1.2rem) 0.9rem; border-top: 1px solid var(--line-soft); }
+    .sidebar.open .side-nav { display: flex; }
+    .side-group-label { display: block; margin: 1rem 0 0.4rem; }
+    .side-foot { margin: 0; padding: 0.2rem clamp(0.7rem, 4vw, 1.2rem) 1.1rem; }
+    .sidebar:not(.open) .side-foot { display: none; }
+  }
+
+  /* ---------- HEAD ---------- */
+  .page-head { padding: clamp(3rem, 8vh, 5rem) 0 0; }
+  .sec-head { display: flex; align-items: center; gap: 1.4rem; }
+  .sec-head .label { color: var(--accent); }
+  .sec-head .rule { flex: 1; height: 1px; background: var(--line); }
+  .page-head h1 {
+    font-family: var(--font-head);
+    font-weight: 400;
+    font-size: clamp(2rem, 5vw, 3rem);
+    margin: 1.2rem 0 0;
+    letter-spacing: 0.02em;
+  }
+
+  /* ---------- GRID ---------- */
+  .tools { padding: clamp(2.2rem, 5vh, 3.4rem) 0 clamp(5rem, 10vh, 7rem); }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: clamp(1rem, 2vw, 1.4rem);
+  }
+  .card {
+    position: relative;
+    display: flex; flex-direction: column; gap: 0.5rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: clamp(1.5rem, 3vw, 1.9rem);
+    min-height: 200px;
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+  .card:hover { background: var(--surface-2); border-color: var(--accent); }
+  .card-icon {
+    width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--accent-soft);
+    border-radius: 12px;
+    color: var(--accent);
+    margin-bottom: 0.7rem;
+    transition: background 0.3s ease;
+  }
+  .card-icon svg { width: 22px; height: 22px; }
+  .card h3 {
+    font-family: var(--font-head);
+    font-weight: 400;
+    font-size: 1.4rem;
+    margin: 0;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    transition: color 0.3s ease;
+  }
+  .card:hover h3 { color: var(--accent); }
+  .card .desc {
+    color: var(--ink-dim);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .card .live {
+    margin-top: auto;
+    color: var(--ink-faint);
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    padding-top: 0.6rem;
+    min-height: 1em;
+  }
+  .card .live:empty { display: none; }
+
+  /* drag to reorder */
+  .card-grip { position: absolute; top: 0.9rem; right: 0.9rem; display: flex; color: var(--ink-faint); cursor: grab; opacity: 0; transition: opacity 0.25s ease, color 0.25s ease; }
+  .card:hover .card-grip { opacity: 1; }
+  .card-grip:hover { color: var(--accent); }
+  .card-grip:active { cursor: grabbing; }
+  .card-grip svg { width: 16px; height: 16px; }
+  .card.dragging { opacity: 0.4; }
+  .card.drop-before { box-shadow: inset 3px 0 0 -1px var(--accent); }
+  .card.drop-after { box-shadow: inset -3px 0 0 -1px var(--accent); }
+
+  /* ---------- SEARCH ---------- */
+  .tool-search {
+    position: relative;
+    margin: clamp(1.6rem, 4vh, 2.4rem) 0 clamp(1.4rem, 3vh, 2rem);
+  }
+  .tool-search svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; color: var(--ink-faint); pointer-events: none; }
+  .tool-search input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    padding: 0.95rem 1.1rem 0.95rem 2.7rem;
+    outline: none;
+    transition: border-color 0.25s ease, background 0.25s ease;
+  }
+  .tool-search input::placeholder { color: var(--ink-faint); }
+  .tool-search input:focus { border-color: var(--accent); background: var(--surface-2); }
+  .no-results { color: var(--ink-faint); font-size: 0.72rem; letter-spacing: 0.16em; padding: 2.5rem 0; text-align: center; }
+
+  /* ---------- FOOTER ---------- */
+  footer { border-top: 1px solid var(--line-soft); padding: 1.6rem 0 2.2rem; }
+  footer .wrap { display: flex; justify-content: space-between; align-items: center; }
+  footer span { color: var(--ink-faint); font-size: 0.6rem; }
+
+  /* ---------- GATE ---------- */
+  #auth-gate {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+  }
+  #auth-gate div { color: var(--ink-faint); letter-spacing: 0.2em; font-size: 0.72rem; text-transform: uppercase; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<aside class="sidebar" id="sidebar">
+  <div class="side-top">
+    <a class="side-logo" href="index.html">Blade of Takumi</a>
+    <button class="side-toggle" id="side-toggle" type="button" aria-label="Toggle menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>
+    </button>
+  </div>
+  <nav class="side-nav">
+    <span class="side-group-label">Navigation</span>
+    <a class="mono" href="Dashboard Home.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg>Home</a>
+    <a class="mono" href="index.html#presence">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.5"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>Presence</a>
+    <a class="mono" href="Essays.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"></path><path d="M8 9h8M8 13h8M8 17h5"></path></svg>Essays</a>
+    <a class="mono" href="index.html#connect">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 15l6-6"></path><path d="M13 7l1-1a3.5 3.5 0 0 1 5 5l-1 1"></path><path d="M11 17l-1 1a3.5 3.5 0 0 1-5-5l1-1"></path></svg>Connect</a>
+    <span class="side-group-label">Tools</span>
+    <a class="mono current" href="Dashboard.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>Tools</a>
+  </nav>
+  <div class="side-foot">
+    <span class="nav-user mono" id="nav-user"></span>
+    <span class="role mono">Owner only</span>
+  </div>
+</aside>
+
+<div class="content">
+
+<header class="page-head">
+  <div class="wrap">
+    <div class="sec-head"><span class="label mono">Owner</span><span class="rule"></span></div>
+    <h1>Tools</h1>
+  </div>
+</header>
+
+<main class="tools">
+  <div class="wrap">
+    <div class="tool-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+      <input type="text" id="tool-search-input" placeholder="Search tools" aria-label="Search tools" autocomplete="off" />
+    </div>
+    <div class="grid" id="grid">
+
+      <a class="card" href="Rihla.html">
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"></path><path d="M9 3v15M15 6v15"></path></svg></span>
+        <h3>Rihla</h3>
+        <span class="desc">Plan outreach routes across the map.</span>
+        <span class="live mono" id="live-rihla"></span>
+      </a>
+
+      <a class="card" href="Suzuri.html">
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.5 7.5"></path><circle cx="11" cy="11" r="2"></circle></svg></span>
+        <h3>Suzuri</h3>
+        <span class="desc">Write and publish essays to the site.</span>
+        <span class="live mono" id="live-suzuri"></span>
+      </a>
+
+      <a class="card" href="Kaizen.html">
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1"></circle></svg></span>
+        <h3>Kaizen</h3>
+        <span class="desc">Goals in focus — progress, pace &amp; hours.</span>
+        <span class="live mono" id="live-kaizen"></span>
+      </a>
+
+      <a class="card" href="Teleprompter.html">
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="1.5"></rect><path d="M8 21h8M12 17v4"></path><path d="M7 9h10M7 12h6"></path></svg></span>
+        <h3>Teleprompter</h3>
+        <span class="desc">Scrolling script reader for recordings.</span>
+        <span class="live mono"></span>
+      </a>
+
+      <a class="card" href="Finance Monitor.html">
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><rect x="7" y="12" width="3" height="6"></rect><rect x="12" y="8" width="3" height="10"></rect><rect x="17" y="5" width="3" height="13"></rect></svg></span>
+        <h3>Finance Monitor</h3>
+        <span class="desc">Spreadsheet to profit-and-loss dashboard.</span>
+        <span class="live mono"></span>
+      </a>
+
+      <a class="card" href="CRM Pipeline.dc.html">
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path><path d="M16 6a3 3 0 0 1 0 6M18 20c0-2.5-1-4.7-2.6-6"></path></svg></span>
+        <h3>En</h3>
+        <span class="desc">Contact pipeline &amp; outreach CRM.</span>
+        <span class="live mono" id="live-crm"></span>
+      </a>
+
+      <a class="card" href="Essays.html">
+        <span class="card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14z"></path><path d="M8 7h8M8 11h6"></path></svg></span>
+        <h3>Essays</h3>
+        <span class="desc">Edit, publish and gate your essays.</span>
+        <span class="live mono" id="live-essays"></span>
+      </a>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="mono">Blade of Takumi</span>
+    <span class="mono">Owner only</span>
+  </div>
+</footer>
+
+</div>
+</div>
+
+<div id="auth-gate"><div>Checking access…</div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="botakumi-auth.js"></script>
+<script>
+  // Owner-only launcher: only a logged-in account may view this page.
+  (function () {
+    function guard() {
+      if (!window.BOTAuth) { window.location.replace("index.html"); return; }
+      window.BOTAuth.ready.then(function () {
+        var u = window.BOTAuth.current();
+        if (!u) { window.location.replace("index.html"); return; }
+        var g = document.getElementById("auth-gate");
+        if (g) g.remove();
+        var nu = document.getElementById("nav-user");
+        if (nu) nu.textContent = u.username || "";
+        glances(u);
+      });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", guard);
+    else guard();
+
+    // Light live glances — a few cheap Firestore reads, nothing heavy.
+    function glances(u) {
+      var d;
+      try { d = firebase.firestore(); } catch (e) { return; }
+      var put = function (id, text) {
+        var el = document.getElementById(id);
+        if (el && text) el.textContent = text;
+      };
+
+      // Kaizen: active focuses + hours logged
+      d.collection("kaizen").doc(u.uid).get().then(function (snap) {
+        if (!snap.exists) return;
+        var goals = (snap.data() || {}).goals || [];
+        var hrs = 0;
+        goals.forEach(function (g) { hrs += Number(g.hours || 0); });
+        put("live-kaizen", goals.length + (goals.length === 1 ? " focus" : " focuses") +
+          (hrs ? " \u00b7 " + (Math.round(hrs * 10) / 10) + " hrs" : ""));
+      }).catch(function () {});
+
+      // Essays: published count
+      d.collection("essays").get().then(function (qs) {
+        var n = qs.size, priv = 0;
+        qs.forEach(function (doc) { if ((doc.data() || {}).private) priv++; });
+        put("live-essays", n + " published" + (priv ? " \u00b7 " + priv + " private" : ""));
+      }).catch(function () {});
+
+      // Rihla: saved itineraries
+      d.collection("rihla").doc(u.uid).get().then(function (snap) {
+        if (!snap.exists) return;
+        var data = snap.data() || {};
+        var its = (data.library && Array.isArray(data.library.items)) ? data.library.items : [];
+        if (its.length) put("live-rihla", its.length + (its.length === 1 ? " itinerary" : " itineraries"));
+      }).catch(function () {});
+
+      // En: pipeline contacts
+      d.collection("crm").doc(u.uid).get().then(function (snap) {
+        if (!snap.exists) return;
+        var data = snap.data() || {};
+        var rows = data.contacts || data.rows || data.entries || [];
+        var n = Array.isArray(rows) ? rows.length : 0;
+        if (n) put("live-crm", n + (n === 1 ? " contact" : " contacts"));
+      }).catch(function () {});
+    }
+  })();
+
+  // Tool search — filter cards by name + tag
+  (function () {
+    var input = document.getElementById("tool-search-input");
+    var grid = document.getElementById("grid");
+    if (!input || !grid) return;
+    var empty = document.createElement("p");
+    empty.className = "no-results mono";
+    empty.textContent = "No tools match";
+    empty.hidden = true;
+    grid.parentNode.insertBefore(empty, grid.nextSibling);
+
+    input.addEventListener("input", function () {
+      var q = input.value.trim().toLowerCase();
+      var shown = 0;
+      grid.querySelectorAll(".card").forEach(function (card) {
+        var hit = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+        card.style.display = hit ? "" : "none";
+        if (hit) shown++;
+      });
+      grid.style.display = shown ? "" : "none";
+      empty.hidden = shown > 0;
+    });
+  })();
+
+  // Drag to reorder tool cards (persisted per-device)
+  (function () {
+    var grid = document.getElementById("grid");
+    if (!grid) return;
+    var KEY = "dash-tools-order-v1";
+    var GRIP = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg>';
+
+    Array.prototype.forEach.call(grid.querySelectorAll(".card"), function (c) {
+      c.dataset.key = c.getAttribute("href");
+      c.setAttribute("draggable", "false");
+      var grip = document.createElement("span");
+      grip.className = "card-grip";
+      grip.title = "Drag to reorder";
+      grip.innerHTML = GRIP;
+      c.appendChild(grip);
+    });
+
+    // apply saved order
+    (function () {
+      var saved;
+      try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
+      if (!Array.isArray(saved)) return;
+      saved.forEach(function (k) {
+        var el = grid.querySelector('.card[data-key="' + (window.CSS && CSS.escape ? CSS.escape(k) : k) + '"]');
+        if (el) grid.appendChild(el);
+      });
+    })();
+
+    function saveOrder() {
+      var order = Array.prototype.map.call(grid.querySelectorAll(".card"), function (c) { return c.dataset.key; });
+      try { localStorage.setItem(KEY, JSON.stringify(order)); } catch (e) {}
+    }
+    function clearHints() {
+      grid.querySelectorAll(".drop-before, .drop-after").forEach(function (c) { c.classList.remove("drop-before", "drop-after"); });
+    }
+    function isAfter(over, ev) {
+      var r = over.getBoundingClientRect();
+      if (ev.clientY < r.top) return false;
+      if (ev.clientY > r.bottom) return true;
+      return ev.clientX > r.left + r.width / 2;
+    }
+
+    var dragEl = null, dragged = false;
+
+    grid.addEventListener("mousedown", function (ev) {
+      var grip = ev.target.closest(".card-grip");
+      if (!grip) return;
+      var card = grip.closest(".card");
+      if (card) card.setAttribute("draggable", "true");
+    });
+
+    grid.addEventListener("dragstart", function (ev) {
+      var card = ev.target.closest('.card[draggable="true"]');
+      if (!card) { ev.preventDefault(); return; }
+      dragEl = card; dragged = true;
+      card.classList.add("dragging");
+      try { ev.dataTransfer.effectAllowed = "move"; ev.dataTransfer.setData("text/plain", card.dataset.key); } catch (e) {}
+    });
+
+    grid.addEventListener("dragover", function (ev) {
+      if (!dragEl) return;
+      var over = ev.target.closest(".card");
+      if (!over || over === dragEl) return;
+      ev.preventDefault();
+      clearHints();
+      over.classList.add(isAfter(over, ev) ? "drop-after" : "drop-before");
+    });
+
+    grid.addEventListener("drop", function (ev) {
+      if (!dragEl) return;
+      var over = ev.target.closest(".card");
+      if (!over || over === dragEl) { clearHints(); return; }
+      ev.preventDefault();
+      if (isAfter(over, ev)) over.after(dragEl); else over.before(dragEl);
+      clearHints();
+      saveOrder();
+    });
+
+    grid.addEventListener("dragend", function () {
+      if (dragEl) dragEl.classList.remove("dragging");
+      dragEl = null;
+      clearHints();
+      grid.querySelectorAll('.card[draggable="true"]').forEach(function (c) { c.setAttribute("draggable", "false"); });
+      setTimeout(function () { dragged = false; }, 0);
+    });
+
+    // suppress the navigation click that follows a drag
+    grid.addEventListener("click", function (ev) {
+      if (dragged) { ev.preventDefault(); ev.stopPropagation(); }
+    }, true);
+  })();
+
+  // Mobile nav toggle
+  (function () {
+    var tgl = document.getElementById("side-toggle");
+    var sb = document.getElementById("sidebar");
+    if (!tgl || !sb) return;
+    tgl.addEventListener("click", function () {
+      var open = sb.classList.toggle("open");
+      tgl.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    sb.querySelectorAll(".side-nav a").forEach(function (a) {
+      a.addEventListener("click", function () {
+        sb.classList.remove("open");
+        tgl.setAttribute("aria-expanded", "false");
+      });
+    });
+  })();
+</script>
+
+</body>
+</html>

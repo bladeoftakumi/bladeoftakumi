@@ -97,24 +97,14 @@ const PRESENCE = [
 { icon: <IconPen />, name: "Essays", href: "Essays.html", kind: "page", cue: "Read" },
 { icon: <IconPhoto />, name: "Unsplash", href: LINKS.unsplash, kind: "ext", cue: "Browse" }];
 
-// RULE: the Tools section shows EXACTLY 5 tool cards + the "More" card (6 total).
-// Do NOT add a 6th tool here. Any new tool goes in MORE_TOOLS below — it surfaces
-// through the "More" search palette automatically.
+// RULE: the public Tools section shows ONLY these cards. Every other tool is
+// owner-only and lives on Dashboard.html — add new tools THERE, not here.
 const TOOLS = [
-{ tag: "Reflection", name: "Ruminations on Death", desc: "A quiet meditation on mortality. Reflect on death to increase urgency.", href: "https://ruminationsondeath.com/", external: true },
-{ tag: "Route Planner", name: "Rihla", desc: "My workflow for IRL outreach — plan routes, track visits, organize contacts.", href: "Rihla.html", account: true },
-{ tag: "Essay Composer", name: "Suzuri", desc: "A tool that auto-formats my essays, ready to upload.", href: "Suzuri.html" },
-{ tag: "Goal Monitor", name: "Kaizen", desc: "Track focused goals across a window of days — log progress and watch completion fill.", href: "Kaizen.html" },
-{ tag: "Teleprompter", name: "Teleprompter", desc: "Paste a script, set the pace, and let the line carry your delivery on camera.", href: "Teleprompter.html" }];
+{ tag: "Goal Monitor", name: "Kaizen", desc: "The goals I\u2019m holding focus on \u2014 progress, pace, and hours logged.", href: "Kaizen.html" },
+{ tag: "Reflection", name: "Ruminations on Death", desc: "A quiet meditation on mortality. Reflect on death to increase urgency.", href: "https://ruminationsondeath.com/", external: true }];
 
-// Additional / overflow tools — surfaced only through the "More" search palette.
-// Add new tools here ({ tag, name, desc, href, external?, account? }) and they
-// appear in the palette automatically.
-const MORE_TOOLS = [
-{ tag: "Finance Monitor", name: "Finance Monitor", desc: "Drop in a spreadsheet and read the month back as a clean P&L dashboard.", href: "Finance Monitor.html", gated: true },
-{ tag: "縁 · Connections", name: "En", desc: "Track contacts and institutions through your outreach pipeline — drag cards across stages.", href: "CRM Pipeline.dc.html", gated: true }];
-
-const ALL_TOOLS = TOOLS.concat(MORE_TOOLS);
+// Owner launcher card — rendered in Tools ONLY when logged in.
+const DASHBOARD_TOOL = { tag: "Owner", name: "Dashboard", desc: "", href: "Dashboard.html", account: true };
 
 
 const TYPE_SYSTEMS = {
@@ -581,71 +571,11 @@ function AccountMenu({ user, onLogout, onSecurity, onLock }) {
   );
 }
 
-/* ----------------------------- tool palette ----------------------------- */
-function ToolPalette({ tools, onClose, user, onGated }) {
-  const [q, setQ] = useState("");
-  const [active, setActive] = useState(0);
-  const inputRef = useRef(null);
-
-  useEffect(() => { if (inputRef.current) inputRef.current.focus(); }, []);
-
-  const query = q.trim().toLowerCase();
-  const results = tools.filter((t) =>
-    (t.name + " " + t.tag + " " + t.desc).toLowerCase().includes(query));
-
-  useEffect(() => { setActive(0); }, [q]);
-
-  const open = (t) => {
-    if (!t) return;
-    if (t.gated && !user) { onGated(t); return; }
-    if (t.external) window.open(t.href, "_blank", "noopener");
-    else window.location.href = t.href;
-  };
-
-  const onKey = (e) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(results.length - 1, a + 1)); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(0, a - 1)); }
-    else if (e.key === "Enter") { e.preventDefault(); open(results[active]); }
-    else if (e.key === "Escape") { e.preventDefault(); onClose(); }
-  };
-
-  return (
-    <div className="palette-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="palette-card" role="dialog" aria-modal="true" onKeyDown={onKey}>
-        <div className="palette-search">
-          <IconSearch />
-          <input ref={inputRef} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search tools…" />
-          <span className="palette-esc">Esc</span>
-        </div>
-        <div className="palette-list">
-          {results.length === 0
-            ? <div className="palette-empty">No tools match “{q}”.</div>
-            : results.map((t, i) =>
-              <button
-                key={t.name}
-                className={"palette-item" + (i === active ? " active" : "")}
-                onMouseEnter={() => setActive(i)}
-                onClick={() => open(t)}>
-                <span className="pi-main">
-                  <span className="pi-tag">{t.tag}</span>
-                  <h4 className="pi-name">{t.name}</h4>
-                  <p className="pi-desc">{t.desc}</p>
-                </span>
-                <span className="pi-arrow">{t.external ? <IconArrowUR /> : <IconArrow />}</span>
-              </button>
-            )}
-        </div>
-      </div>
-    </div>);
-
-}
-
 /* ----------------------------- app ----------------------------- */
 function App() {
   const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
   const [user, setUser] = useState(() => (window.BOTAuth ? window.BOTAuth.current() : null));
   const [auth, setAuth] = useState(null); // null | { reason, pendingHref }
-  const [palette, setPalette] = useState(false);
   const [security, setSecurity] = useState(false);
   const [trustPrompt, setTrustPrompt] = useState(false);
   const [locked, setLocked] = useState(() => { try { return localStorage.getItem("botakumi_locked") === "1"; } catch (e) { return false; } });
@@ -777,7 +707,7 @@ function App() {
             <span className="rule"></span>
           </div>
           <div className="tools-grid">
-            {TOOLS.map((tool) => {
+            {(user ? TOOLS.concat([DASHBOARD_TOOL]) : TOOLS).map((tool) => {
               const blocked = tool.gated && !user;          // hard-gated, logged out
               const accountAware = tool.account || tool.gated;
               const synced = accountAware && !!user;
@@ -800,11 +730,6 @@ function App() {
                 </a>
               );
             })}
-            <button type="button" className="tool-card more" onClick={() => setPalette(true)}>
-              <span className="more-plus"><IconPlus /></span>
-              <h3 className="more-name">More</h3>
-              <span className="more-cue">Search tools</span>
-            </button>
           </div>
         </div>
       </section>
@@ -837,21 +762,6 @@ function App() {
 
       {/* LOCK SCREEN */}
       {locked && user && <LockScreen user={user} onUnlock={unlock} />}
-
-      {/* TOOL PALETTE */}
-      {palette && (
-        <ToolPalette
-          tools={ALL_TOOLS}
-          user={user}
-          onGated={(tool) => {
-            setPalette(false);
-            openLogin({
-              reason: "Log in to open \u201c" + tool.name + "\u201d and the features tied to your account.",
-              pendingHref: tool.href
-            });
-          }}
-          onClose={() => setPalette(false)} />
-      )}
 
       {/* TWEAKS */}
       <TweaksPanel>

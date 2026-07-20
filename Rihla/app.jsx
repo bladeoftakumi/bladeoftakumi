@@ -35,6 +35,11 @@ function Nav({ mode, user, onHome, onNavigate, onLogin }) {
         </div>
       )}
       <div className="nav-right">
+        {user && (
+          <a className="btn btn-ghost btn-sm site-home" href="Dashboard.html" title="Owner dashboard">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg> <span>Dashboard</span>
+          </a>
+        )}
         <a className="btn btn-ghost btn-sm site-home" href="index.html" title="Back to Blade of Takumi">
           <IconHome size={15} /> <span>Home</span>
         </a>

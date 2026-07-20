@@ -9,23 +9,24 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Spectral:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 <style>
+  @font-face { font-family:'Luxia Display'; src:url('fonts/LuxiaDisplay.otf') format('opentype'); font-weight:400 700; font-style:normal; font-display:swap; }
   :root {
-    --bg: #0a0a0a;
-    --bg-soft: #0e0d0b;
-    --surface: #121110;
-    --surface-2: #161412;
-    --line: #211f1b;
-    --line-soft: #1a1815;
-    --ink: #e9e4d8;
-    --ink-dim: #9a948a;
-    --ink-faint: #6b665d;
-    --accent: #b4965a;
-    --accent-soft: rgba(180,150,90,0.14);
-    --good: #7f9a6a;
-    --warn: #b07a52;
-    --font-head: 'Instrument Serif', Georgia, serif;
-    --font-body: 'Spectral', Georgia, serif;
-    --font-mono: 'Space Mono', monospace;
+    --bg: #ffffff;
+    --bg-soft: #faf8f2;
+    --surface: #ffffff;
+    --surface-2: #f6f5ef;
+    --line: #e5e1cb;
+    --line-soft: #efecdc;
+    --ink: #302d22;
+    --ink-dim: #504b38;
+    --ink-faint: #928b6f;
+    --accent: #c9971a;
+    --accent-soft: #fcf2d6;
+    --good: #6f7a4d;
+    --warn: #c08a3e;
+    --font-head: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-body: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-mono: 'Space Mono', ui-monospace, monospace;
   }
 
   * { box-sizing: border-box; }
@@ -107,20 +108,13 @@
 
   /* ---------- WORKBENCH ---------- */
   .bench {
-    display: grid;
-    grid-template-columns: minmax(360px, 5fr) 7fr;
-    gap: clamp(1.5rem, 3vw, 3rem);
-    align-items: start;
+    display: block;
     padding: clamp(2.5rem, 6vh, 4rem) 0 clamp(5rem, 10vh, 7rem);
   }
 
   /* form column */
   .composer {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    padding: 2rem 1.8rem;
-    display: flex; flex-direction: column; gap: 1.5rem;
-    position: sticky; top: 92px;
+    display: flex; flex-direction: column; gap: 1.4rem;
   }
   .field { display: flex; flex-direction: column; gap: 0.55rem; }
   .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -284,6 +278,7 @@
     outline: none; transition: border-color 0.25s ease;
   }
   .gc-log .cur:focus { border-color: var(--accent); }
+  .gc-log .cur-unit { font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.08em; color: var(--ink-faint); white-space: nowrap; }
   .gc-log .of { font-family: var(--font-mono); font-size: 0.62rem; letter-spacing: 0.1em; color: var(--ink-faint); white-space: nowrap; }
 
   /* pace bar */
@@ -310,6 +305,26 @@
   .goal-card:hover .gc-del { opacity: 1; }
   .gc-del:hover { color: var(--warn); }
   .gc-del svg { width: 15px; height: 15px; }
+
+  /* settings gear + menu */
+  .gc-gear { position: absolute; top: 0.9rem; right: 0.9rem; z-index: 6; appearance: none; background: transparent; border: none; color: var(--ink-faint); cursor: pointer; padding: 0.3rem; line-height: 0; transition: color 0.25s ease; }
+  .gc-gear:hover, .goal-card.menu-open .gc-gear { color: var(--accent); }
+  .gc-gear svg { width: 17px; height: 17px; }
+  .gc-menu { position: absolute; top: 2.5rem; right: 0.9rem; z-index: 20; min-width: 186px; display: flex; flex-direction: column; padding: 0.3rem; background: var(--surface-2); border: 1px solid var(--line); box-shadow: 0 14px 34px rgba(0,0,0,0.45); }
+  .gc-menu button { appearance: none; background: transparent; border: none; text-align: left; color: var(--ink-dim); font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 0.65rem 0.7rem; cursor: pointer; transition: color 0.2s ease, background 0.2s ease; }
+  .gc-menu button:hover { color: var(--accent); background: var(--bg); }
+  .gc-menu button.danger:hover { color: var(--warn); }
+
+  /* drag handle + reorder states */
+  .gc-grip { position: absolute; top: 0.9rem; left: 0.9rem; z-index: 6; appearance: none; background: transparent; border: none; color: var(--ink-faint); cursor: grab; padding: 0.3rem; line-height: 0; opacity: 0; transition: color 0.25s ease, opacity 0.25s ease; }
+  .goal-card:hover .gc-grip { opacity: 1; }
+  .gc-grip:hover { color: var(--accent); }
+  .gc-grip:active { cursor: grabbing; }
+  .gc-grip svg { width: 16px; height: 16px; }
+  .goal-card.dragging { opacity: 0.4; }
+  .goal-card.drop-before { box-shadow: inset 0 3px 0 -1px var(--accent); }
+  .goal-card.drop-after { box-shadow: inset 0 -3px 0 -1px var(--accent); }
+  @media (max-width: 640px) { .gc-grip { left: 50%; transform: translateX(-50%); } }
 
   /* empty state */
   .empty-state {
@@ -340,7 +355,17 @@
   .gc-hours .hstep:hover { color:var(--accent); border-color:var(--accent); }
   .gc-hours .hcur { width:64px; height:30px; background:var(--bg); border:1px solid var(--line); color:var(--ink); font-family:var(--font-mono); font-size:0.9rem; text-align:center; outline:none; transition:border-color .25s ease; }
   .gc-hours .hcur:focus { border-color:var(--accent); }
+  .gc-hours .hcur-view { display:inline-flex; align-items:center; justify-content:center; cursor:default; user-select:none; }
   .gc-hours .hl-unit { font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.1em; color:var(--ink-faint); }
+
+  /* add-time quick entry */
+  .gc-addtime { display:flex; align-items:center; gap:0.4rem; margin-top:0.45rem; flex-wrap:wrap; }
+  .gc-addtime .at-label { font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--ink-faint); margin-right:0.1rem; }
+  .gc-addtime .at-in { width:48px; height:30px; background:var(--bg); border:1px solid var(--line); color:var(--ink); font-family:var(--font-mono); font-size:0.9rem; text-align:center; outline:none; transition:border-color .25s ease; }
+  .gc-addtime .at-in:focus { border-color:var(--accent); }
+  .gc-addtime .at-x { font-family:var(--font-mono); font-size:0.7rem; color:var(--ink-faint); }
+  .gc-addtime .at-btn { appearance:none; cursor:pointer; height:30px; padding:0 0.75rem; background:transparent; border:1px solid var(--line); color:var(--ink-dim); font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.16em; text-transform:uppercase; transition:color .25s ease,border-color .25s ease; }
+  .gc-addtime .at-btn:hover { color:var(--accent); border-color:var(--accent); }
 
   /* card actions (un-focus) */
   .gc-actions { display:flex; gap:1.2rem; margin-top:0.55rem; }
@@ -365,6 +390,61 @@
   .rest-card .rc-meta { font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--ink-faint); }
   .rest-card .rc-meta b { color:var(--accent); font-weight:400; }
   .rest-card .rc-actions { display:flex; gap:1.2rem; }
+
+  /* ---------- NEW-GOAL BUTTON + MODAL ---------- */
+  .btn.newgoal { padding: 0.6rem 1rem; font-size: 0.6rem; }
+  .goal-overlay { position: fixed; inset: 0; z-index: 120; display: flex; align-items: flex-start; justify-content: center; padding: clamp(1.5rem,6vh,4rem) 1.5rem; overflow: auto; }
+  .goal-overlay[hidden] { display: none; }
+  .goal-backdrop { position: absolute; inset: 0; background: rgba(5,5,5,0.72); backdrop-filter: blur(4px); }
+  .goal-modal { position: relative; width: min(560px,96vw); background: var(--surface); border: 1px solid var(--line); padding: clamp(1.8rem,4vw,2.4rem); }
+
+  /* milestone editor (create form) */
+  .ms-editor { display: flex; flex-direction: column; gap: 0.5rem; }
+  .ms-editor:empty { display: none; }
+  .ms-row-edit { display: grid; grid-template-columns: 1fr 84px 138px 34px; gap: 0.5rem; align-items: center; }
+  .ms-row-edit .ms-label, .ms-row-edit .ms-date { background: var(--bg); border: 1px solid var(--line); color: var(--ink); font-family: var(--font-body); font-size: 0.95rem; padding: 0.5rem 0.6rem; outline: none; transition: border-color .3s ease; }
+  .ms-row-edit .ms-num { background: var(--bg); border: 1px solid var(--line); color: var(--ink); font-family: var(--font-mono); font-size: 0.85rem; padding: 0.5rem 0.4rem; outline: none; text-align: center; transition: border-color .3s ease; }
+  .ms-row-edit .ms-date { color-scheme: dark; font-family: var(--font-mono); font-size: 0.8rem; }
+  .ms-row-edit input:focus { border-color: var(--accent); }
+  .ms-del { appearance: none; background: transparent; border: 1px solid var(--line); color: var(--ink-faint); cursor: pointer; height: 36px; font-size: 1.05rem; line-height: 1; transition: color .25s ease, border-color .25s ease; }
+  .ms-del:hover { color: var(--warn); border-color: var(--warn); }
+  .ms-addrow { align-self: flex-start; appearance: none; background: transparent; border: 1px solid var(--line); color: var(--ink-dim); font-family: var(--font-mono); font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase; padding: 0.5rem 0.8rem; cursor: pointer; transition: color .25s ease, border-color .25s ease; }
+  .ms-addrow:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* card kicker + milestone checklist */
+  .gc-kicker { font-family: var(--font-mono); font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink-faint); display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; align-items: center; }
+  .gc-kicker b { color: var(--ink-dim); font-weight: 400; }
+  .gc-nextlabel { color: var(--accent); letter-spacing: 0.22em; }
+
+  .gc-ms { display: flex; flex-direction: column; gap: 0.1rem; margin-top: 0.55rem; }
+  .ms-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.3rem 0; }
+  .ms-check { appearance: none; flex: none; width: 17px; height: 17px; border: 1px solid var(--line); background: var(--bg); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: transparent; transition: border-color .25s ease, color .25s ease; }
+  .ms-check:hover { border-color: var(--accent); }
+  .ms-check svg { width: 11px; height: 11px; }
+  .ms-row.done .ms-check { color: var(--good); border-color: var(--good); }
+  .ms-name { font-family: var(--font-body); font-size: 0.98rem; color: var(--ink); }
+  .ms-row.done .ms-name { color: var(--ink-faint); text-decoration: line-through; }
+  .ms-row.next .ms-name { color: var(--accent); }
+  .ms-due { margin-left: 0; font-family: var(--font-mono); font-size: 0.54rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-faint); white-space: nowrap; }
+  .ms-due.soon { color: var(--accent); }
+  .ms-due.over { color: var(--warn); }
+  .ms-right { margin-left: auto; display: flex; align-items: center; gap: 0.55rem; }
+  .ms-target { font-family: var(--font-mono); font-size: 0.56rem; letter-spacing: 0.1em; color: var(--accent); white-space: nowrap; }
+  .ms-check.auto { cursor: default; }
+  .ms-remove { appearance: none; background: transparent; border: none; color: var(--ink-faint); cursor: pointer; padding: 0 0.2rem; line-height: 1; font-size: 1rem; opacity: 0; transition: opacity .2s ease, color .2s ease; }
+  .ms-row:hover .ms-remove { opacity: 1; }
+  .ms-remove:hover { color: var(--warn); }
+
+  .ms-addline { margin-top: 0.3rem; }
+  .ms-inline-form { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.4rem; padding: 0.6rem 0.7rem; background: var(--bg); border: 1px solid var(--line); }
+  .ms-inline-form input[type="text"] { background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-family: var(--font-body); font-size: 0.92rem; padding: 0.4rem 0.55rem; outline: none; min-width: 130px; flex: 1; }
+  .ms-inline-form input[type="date"] { background: var(--surface); border: 1px solid var(--line); color: var(--ink); color-scheme: dark; font-family: var(--font-mono); font-size: 0.78rem; padding: 0.4rem 0.5rem; outline: none; }
+  .ms-inline-form input[type="number"] { background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-family: var(--font-mono); font-size: 0.8rem; padding: 0.4rem 0.5rem; outline: none; width: 92px; text-align: center; }
+  .ms-inline-form input:focus { border-color: var(--accent); }
+  .ms-editlist { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.4rem; }
+  .ms-editlist .ms-inline-form { margin-top: 0; }
+  .ms-editlist .ms-remove { opacity: 1; margin-left: auto; }
+  .ms-editlist .ms-addrow { align-self: flex-start; margin-top: 0.2rem; }
 
   /* ---------- EYE / PUBLIC PROGRESS ---------- */
   .eye-btn { appearance:none; cursor:pointer; display:inline-flex; align-items:center; gap:0.5rem; background:transparent; border:1px solid var(--line); color:var(--ink-dim); font-family:var(--font-mono); font-size:0.6rem; text-transform:uppercase; letter-spacing:0.2em; padding:0.5rem 0.8rem; white-space:nowrap; transition:color .25s ease,border-color .25s ease; }
@@ -396,6 +476,12 @@
   .progress-empty { color:var(--ink-faint); font-style:italic; text-align:center; padding:2rem 0; }
   .progress-foot { margin-top:1.8rem; padding-top:1.2rem; border-top:1px solid var(--line); color:var(--ink-faint); font-family:var(--font-mono); font-size:0.56rem; letter-spacing:0.16em; text-transform:uppercase; }
 
+  /* ---------- VISITOR MODE: the page IS the public progress view ---------- */
+  .public-page { display:none; padding: clamp(2.5rem, 6vh, 4rem) 0 clamp(5rem, 10vh, 7rem); }
+  body.visitor .public-page { display:block; }
+  body.visitor main.bench, body.visitor #eye-btn { display:none; }
+  .public-panel { max-width: 620px; }
+
   /* ---------- FOOTER ---------- */
   footer.site {
     border-top: 1px solid var(--line-soft);
@@ -425,73 +511,32 @@
     .gc-meta, .gc-log { justify-content: center; }
     footer.site .wrap { flex-direction: column; gap: 0.8rem; align-items: flex-start; }
   }
+
+  /* ---------- light-shell adaptation ---------- */
+  input[type="date"], input[type="number"] { color-scheme: light; }
+  .bench { padding: 0; }
+  .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 24px; flex-wrap: wrap; }
+  .gc-focus, .sum-num, .ring .pct b, .pg-focus, .pg-pct, .empty-state h3, .progress-head h2, .rc-focus { font-weight: 600; }
+  .eye-btn { border-radius: 10px; }
+  .gc-menu { box-shadow: 0 8px 24px rgba(80,75,56,0.14); }
+  .goal-modal, .progress-panel { border-radius: 16px; box-shadow: 0 18px 48px rgba(80,75,56,0.18); }
+  body.visitor .bot-page { display: none; }
+  .public-panel { max-width: 620px; margin: 0 auto; padding: clamp(2rem,6vh,4rem) 20px; }
+  .pub-head { margin-bottom: 1.6rem; }
+  .pub-head .pub-brand { font-family: 'Luxia Display', Georgia, serif; color: var(--accent); font-size: 1rem; letter-spacing: 0.04em; }
+  .pub-head h1 { font-size: 2rem; font-weight: 700; margin: 0.4rem 0 0; color: var(--ink); letter-spacing: -0.02em; }
 </style>
 </head>
 <body data-screen-label="Kaizen — goal monitor">
-<nav class="site">
-  <div class="wrap">
-    <a href="index.html" class="logo">Blade of Takumi</a>
-    <div class="navlinks">
-      <a class="mono" href="index.html#presence">Presence</a>
-      <a class="mono" href="index.html#tools">Tools</a>
-      <a class="mono" href="Essays.html">Essays</a>
-      <a class="mono" href="https://www.instagram.com/bladeoftakumi" target="_blank" rel="noopener noreferrer">Connect</a>
-      <a class="mono nav-acct" id="nav-acct" href="index.html" title="Account"><span class="dot"></span><span id="nav-acct-label">Log in</span></a>
-    </div>
+<div class="bot-page">
+  <div class="page-header">
+    <h1 class="bot-page-h">Kaizen</h1>
+    <button class="eye-btn" id="eye-btn" type="button" title="Public progress view" aria-label="Public progress view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg> Progress</button>
   </div>
-</nav>
 
-<header class="page-head">
-  <div class="wrap">
-    <div class="sec-head"><span class="label mono">Kaizen · Goal Monitor</span><span class="rule"></span><button class="eye-btn" id="eye-btn" type="button" title="Public progress view" aria-label="Public progress view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg> Progress</button></div>
-  </div>
-</header>
-
-<main class="bench wrap">
-  <section class="composer" aria-label="New goal form">
-    <div class="field">
-      <label for="f-focus">Focus</label>
-      <input id="f-focus" type="text" placeholder="e.g. Read deeply" autocomplete="off" />
-    </div>
-
-    <div class="field">
-      <label for="f-unit">Unit of measure</label>
-      <input id="f-unit" type="text" placeholder="e.g. minutes, books, pages" autocomplete="off" />
-      <div class="chips" id="unit-chips" role="group" aria-label="Common units">
-        <button class="chip" type="button" data-unit="minutes">Minutes</button>
-        <button class="chip" type="button" data-unit="hours">Hours</button>
-        <button class="chip" type="button" data-unit="pages">Pages</button>
-        <button class="chip" type="button" data-unit="books">Books</button>
-        <button class="chip" type="button" data-unit="sessions">Sessions</button>
-      </div>
-    </div>
-
-    <div class="field">
-      <label for="f-target">Target <em>(total to reach)</em></label>
-      <input id="f-target" type="number" min="1" step="1" placeholder="e.g. 1200" inputmode="numeric" />
-    </div>
-
-    <div class="field-row">
-      <div class="field">
-        <label for="f-start">Start</label>
-        <input id="f-start" type="date" />
-      </div>
-      <div class="field">
-        <label for="f-end">End</label>
-        <input id="f-end" type="date" />
-      </div>
-    </div>
-
-    <p class="hint" id="form-hint">Each goal tracks one focus over a window of days. Log progress on its card anytime.</p>
-
-    <div class="actions">
-      <button class="btn" id="b-add" type="button">Add goal</button>
-      <button class="btn ghost" id="b-reset" type="button">Reset form</button>
-    </div>
-  </section>
-
+<main class="bench">
   <section class="ledger" aria-label="Goals">
-    <div class="pv-tag mono"><span>Your goals</span><span class="rule"></span><span class="sync-state" id="sync-state">Saved on this device</span></div>
+    <div class="pv-tag mono"><span>Your goals</span><span class="rule"></span><span class="sync-state" id="sync-state">Saved on this device</span><button class="btn newgoal" id="b-open-new" type="button">+ New goal</button></div>
 
     <div class="summary empty" id="summary">
       <div class="sum-item"><span class="sum-num" id="s-active">0</span><span class="sum-label">Active goals</span></div>
@@ -503,6 +548,70 @@
     <div class="goals" id="goals"></div>
   </section>
 </main>
+</div>
+
+<div class="goal-overlay" id="goal-overlay" hidden="">
+  <div class="goal-backdrop" data-act="close-goal"></div>
+  <div class="goal-modal" role="dialog" aria-modal="true" aria-label="New goal">
+    <button class="progress-close" type="button" data-act="close-goal" aria-label="Close">×</button>
+    <div class="progress-head"><span class="label mono">Kaizen</span><h2 id="goal-modal-title">New goal</h2></div>
+    <section class="composer" aria-label="New goal form" style="margin-top:1.6rem;">
+      <div class="field">
+        <label for="f-focus">Focus</label>
+        <input id="f-focus" type="text" placeholder="e.g. Read deeply" autocomplete="off" />
+      </div>
+
+      <div class="field">
+        <label for="f-unit">Unit of measure <em>(optional)</em></label>
+        <input id="f-unit" type="text" placeholder="e.g. minutes, books, pages" autocomplete="off" />
+        <div class="chips" id="unit-chips" role="group" aria-label="Common units">
+          <button class="chip" type="button" data-unit="minutes">Minutes</button>
+          <button class="chip" type="button" data-unit="hours">Hours</button>
+          <button class="chip" type="button" data-unit="pages">Pages</button>
+          <button class="chip" type="button" data-unit="books">Books</button>
+          <button class="chip" type="button" data-unit="sessions">Sessions</button>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="f-target">Target <em>(optional)</em></label>
+          <input id="f-target" type="number" min="1" step="1" placeholder="e.g. 1200" inputmode="numeric" />
+        </div>
+        <div class="field">
+          <label for="f-end">Due <em>(optional)</em></label>
+          <input id="f-end" type="date" />
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="f-start">Start</label>
+        <input id="f-start" type="date" />
+      </div>
+
+      <div class="field">
+        <label>Milestones <em>(optional target &amp; due date)</em></label>
+        <div class="ms-editor" id="ms-editor"></div>
+        <button class="ms-addrow" id="ms-addrow" type="button">+ Add milestone</button>
+      </div>
+
+      <p class="hint" id="form-hint">Track a number, a set of milestones, or both. The card shows the closest milestone.</p>
+
+      <div class="actions">
+        <button class="btn" id="b-add" type="button">Add goal</button>
+        <button class="btn ghost" id="b-reset" type="button">Reset form</button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<section class="public-page wrap" aria-label="Progress">
+  <div class="public-panel">
+    <div class="pub-head"><a class="pub-brand" href="index.html">Blade of Takumi</a><h1>Progress</h1></div>
+    <div class="progress-body" id="pp-body"></div>
+    <div class="progress-foot" id="pp-foot"></div>
+  </div>
+</section>
 
 <div class="progress-overlay" id="progress-overlay" hidden="">
   <div class="progress-backdrop" data-act="close-progress"></div>
@@ -516,19 +625,14 @@
   </div>
 </div>
 
-<footer class="site">
-  <div class="wrap">
-    <span class="f-brand">Blade of Takumi</span>
-    <span class="f-copy mono">© 2026 — All rights reserved</span>
-  </div>
-</footer>
-
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="botakumi-auth.js"></script>
 <script src="botakumi-account.js"></script>
+<script>window.BOTShell = { active: "kaizen", manual: true };</script>
+<script src="botakumi-shell.js"></script>
 
 <script>
 (function () {
@@ -572,8 +676,19 @@
   /* ---------- persistence (device cache + cloud when logged in) ---------- */
   var owner = null;          // signed-in user, or null
   var unfocusEditing = {};   // transient: goal ids showing the rest-date form
+  var msAdding = {};         // transient: goal ids showing the add-milestone form
+  var msEditing = {};        // transient: goal ids showing the edit-milestones list
+  var viewMode = {};         // transient: goal id -> 'ms' | 'final' (default 'ms')
+  var menuOpen = {};         // transient: goal id -> settings menu open
+  var formMs = [];           // milestone rows in the create form
 
   function byId(id) { return goals.filter(function (x) { return x.id === id; })[0]; }
+
+  /* a bare-number milestone label (e.g. "100") doubles as its target */
+  function numFromLabel(label) {
+    var n = parseFloat(String(label == null ? "" : label).replace(/[, ]/g, ""));
+    return (!isNaN(n) && n > 0 && /^[\d.,\s]+$/.test(String(label).trim())) ? n : 0;
+  }
 
   function db() {
     if (!(window.firebase && firebase.firestore)) return null;
@@ -633,6 +748,12 @@
   /* load goals for the current auth state */
   function boot(user) {
     owner = user || null;
+    document.body.classList.toggle("visitor", !owner);
+    if (owner && window.BOTShellMount && !document.getElementById("bot-shell")) window.BOTShellMount();
+    if (!owner) {                        // visitors: curated public progress only
+      fetchPublicProgress($("pp-body"), $("pp-foot"));
+      return;
+    }
     if (owner) {
       var d = db();
       if (d) {
@@ -672,9 +793,42 @@
   }
 
   /* ---------- compute per-goal status ---------- */
+  function msReached(g, m) {
+    return (m.target > 0) ? ((g.current || 0) >= m.target) : !!m.done;
+  }
+
+  function nextMilestone(g) {
+    var ms = (g.milestones || []).filter(function (m) { return !msReached(g, m); });
+    if (!ms.length) return null;
+    ms.sort(function (a, b) {
+      var at = a.target > 0 ? a.target : Infinity, bt = b.target > 0 ? b.target : Infinity;
+      if (at !== bt) return at - bt;
+      var ad = a.due ? dayNum(a.due) : Infinity, bd = b.due ? dayNum(b.due) : Infinity;
+      return ad - bd;
+    });
+    return ms[0];
+  }
+
   function statusOf(g) {
-    var pct = g.target > 0 ? Math.min(100, (g.current / g.target) * 100) : 0;
-    var done = pct >= 100;
+    var ms = g.milestones || [];
+    var msDone = ms.filter(function (m) { return msReached(g, m); }).length;
+    var hasNumeric = g.target > 0;
+    var next = nextMilestone(g);
+
+    var finalPct = hasNumeric
+      ? Math.min(100, (g.current / g.target) * 100)
+      : (ms.length ? (msDone / ms.length) * 100 : 0);
+
+    var msPct;
+    if (next) {
+      msPct = (next.target > 0)
+        ? Math.min(100, (g.current / next.target) * 100)
+        : (ms.length ? (msDone / ms.length) * 100 : finalPct);
+    } else {
+      msPct = finalPct; // every milestone reached
+    }
+
+    var done = finalPct >= 100 && (hasNumeric || ms.length > 0);
 
     // time window
     var ds = dayNum(g.start), de = dayNum(g.end), dt = dayNum(todayISO());
@@ -692,21 +846,24 @@
       pace = { cls: "lead", text: "Goal reached" };
     } else if (timePct != null) {
       if (daysLeft < 0) {
-        pace = { cls: "lag", text: "Window closed · " + niceNum(g.target - g.current) + " " + g.unit + " short" };
+        pace = { cls: "lag", text: "Window closed" + (hasNumeric ? " · " + niceNum(g.target - g.current) + " " + g.unit + " short" : "") };
       } else {
-        var delta = pct - timePct;
+        var delta = finalPct - timePct;
         var left = daysLeft + " day" + (daysLeft === 1 ? "" : "s") + " left";
         if (delta >= 5) pace = { cls: "lead", text: "Ahead of pace · " + left };
         else if (delta <= -5) pace = { cls: "lag", text: "Behind pace · " + left };
         else pace = { cls: "neutral", text: "On pace · " + left };
       }
     }
-    return { pct: pct, done: done, timePct: timePct, daysLeft: daysLeft, pace: pace };
+    return { finalPct: finalPct, msPct: msPct, done: done, timePct: timePct, daysLeft: daysLeft, pace: pace,
+             hasNumeric: hasNumeric, msDone: msDone, msTotal: ms.length, next: next };
   }
 
   /* ---------- render ---------- */
   function render() {
     var box = $("goals");
+    // for hours-unit goals, the logged hours ARE the progress value — keep them in sync
+    goals.forEach(function (g) { if (isHoursUnit(g)) g.current = +g.hours || 0; });
     var active = goals.filter(function (g) { return !isDormant(g); });
     var resting = goals.filter(isDormant);
 
@@ -716,14 +873,14 @@
         '<div class="empty-state">' +
           '<span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 12 L12 6 M12 12 L16 14"></path></svg></span>' +
           '<h3>No goals yet</h3>' +
-          '<p>Name a focus, give it a target and a window of days, then add it. Progress rings appear here.</p>' +
+          '<p>Add a focus with a target or a set of milestones. Progress rings appear here.</p>' +
         '</div>';
       return;
     }
 
     // summary
     var doneCount = 0, sumPct = 0, hoursTotal = 0;
-    active.forEach(function (g) { var s = statusOf(g); sumPct += s.pct; if (s.done) doneCount++; });
+    active.forEach(function (g) { var s = statusOf(g); sumPct += s.finalPct; if (s.done) doneCount++; });
     goals.forEach(function (g) { hoursTotal += (+g.hours || 0); });
     $("summary").classList.remove("empty");
     $("s-active").textContent = active.length - doneCount;
@@ -748,65 +905,173 @@
     box.innerHTML = activeHTML + restHTML;
   }
 
+  function msDueBadge(due) {
+    if (!due) return "";
+    var left = dayNum(due) - dayNum(todayISO());
+    var cls = left < 0 ? "over" : (left <= 7 ? "soon" : "");
+    var txt = left < 0 ? ("Overdue \u00b7 " + fmtShort(due)) : (fmtShort(due) + " \u00b7 " + left + "d");
+    return '<span class="ms-due ' + cls + '">' + txt + '</span>';
+  }
+
+  function isHoursUnit(g) { return /^\s*hours?\s*$/i.test(g.unit || ""); }
+
   function activeCard(g) {
     var s = statusOf(g);
-    var pctTxt = niceNum(s.pct);
-    var meta = [];
-    meta.push('<span>Target&nbsp;<span class="v">' + niceNum(g.target) + " " + esc(g.unit) + '</span></span>');
-    meta.push('<span>' + fmtShort(g.start) + ' &ndash; ' + fmtShort(g.end) + '</span>');
-    if (+g.hours > 0) meta.push('<span><span class="v">' + niceNum(g.hours) + '</span> hrs in</span>');
+    var ms = g.milestones || [];
+    var next = s.next;
 
-    var paceBlock = "";
-    if (s.timePct != null) {
-      paceBlock =
-        '<div class="pace">' +
-          '<div class="pace-track">' +
-            '<div class="pace-done" style="width:' + s.pct.toFixed(1) + '%"></div>' +
-            (s.done ? "" : '<div class="pace-marker" style="left:' + s.timePct.toFixed(1) + '%"></div>') +
-          '</div>' +
-          '<div class="pace-note"><span class="' + s.pace.cls + '">' + esc(s.pace.text) + '</span></div>' +
-        '</div>';
-    } else if (s.pace.text) {
-      paceBlock = '<div class="pace"><div class="pace-note"><span class="' + s.pace.cls + '">' + esc(s.pace.text) + '</span></div></div>';
+    // perspective: nearest milestone by default; a button flips to the final goal
+    var canToggle = ms.length > 0 && next != null;
+    var view = canToggle ? (viewMode[g.id] || "ms") : "final";
+    var pct = (view === "ms") ? s.msPct : s.finalPct;
+    var pctTxt = niceNum(pct);
+
+    // TITLE always stays the goal's own title
+    var kicker = "";
+    if (view === "ms" && next) {
+      var sameAsLabel = next.target > 0 && numFromLabel(next.label) === next.target;
+      kicker = '<span class="gc-kicker"><span class="gc-nextlabel">Next milestone</span> ' +
+        esc(next.label) +
+        (next.target > 0 && !sameAsLabel ? ' &middot; <b>' + niceNum(next.target) + (g.unit ? " " + esc(g.unit) : "") + '</b>' :
+          (next.target > 0 && sameAsLabel && g.unit ? ' <b>' + esc(g.unit) + '</b>' : "")) +
+        '</span>';
+    } else if (ms.length && view === "final") {
+      kicker = '<span class="gc-kicker"><span class="gc-nextlabel">Final goal</span></span>';
     }
 
-    var actionBlock = unfocusEditing[g.id]
+    var meta = [];
+    if (g.end) meta.push('<span>Due&nbsp;<span class="v">' + fmtShort(g.end) + '</span></span>');
+
+    // completion bar — reflects the ACTIVE perspective (nearest milestone by default)
+    var barNoteText = "", barNoteCls = "neutral";
+    if (view === "final") {
+      barNoteText = s.pace.text; barNoteCls = s.pace.cls;
+    }
+    // time marker: final view uses the goal window; milestone view uses the milestone's own due date
+    var markerPct = null;
+    if (view === "final" && s.timePct != null && !s.done) {
+      markerPct = s.timePct;
+    } else if (view === "ms" && next && next.due) {
+      var mds = dayNum(g.start), mde = dayNum(next.due), mdt = dayNum(todayISO());
+      if (mds != null && mde != null) {
+        var mTotal = Math.max(1, mde - mds);
+        markerPct = Math.max(0, Math.min(100, ((mdt - mds) / mTotal) * 100));
+      }
+    }
+    var showMarker = markerPct != null;
+    var paceBlock =
+      '<div class="pace">' +
+        '<div class="pace-track">' +
+          '<div class="pace-done" style="width:' + pct.toFixed(1) + '%"></div>' +
+        '</div>' +
+        (barNoteText ? '<div class="pace-note"><span class="' + barNoteCls + '">' + esc(barNoteText) + '</span></div>' : "") +
+      '</div>';
+
+    var logBlock = (s.hasNumeric && !isHoursUnit(g)) ?
+      '<div class="gc-log">' +
+        '<input class="cur" type="number" data-act="set" value="' + niceNum(g.current) + '" min="0" inputmode="numeric" aria-label="Logged ' + esc(g.unit) + '" />' +
+        '<span class="cur-unit">' + esc(g.unit) + '</span>' +
+      '</div>' : '';
+
+    var hoursBlock =
+      '<div class="gc-hours">' +
+        '<span class="hcur hcur-view" aria-label="Hours logged">' + niceNum(g.hours || 0) + '</span>' +
+        '<span class="hl-label">Hours</span>' +
+      '</div>' +
+      '<div class="gc-addtime">' +
+        '<input class="at-in" type="number" data-act="at-h" min="0" step="1" placeholder="0" inputmode="numeric" aria-label="Hours to add" />' +
+        '<span class="at-x">h</span>' +
+        '<input class="at-in" type="number" data-act="at-m" min="0" max="59" step="1" placeholder="00" inputmode="numeric" aria-label="Minutes to add" />' +
+        '<span class="at-x">m</span>' +
+        '<button class="at-btn" type="button" data-act="at-add">Add</button>' +
+      '</div>';
+
+    var msRows = ms.map(function (m) {
+      var reached = msReached(g, m);
+      var isNext = next && m.id === next.id;
+      var control = (m.target > 0)
+        ? '<span class="ms-check auto" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"></path></svg></span>'
+        : '<button class="ms-check" type="button" data-act="ms-toggle" aria-label="Toggle milestone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"></path></svg></button>';
+      var right = "";
+      if (m.target > 0 || m.due) {
+        right = '<span class="ms-right">' +
+          (m.target > 0 ? '<span class="ms-target">' + niceNum(m.target) + (g.unit ? " " + esc(g.unit) : "") + '</span>' : "") +
+          (m.due ? msDueBadge(m.due) : "") +
+        '</span>';
+      }
+      return '<div class="ms-row' + (reached ? " done" : "") + (isNext ? " next" : "") + '" data-mid="' + m.id + '">' +
+          control +
+          '<span class="ms-name">' + esc(m.label) + '</span>' +
+          right +
+          '<button class="ms-remove" type="button" data-act="ms-del" aria-label="Remove milestone">\u00d7</button>' +
+        '</div>';
+    }).join("");
+
+    var addUI = msAdding[g.id]
+      ? '<div class="ms-inline-form">' +
+          '<input type="text" data-act="ms-new-label" placeholder="Milestone" />' +
+          '<input type="number" data-act="ms-new-target" min="0" step="1" placeholder="Target #" inputmode="numeric" />' +
+          '<input type="date" data-act="ms-new-due" />' +
+          '<button class="uf-btn" type="button" data-act="ms-new-confirm">Add</button>' +
+          '<button class="uf-btn ghost" type="button" data-act="ms-new-cancel">Cancel</button>' +
+        '</div>'
+      : "";
+
+    var msEditList = (msEditing[g.id] && ms.length)
+      ? '<div class="ms-editlist">' +
+          ms.map(function (m) {
+            return '<div class="ms-inline-form" data-mid="' + m.id + '">' +
+              '<input type="text" data-act="ms-e-label" value="' + esc(m.label) + '" placeholder="Milestone" />' +
+              '<input type="number" data-act="ms-e-target" min="0" step="1" value="' + (m.target > 0 ? niceNum(m.target) : "") + '" placeholder="Target #" inputmode="numeric" />' +
+              '<input type="date" data-act="ms-e-due" value="' + (m.due || "") + '" />' +
+              '<button class="ms-remove" type="button" data-act="ms-del" aria-label="Remove milestone">\u00d7</button>' +
+            '</div>';
+          }).join("") +
+          '<button class="ms-addrow" type="button" data-act="ms-edit-done">Done editing</button>' +
+        '</div>'
+      : "";
+
+    var msBlock = msEditList + addUI;
+
+    var unfocusBlock = unfocusEditing[g.id]
       ? '<div class="unfocus-form">' +
           '<span class="uf-label">Rest until</span>' +
           '<input type="date" data-act="unfocus-date" value="' + plusDaysISO(14) + '" min="' + plusDaysISO(1) + '" />' +
           '<button class="uf-btn" type="button" data-act="unfocus-confirm">Rest</button>' +
           '<button class="uf-btn ghost" type="button" data-act="unfocus-cancel">Cancel</button>' +
         '</div>'
-      : '<div class="gc-actions">' +
-          '<button class="link-act" type="button" data-act="unfocus">Un-focus temporarily</button>' +
-        '</div>';
+      : "";
+
+    var menu = menuOpen[g.id]
+      ? '<div class="gc-menu">' +
+          '<button type="button" data-act="ms-add-open">+ Add milestone</button>' +
+          (ms.length ? '<button type="button" data-act="ms-edit">Edit milestones</button>' : "") +
+          (canToggle ? '<button type="button" data-act="persp">' + (view === "ms" ? "View final goal" : "View milestone") + '</button>' : "") +
+          '<button type="button" data-act="unfocus">Un-focus temporarily</button>' +
+          '<button type="button" class="danger" data-act="del">Remove goal</button>' +
+        '</div>'
+      : "";
 
     return '' +
-      '<article class="goal-card' + (s.done ? " done" : "") + '" data-id="' + g.id + '">' +
-        '<button class="gc-del" type="button" data-act="del" title="Remove goal" aria-label="Remove goal">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M6 6 L18 18 M18 6 L6 18"></path></svg>' +
+      '<article class="goal-card' + (s.done ? " done" : "") + (menuOpen[g.id] ? " menu-open" : "") + '" data-id="' + g.id + '">' +
+        '<button class="gc-grip" type="button" title="Drag to reorder" aria-label="Drag to reorder">' +
+          '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg>' +
         '</button>' +
-        '<div class="ring">' + ringSVG(s.pct) +
-          '<div class="pct"><b>' + pctTxt + '<span style="font-size:1rem">%</span></b><span>Complete</span></div>' +
+        '<button class="gc-gear" type="button" data-act="menu" title="Settings" aria-label="Card settings" aria-expanded="' + (menuOpen[g.id] ? "true" : "false") + '">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>' +
+        '</button>' + menu +
+        '<div class="ring">' + ringSVG(pct) +
+          '<div class="pct"><b>' + pctTxt + '<span style="font-size:1rem">%</span></b></div>' +
         '</div>' +
         '<div class="gc-body">' +
+          kicker +
           '<h3 class="gc-focus">' + esc(g.focus) + '</h3>' +
           '<div class="gc-meta">' + meta.join("") + '</div>' +
-          '<div class="gc-log">' +
-            '<button class="step" type="button" data-act="dec" aria-label="Decrease">&minus;</button>' +
-            '<input class="cur" type="number" data-act="set" value="' + niceNum(g.current) + '" min="0" inputmode="numeric" aria-label="Logged ' + esc(g.unit) + '" />' +
-            '<button class="step" type="button" data-act="inc" aria-label="Increase">+</button>' +
-            '<span class="of">/ ' + niceNum(g.target) + ' ' + esc(g.unit) + '</span>' +
-          '</div>' +
-          '<div class="gc-hours">' +
-            '<span class="hl-label">Hours</span>' +
-            '<button class="hstep" type="button" data-act="hdec" aria-label="Subtract half hour">&minus;</button>' +
-            '<input class="hcur" type="number" data-act="hset" value="' + niceNum(g.hours || 0) + '" min="0" step="0.5" inputmode="decimal" aria-label="Hours logged" />' +
-            '<button class="hstep" type="button" data-act="hinc" aria-label="Add half hour">+</button>' +
-            '<span class="hl-unit">hrs logged</span>' +
-          '</div>' +
           paceBlock +
-          actionBlock +
+          logBlock +
+          hoursBlock +
+          msBlock +
+          unfocusBlock +
         '</div>' +
       '</article>';
   }
@@ -856,8 +1121,18 @@
     } else if (act === "hinc" || act === "hdec") {
       g.hours = Math.max(0, Math.round(((+g.hours || 0) + (act === "hinc" ? 0.5 : -0.5)) * 10) / 10);
       save(); render();
+    } else if (act === "at-add") {
+      var hIn = holder.querySelector('[data-act="at-h"]');
+      var mIn = holder.querySelector('[data-act="at-m"]');
+      var addH = parseInt(hIn && hIn.value, 10); if (isNaN(addH) || addH < 0) addH = 0;
+      var addM = parseInt(mIn && mIn.value, 10); if (isNaN(addM) || addM < 0) addM = 0;
+      var addTotal = addH + addM / 60;
+      if (addTotal > 0) {
+        g.hours = Math.round(((+g.hours || 0) + addTotal) * 100) / 100;
+        save(); render();
+      }
     } else if (act === "unfocus") {
-      unfocusEditing[id] = true; render();
+      delete menuOpen[id]; unfocusEditing[id] = true; render();
     } else if (act === "unfocus-cancel") {
       delete unfocusEditing[id]; render();
     } else if (act === "unfocus-confirm") {
@@ -868,7 +1143,51 @@
       } else if (inp) { inp.focus(); }
     } else if (act === "resume") {
       g.unfocusUntil = null; save(); render();
+    } else if (act === "ms-toggle") {
+      var mt = actEl.closest("[data-mid]");
+      var mid = mt && mt.getAttribute("data-mid");
+      var m = (g.milestones || []).filter(function (x) { return x.id === mid; })[0];
+      if (m) { m.done = !m.done; save(); render(); }
+    } else if (act === "ms-del") {
+      var md = actEl.closest("[data-mid]");
+      var mid2 = md && md.getAttribute("data-mid");
+      g.milestones = (g.milestones || []).filter(function (x) { return x.id !== mid2; });
+      save(); render();
+    } else if (act === "ms-add-open") {
+      delete menuOpen[id]; msAdding[id] = true; render();
+    } else if (act === "ms-edit") {
+      delete menuOpen[id]; msEditing[id] = true; render();
+    } else if (act === "ms-edit-done") {
+      delete msEditing[id]; render();
+    } else if (act === "persp") {
+      delete menuOpen[id]; viewMode[id] = (viewMode[id] === "final") ? "ms" : "final"; render();
+    } else if (act === "menu") {
+      var wasOpen = menuOpen[id];
+      menuOpen = {};
+      if (!wasOpen) menuOpen[id] = true;
+      render();
+    } else if (act === "ms-new-cancel") {
+      delete msAdding[id]; render();
+    } else if (act === "ms-new-confirm") {
+      var li = holder.querySelector('[data-act="ms-new-label"]');
+      var ti = holder.querySelector('[data-act="ms-new-target"]');
+      var di = holder.querySelector('[data-act="ms-new-due"]');
+      var lab = li && li.value.trim();
+      if (lab) {
+        var tn = parseFloat(ti && ti.value); if (isNaN(tn) || tn < 0) tn = 0;
+        if (tn <= 0) tn = numFromLabel(lab);
+        g.milestones = g.milestones || [];
+        g.milestones.push({ id: uid(), label: lab, target: tn, due: (di && di.value) || "", done: false });
+        delete msAdding[id]; save(); render();
+      } else if (li) { li.focus(); }
     }
+  });
+
+  /* close the settings menu on any outside click */
+  document.addEventListener("click", function (ev) {
+    if (!Object.keys(menuOpen).length) return;
+    if (ev.target.closest && ev.target.closest(".gc-gear, .gc-menu")) return;
+    menuOpen = {}; render();
   });
 
   $("goals").addEventListener("change", function (ev) {
@@ -885,8 +1204,81 @@
       var h = parseFloat(t.value);
       g.hours = isNaN(h) ? 0 : Math.max(0, h);
       save(); render();
+    } else if (t.matches('[data-act="ms-e-label"], [data-act="ms-e-target"], [data-act="ms-e-due"]')) {
+      var erow = t.closest("[data-mid]");
+      var em = erow && (g.milestones || []).filter(function (x) { return x.id === erow.getAttribute("data-mid"); })[0];
+      if (em) {
+        if (t.matches('[data-act="ms-e-label"]')) { em.label = t.value.trim(); if (!(em.target > 0)) { var ln = numFromLabel(em.label); if (ln > 0) em.target = ln; } }
+        else if (t.matches('[data-act="ms-e-target"]')) { var tv = parseFloat(t.value); em.target = (isNaN(tv) || tv < 0) ? 0 : tv; }
+        else em.due = t.value || "";
+        save(); render();
+      }
     }
   });
+
+  /* ---------- drag to reorder (active cards) ---------- */
+  (function () {
+    var box = $("goals");
+    var dragId = null;
+
+    box.addEventListener("mousedown", function (ev) {
+      var grip = ev.target.closest(".gc-grip");
+      if (!grip) return;
+      var card = grip.closest(".goal-card");
+      if (card) card.setAttribute("draggable", "true");
+    });
+
+    function clearHints() {
+      box.querySelectorAll(".drop-before, .drop-after").forEach(function (c) {
+        c.classList.remove("drop-before", "drop-after");
+      });
+    }
+
+    box.addEventListener("dragstart", function (ev) {
+      var card = ev.target.closest(".goal-card[draggable='true']");
+      if (!card) { ev.preventDefault(); return; }
+      dragId = card.getAttribute("data-id");
+      card.classList.add("dragging");
+      try { ev.dataTransfer.effectAllowed = "move"; ev.dataTransfer.setData("text/plain", dragId); } catch (e) {}
+    });
+
+    box.addEventListener("dragover", function (ev) {
+      if (dragId == null) return;
+      var over = ev.target.closest(".goal-card");
+      if (!over || over.getAttribute("data-id") === dragId) return;
+      ev.preventDefault();
+      var r = over.getBoundingClientRect();
+      var after = ev.clientY > r.top + r.height / 2;
+      clearHints();
+      over.classList.add(after ? "drop-after" : "drop-before");
+    });
+
+    box.addEventListener("drop", function (ev) {
+      if (dragId == null) return;
+      var over = ev.target.closest(".goal-card");
+      if (!over || over.getAttribute("data-id") === dragId) return;
+      ev.preventDefault();
+      var overId = over.getAttribute("data-id");
+      var r = over.getBoundingClientRect();
+      var after = ev.clientY > r.top + r.height / 2;
+      var from = goals.findIndex(function (x) { return x.id === dragId; });
+      if (from < 0) return;
+      var moved = goals.splice(from, 1)[0];
+      var to = goals.findIndex(function (x) { return x.id === overId; });
+      if (to < 0) { goals.push(moved); }
+      else { goals.splice(after ? to + 1 : to, 0, moved); }
+      dragId = null;
+      clearHints();
+      save(); render();
+    });
+
+    box.addEventListener("dragend", function () {
+      dragId = null;
+      clearHints();
+      box.querySelectorAll(".dragging").forEach(function (c) { c.classList.remove("dragging"); });
+      box.querySelectorAll(".goal-card[draggable='true']").forEach(function (c) { c.removeAttribute("draggable"); });
+    });
+  })();
 
   /* ---------- events: form ---------- */
   var unitChips = $("unit-chips");
@@ -906,7 +1298,10 @@
   fUnit.addEventListener("input", syncChips);
 
   function validate() {
-    var ok = fFocus.value.trim() && fUnit.value.trim() && parseFloat(fTarget.value) > 0;
+    var tgt = parseFloat(fTarget.value);
+    var hasNumeric = tgt > 0 && fUnit.value.trim();
+    var hasMs = formMs.some(function (m) { return (m.label || "").trim(); });
+    var ok = !!(fFocus.value.trim() && (hasNumeric || hasMs));
     $("b-add").disabled = !ok;
     return ok;
   }
@@ -916,30 +1311,56 @@
 
   function resetForm() {
     fFocus.value = ""; fUnit.value = ""; fTarget.value = "";
-    fStart.value = todayISO(); fEnd.value = plusDaysISO(30);
-    syncChips(); validate(); fFocus.focus();
+    fStart.value = todayISO(); fEnd.value = "";
+    formMs = []; renderFormMs();
+    syncChips(); validate();
   }
+
+  /* ----- create-form milestone rows ----- */
+  function renderFormMs() {
+    var box = $("ms-editor");
+    if (!box) return;
+    box.innerHTML = formMs.map(function (m, i) {
+      return '<div class="ms-row-edit" data-i="' + i + '">' +
+          '<input class="ms-label" type="text" placeholder="Milestone" value="' + esc(m.label || "") + '" data-f="label" />' +
+          '<input class="ms-num" type="number" min="0" step="1" placeholder="#" value="' + (m.target || "") + '" data-f="target" inputmode="numeric" />' +
+          '<input class="ms-date" type="date" value="' + (m.due || "") + '" data-f="due" />' +
+          '<button class="ms-del" type="button" data-f="del" aria-label="Remove">\u00d7</button>' +
+        '</div>';
+    }).join("");
+  }
+
+  function openGoalModal() {
+    resetForm();
+    $("goal-overlay").hidden = false;
+    setTimeout(function () { try { fFocus.focus(); } catch (e) {} }, 30);
+  }
+  function closeGoalModal() { $("goal-overlay").hidden = true; }
 
   $("b-add").addEventListener("click", function () {
     if (!validate()) return;
+    var tgt = parseFloat(fTarget.value); if (isNaN(tgt) || tgt < 0) tgt = 0;
     var g = {
       id: uid(),
       focus: fFocus.value.trim(),
       unit: fUnit.value.trim(),
-      target: Math.max(1, parseFloat(fTarget.value) || 1),
+      target: tgt,
       current: 0,
       hours: 0,
       unfocusUntil: null,
       start: fStart.value || todayISO(),
-      end: fEnd.value || plusDaysISO(30),
+      end: fEnd.value || "",
+      milestones: formMs.filter(function (m) { return (m.label || "").trim(); })
+        .map(function (m) { var t = parseFloat(m.target); if (isNaN(t) || t <= 0) t = numFromLabel(m.label); return { id: uid(), label: m.label.trim(), target: (t > 0 ? t : 0), due: m.due || "", done: false }; }),
       created: Date.now()
     };
-    // guard: end before start -> swap
-    if (dayNum(g.end) < dayNum(g.start)) { var t = g.start; g.start = g.end; g.end = t; }
+    // guard: due before start -> swap
+    if (g.start && g.end && dayNum(g.end) < dayNum(g.start)) { var t = g.start; g.start = g.end; g.end = t; }
     goals.push(g);
     save();
     resetForm();
     render();
+    closeGoalModal();
   });
 
   $("b-reset").addEventListener("click", resetForm);
@@ -953,13 +1374,13 @@
   function publicSummary() {
     return goals.filter(function (g) { return !isDormant(g); }).map(function (g) {
       var s = statusOf(g);
-      return { focus: g.focus, pct: Math.round(s.pct), hours: +g.hours || 0, paceCls: s.pace.cls, paceText: s.pace.text };
+      return { focus: g.focus, pct: Math.round(s.msPct * 10) / 10, hours: +g.hours || 0, paceCls: s.pace.cls, paceText: s.pace.text };
     });
   }
 
-  function renderProgress(items, opts) {
+  function renderProgress(items, opts, bodyEl, footEl) {
     opts = opts || {};
-    var body = $("progress-body"), foot = $("progress-foot");
+    var body = bodyEl || $("progress-body"), foot = footEl || $("progress-foot");
     if (!items || !items.length) {
       body.innerHTML = '<p class="progress-empty">' +
         (opts.message || "No focuses to show yet.") + '</p>';
@@ -979,44 +1400,74 @@
     foot.textContent = items.length + " focus" + (items.length === 1 ? "" : "es") + " in progress";
   }
 
-  function openProgress() {
-    $("progress-overlay").hidden = false;
-    if (owner) { renderProgress(publicSummary()); return; }   // owner: live data
+  /* fetch the curated public mirror into the given body/foot elements */
+  function fetchPublicProgress(body, foot) {
     var d = db();
-    if (!d) { renderProgress([], { message: "Progress is offline right now \u2014 can\u2019t reach the server." }); return; }
-    $("progress-body").innerHTML = '<p class="progress-empty">Loading\u2026</p>';
+    if (!d) { renderProgress([], { message: "Progress is offline right now \u2014 can\u2019t reach the server." }, body, foot); return; }
+    body.innerHTML = '<p class="progress-empty">Loading\u2026</p>';
     d.collection("public").doc("progress").get().then(function (snap) {
       var items = snap.exists ? (snap.data() || {}).goals : [];
       renderProgress(Array.isArray(items) ? items : [], {
         message: snap.exists ? "No focuses being tracked publicly yet." : "Nothing published yet \u2014 check back soon."
-      });
+      }, body, foot);
     }).catch(function (e) {
       var denied = e && e.code === "permission-denied";
       renderProgress([], {
         message: denied
           ? "Public progress isn\u2019t available yet \u2014 check back soon."
           : "Couldn\u2019t load progress right now. Please try again later."
-      });
+      }, body, foot);
     });
+  }
+
+  function openProgress() {
+    $("progress-overlay").hidden = false;
+    if (owner) { renderProgress(publicSummary()); return; }   // owner: live data
+    fetchPublicProgress($("progress-body"), $("progress-foot"));
   }
 
   function closeProgress() { $("progress-overlay").hidden = true; }
 
   /* ---------- init ---------- */
   fStart.value = todayISO();
-  fEnd.value = plusDaysISO(30);
+  fEnd.value = "";
+  renderFormMs();
   validate();
+
+  $("b-open-new").addEventListener("click", openGoalModal);
+  $("goal-overlay").addEventListener("click", function (ev) {
+    if (ev.target.closest('[data-act="close-goal"]')) closeGoalModal();
+  });
+  $("ms-addrow").addEventListener("click", function () {
+    formMs.push({ label: "", target: "", due: "" }); renderFormMs(); validate();
+    var box = $("ms-editor");
+    var last = box && box.querySelector(".ms-row-edit:last-child .ms-label");
+    if (last) last.focus();
+  });
+  $("ms-editor").addEventListener("input", function (ev) {
+    var row = ev.target.closest("[data-i]"); if (!row) return;
+    var i = +row.getAttribute("data-i"); var f = ev.target.getAttribute("data-f");
+    if (f && formMs[i]) { formMs[i][f] = ev.target.value; validate(); }
+  });
+  $("ms-editor").addEventListener("click", function (ev) {
+    var b = ev.target.closest('[data-f="del"]'); if (!b) return;
+    var row = b.closest("[data-i]"); var i = +row.getAttribute("data-i");
+    formMs.splice(i, 1); renderFormMs(); validate();
+  });
 
   $("eye-btn").addEventListener("click", openProgress);
   $("progress-overlay").addEventListener("click", function (ev) {
     if (ev.target.closest('[data-act="close-progress"]')) closeProgress();
   });
   document.addEventListener("keydown", function (ev) {
-    if (ev.key === "Escape" && !$("progress-overlay").hidden) closeProgress();
+    if (ev.key !== "Escape") return;
+    if (!$("progress-overlay").hidden) closeProgress();
+    else if (!$("goal-overlay").hidden) closeGoalModal();
   });
 
   function updateAcct(u) {
     var el = $("nav-acct"), lbl = $("nav-acct-label");
+    var dash = $("nav-dash"); if (dash) dash.style.display = u ? "" : "none";
     if (!el) return;
     if (u) { el.classList.add("in"); lbl.textContent = u.username || "Owner"; el.removeAttribute("href"); }
     else { el.classList.remove("in"); lbl.textContent = "Log in"; el.setAttribute("href", "index.html"); }

@@ -17,6 +17,14 @@ GitHub repo. No build step — plain HTML + inline React (Babel) + vanilla JS. F
   code. **Trust-this-device + Lock** added — see auth layer below.
 
 ## Files (live site = project root + Rihla/)
+- **Site IA (2026-07):** public = landing (index.html), Essays, Ruminations link, and Kaizen's
+  visitor Progress view. EVERYTHING else is owner-only, launched from `Dashboard.html`
+  (owner launcher: cards for Rihla, Suzuri, Kaizen, Teleprompter, Finance Monitor,
+  En/CRM, Essays + light Firestore glances). All private pages (Suzuri, Teleprompter,
+  Rihla, Finance Monitor, CRM Pipeline, Dashboard) carry the same `BOTAuth.ready`
+  redirect-to-index guard. Landing Tools section shows ONLY Ruminations + Kaizen;
+  Dashboard card appears only when logged in (see `TOOLS` / `DASHBOARD_TOOL` in app.jsx).
+  Kaizen: logged-out = page IS the public progress view (`body.visitor`); logged-in = full tool.
 - `index.html` + `app.jsx` — landing page / tool launcher.
 - `Suzuri.html` — essay composer. **Publish to site** (login-only) writes essays to
   Firestore `essays` collection (keyed by title-slug). Falls back to .txt download for

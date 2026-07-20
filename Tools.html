@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex" />
+<title>Tools — Blade of Takumi</title>
+<link rel="icon" type="image/png" href="assets/logo-line.png" />
+<style>
+  @font-face { font-family:'Luxia Display'; src:url('fonts/LuxiaDisplay.otf') format('opentype'); font-weight:400 700; font-style:normal; font-display:swap; }
+  .searchwrap{ position:relative; max-width:780px; margin:22px 0 28px; }
+  .searchwrap svg{ position:absolute; left:14px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--olive-400); pointer-events:none; }
+  .searchwrap input{ width:100%; background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); color:var(--olive-900); font-family:inherit; font-size:15px; padding:12px 14px 12px 40px; outline:none; transition:border-color 160ms var(--ease-standard), box-shadow 160ms var(--ease-standard); }
+  .searchwrap input::placeholder{ color:var(--olive-400); }
+  .searchwrap input:focus{ border-color:var(--gold-500); box-shadow:0 0 0 3px rgba(235,174,43,0.16); }
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(258px, 1fr)); gap:18px; }
+  .card{ position:relative; display:flex; flex-direction:column; gap:14px; text-align:left; cursor:pointer; border:1px solid var(--border-subtle); background:var(--surface-card); border-radius:var(--radius-lg); padding:20px 20px 22px; box-shadow:var(--shadow-xs); transition:box-shadow 200ms var(--ease-out), transform 200ms var(--ease-out); }
+  .card:hover{ box-shadow:var(--shadow-md); transform:translateY(-2px); }
+  .card .icon{ display:inline-flex; align-items:center; justify-content:center; width:46px; height:46px; border-radius:var(--radius-md); color:var(--olive-900); }
+  .card .icon svg{ width:22px; height:22px; }
+  .card .name{ font-size:18px; font-weight:600; color:var(--olive-900); }
+  .card .desc{ font-size:14px; color:var(--text-muted); margin-top:4px; line-height:1.45; }
+  .card .live{ margin-top:2px; font-size:12px; font-weight:500; color:var(--gold-700); display:flex; align-items:center; gap:7px; min-height:1em; }
+  .card .live:empty{ display:none; }
+  .card .live::before{ content:""; width:5px; height:5px; border-radius:50%; background:var(--gold-500); flex:none; }
+  .card-grip{ position:absolute; top:16px; right:16px; display:flex; color:var(--olive-400); cursor:grab; opacity:0; transition:opacity 180ms var(--ease-standard), color 180ms var(--ease-standard); }
+  .card:hover .card-grip{ opacity:1; }
+  .card-grip:hover{ color:var(--gold-600); }
+  .card-grip:active{ cursor:grabbing; }
+  .card-grip svg{ width:16px; height:16px; }
+  .card.dragging{ opacity:0.4; }
+  .card.drop-before{ box-shadow:inset 3px 0 0 -1px var(--gold-500), var(--shadow-md); }
+  .card.drop-after{ box-shadow:inset -3px 0 0 -1px var(--gold-500), var(--shadow-md); }
+  .no-results{ color:var(--text-muted); font-size:14px; padding:2.4rem 0; }
+  #auth-gate{ position:fixed; inset:0; z-index:9999; background:#fff; display:flex; align-items:center; justify-content:center; }
+  #auth-gate div{ color:#928b6f; letter-spacing:0.16em; font-size:12px; text-transform:uppercase; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; }
+</style>
+</head>
+<body>
+
+<div class="bot-page">
+  <h1 class="bot-page-h">Tools</h1>
+  <div class="searchwrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+    <input type="text" id="tool-search-input" placeholder="Search tools" aria-label="Search tools" autocomplete="off" />
+  </div>
+
+  <div class="grid" id="grid">
+
+    <a class="card" href="Rihla.html">
+      <span class="icon" style="background:#f2c24e"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3 3 6v15l6-3 6 3 6-3V3l-6 3-6-3z"></path><path d="M9 3v15M15 6v15"></path></svg></span>
+      <div><div class="name">Rihla</div><div class="desc">Plan outreach routes across the map.</div></div>
+      <span class="live" id="live-rihla"></span>
+    </a>
+
+    <a class="card" href="Suzuri.html">
+      <span class="icon" style="background:var(--gold-100)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.5 7.5"></path><circle cx="11" cy="11" r="2"></circle></svg></span>
+      <div><div class="name">Suzuri</div><div class="desc">Write and publish essays to the site.</div></div>
+      <span class="live" id="live-suzuri"></span>
+    </a>
+
+    <a class="card" href="Kaizen.html">
+      <span class="icon" style="background:var(--success-100)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1"></circle></svg></span>
+      <div><div class="name">Kaizen</div><div class="desc">Goals in focus — progress, pace &amp; hours.</div></div>
+      <span class="live" id="live-kaizen"></span>
+    </a>
+
+    <a class="card" href="Teleprompter.html">
+      <span class="icon" style="background:var(--info-100)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="13" rx="1.5"></rect><path d="M8 21h8M12 17v4"></path><path d="M7 9h10M7 12h6"></path></svg></span>
+      <div><div class="name">Teleprompter</div><div class="desc">Scrolling script reader for recordings.</div></div>
+      <span class="live"></span>
+    </a>
+
+    <a class="card" href="Finance Monitor.html">
+      <span class="icon" style="background:var(--gold-200)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><rect x="7" y="12" width="3" height="6"></rect><rect x="12" y="8" width="3" height="10"></rect><rect x="17" y="5" width="3" height="13"></rect></svg></span>
+      <div><div class="name">Finance Monitor</div><div class="desc">Spreadsheet to profit-and-loss dashboard.</div></div>
+      <span class="live"></span>
+    </a>
+
+    <a class="card" href="CRM Pipeline.dc.html">
+      <span class="icon" style="background:var(--warning-100)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"></circle><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"></path><path d="M16 6a3 3 0 0 1 0 6M18 20c0-2.5-1-4.7-2.6-6"></path></svg></span>
+      <div><div class="name">En</div><div class="desc">Contact pipeline &amp; outreach CRM.</div></div>
+      <span class="live" id="live-crm"></span>
+    </a>
+
+    <a class="card" href="Essays.html">
+      <span class="icon" style="background:var(--cream-200)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14z"></path><path d="M8 7h8M8 11h6"></path></svg></span>
+      <div><div class="name">Essays</div><div class="desc">Edit, publish and gate your essays.</div></div>
+      <span class="live" id="live-essays"></span>
+    </a>
+
+  </div>
+</div>
+
+<div id="auth-gate"><div>Checking access…</div></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="botakumi-auth.js"></script>
+<script>window.BOTShell = { active: "tools", title: "Tools" };</script>
+<script src="botakumi-shell.js"></script>
+<script>
+  // Owner-only launcher: only a logged-in account may view this page.
+  (function () {
+    function guard() {
+      if (!window.BOTAuth) { window.location.replace("index.html"); return; }
+      window.BOTAuth.ready.then(function () {
+        var u = window.BOTAuth.current();
+        if (!u) { window.location.replace("index.html"); return; }
+        var g = document.getElementById("auth-gate");
+        if (g) g.remove();
+        glances(u);
+      });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", guard);
+    else guard();
+
+    function glances(u) {
+      var d;
+      try { d = firebase.firestore(); } catch (e) { return; }
+      var put = function (id, text) { var el = document.getElementById(id); if (el && text) el.textContent = text; };
+
+      d.collection("kaizen").doc(u.uid).get().then(function (snap) {
+        if (!snap.exists) return;
+        var goals = (snap.data() || {}).goals || [];
+        var hrs = 0; goals.forEach(function (g) { hrs += Number(g.hours || 0); });
+        put("live-kaizen", goals.length + (goals.length === 1 ? " focus" : " focuses") +
+          (hrs ? " \u00b7 " + (Math.round(hrs * 10) / 10) + " hrs" : ""));
+      }).catch(function () {});
+
+      d.collection("essays").get().then(function (qs) {
+        var n = qs.size, priv = 0;
+        qs.forEach(function (doc) { if ((doc.data() || {}).private) priv++; });
+        put("live-essays", n + " published" + (priv ? " \u00b7 " + priv + " private" : ""));
+      }).catch(function () {});
+
+      d.collection("rihla").doc(u.uid).get().then(function (snap) {
+        if (!snap.exists) return;
+        var data = snap.data() || {};
+        var its = (data.library && Array.isArray(data.library.items)) ? data.library.items : [];
+        if (its.length) put("live-rihla", its.length + (its.length === 1 ? " itinerary" : " itineraries"));
+      }).catch(function () {});
+
+      d.collection("crm").doc(u.uid).get().then(function (snap) {
+        if (!snap.exists) return;
+        var data = snap.data() || {};
+        var rows = data.contacts || data.rows || data.entries || [];
+        var n = Array.isArray(rows) ? rows.length : 0;
+        if (n) put("live-crm", n + (n === 1 ? " contact" : " contacts"));
+      }).catch(function () {});
+    }
+  })();
+
+  // Tool search
+  (function () {
+    var input = document.getElementById("tool-search-input");
+    var grid = document.getElementById("grid");
+    if (!input || !grid) return;
+    var empty = document.createElement("p");
+    empty.className = "no-results";
+    empty.textContent = "No tools match.";
+    empty.hidden = true;
+    grid.parentNode.insertBefore(empty, grid.nextSibling);
+    input.addEventListener("input", function () {
+      var q = input.value.trim().toLowerCase();
+      var shown = 0;
+      grid.querySelectorAll(".card").forEach(function (card) {
+        var hit = !q || card.textContent.toLowerCase().indexOf(q) !== -1;
+        card.style.display = hit ? "" : "none";
+        if (hit) shown++;
+      });
+      grid.style.display = shown ? "" : "none";
+      empty.hidden = shown > 0;
+    });
+  })();
+
+  // Drag to reorder tool cards (persisted per-device)
+  (function () {
+    var grid = document.getElementById("grid");
+    if (!grid) return;
+    var KEY = "dash-tools-order-v1";
+    var GRIP = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg>';
+
+    Array.prototype.forEach.call(grid.querySelectorAll(".card"), function (c) {
+      c.dataset.key = c.getAttribute("href");
+      c.setAttribute("draggable", "false");
+      var grip = document.createElement("span");
+      grip.className = "card-grip"; grip.title = "Drag to reorder"; grip.innerHTML = GRIP;
+      c.appendChild(grip);
+    });
+
+    (function () {
+      var saved;
+      try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
+      if (!Array.isArray(saved)) return;
+      saved.forEach(function (k) {
+        var el = grid.querySelector('.card[data-key="' + (window.CSS && CSS.escape ? CSS.escape(k) : k) + '"]');
+        if (el) grid.appendChild(el);
+      });
+    })();
+
+    function saveOrder() {
+      var order = Array.prototype.map.call(grid.querySelectorAll(".card"), function (c) { return c.dataset.key; });
+      try { localStorage.setItem(KEY, JSON.stringify(order)); } catch (e) {}
+    }
+    function clearHints() { grid.querySelectorAll(".drop-before, .drop-after").forEach(function (c) { c.classList.remove("drop-before", "drop-after"); }); }
+    function isAfter(over, ev) {
+      var r = over.getBoundingClientRect();
+      if (ev.clientY < r.top) return false;
+      if (ev.clientY > r.bottom) return true;
+      return ev.clientX > r.left + r.width / 2;
+    }
+    var dragEl = null, dragged = false;
+    grid.addEventListener("mousedown", function (ev) {
+      var grip = ev.target.closest(".card-grip"); if (!grip) return;
+      var card = grip.closest(".card"); if (card) card.setAttribute("draggable", "true");
+    });
+    grid.addEventListener("dragstart", function (ev) {
+      var card = ev.target.closest('.card[draggable="true"]');
+      if (!card) { ev.preventDefault(); return; }
+      dragEl = card; dragged = true; card.classList.add("dragging");
+      try { ev.dataTransfer.effectAllowed = "move"; ev.dataTransfer.setData("text/plain", card.dataset.key); } catch (e) {}
+    });
+    grid.addEventListener("dragover", function (ev) {
+      if (!dragEl) return;
+      var over = ev.target.closest(".card"); if (!over || over === dragEl) return;
+      ev.preventDefault(); clearHints();
+      over.classList.add(isAfter(over, ev) ? "drop-after" : "drop-before");
+    });
+    grid.addEventListener("drop", function (ev) {
+      if (!dragEl) return;
+      var over = ev.target.closest(".card"); if (!over || over === dragEl) { clearHints(); return; }
+      ev.preventDefault();
+      if (isAfter(over, ev)) over.after(dragEl); else over.before(dragEl);
+      clearHints(); saveOrder();
+    });
+    grid.addEventListener("dragend", function () {
+      if (dragEl) dragEl.classList.remove("dragging");
+      dragEl = null; clearHints();
+      grid.querySelectorAll('.card[draggable="true"]').forEach(function (c) { c.setAttribute("draggable", "false"); });
+      setTimeout(function () { dragged = false; }, 0);
+    });
+    grid.addEventListener("click", function (ev) { if (dragged) { ev.preventDefault(); ev.stopPropagation(); } }, true);
+  })();
+</script>
+
+</body>
+</html>

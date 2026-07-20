@@ -6,34 +6,36 @@
 <title>Rihla — Outreach Route Planner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 <style>
+  @font-face { font-family:'Luxia Display'; src:url('fonts/LuxiaDisplay.otf') format('opentype'); font-weight:400 700; font-style:normal; font-display:swap; }
   :root {
-    /* Blade of Takumi design language — warm near-black, gold accent, editorial serif */
-    --bg: #0a0a0a;
-    --bg-soft: #0e0d0b;
-    --surface: #121110;
-    --surface-2: #161412;
-    --ink: #e9e4d8;
-    --ink-2: #9a948a;
-    --ink-3: #6b665d;
-    --line: #211f1b;
-    --line-2: #1a1815;
-    --accent: #b4965a;
-    --accent-ink: #c5a76b;
-    --accent-soft: rgba(180,150,90,.14);
-    --warn: #cf9a4e;
-    --warn-soft: rgba(180,150,90,.12);
-    --danger: #c98b6a;
-    --danger-soft: rgba(201,139,106,.12);
-    --ok: #9aa06a;
-    --radius: 0px;
-    --radius-sm: 0px;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,.5);
-    --shadow-md: 0 10px 30px rgba(0,0,0,.55);
-    --shadow-lg: 0 30px 80px rgba(0,0,0,.7);
-    --font: "Spectral", Georgia, serif;
-    --font-head: "Instrument Serif", Georgia, serif;
+    /* Suffah light admin language — cream/olive, gold accent, system sans */
+    --bg: #f6f5ef;
+    --bg-soft: #fbfaf3;
+    --surface: #ffffff;
+    --surface-2: #f6f5ef;
+    --ink: #302d22;
+    --ink-2: #736c52;
+    --ink-3: #928b6f;
+    --line: #e5e1cb;
+    --line-2: #efecdc;
+    --accent: #c9971a;
+    --accent-ink: #b4860f;
+    --accent-soft: #fcf2d6;
+    --warn: #c08a3e;
+    --warn-soft: rgba(192,138,62,.12);
+    --danger: #a4503f;
+    --danger-soft: rgba(164,80,63,.12);
+    --ok: #6f7a4d;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 2px rgba(80,75,56,.06);
+    --shadow-md: 0 8px 24px rgba(80,75,56,.10);
+    --shadow-lg: 0 18px 48px rgba(80,75,56,.16);
+    --font: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --font-head: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --brand-font: 'Luxia Display', Georgia, serif;
     --mono: "Space Mono", ui-monospace, monospace;
   }
 
@@ -53,8 +55,8 @@
   .nav {
     position: sticky; top: 0; z-index: 40;
     display: flex; align-items: center; justify-content: space-between;
-    height: 60px; padding: 0 22px;
-    background: rgba(14,20,22,.8);
+    height: 62px; padding: 0 22px;
+    background: rgba(255,255,255,.85);
     backdrop-filter: saturate(180%) blur(12px);
     border-bottom: 1px solid var(--line);
   }
@@ -83,9 +85,9 @@
     line-height: 1; white-space: nowrap;
   }
   .btn:active { transform: translateY(.5px); }
-  .btn-primary { background: var(--accent); color: #0b1112; font-weight: 600; }
-  .btn-primary:hover { background: var(--accent-ink); }
-  .btn-primary:disabled { background: #2a3338; color: var(--ink-3); cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #302d22; font-weight: 600; }
+  .btn-primary:hover { background: var(--accent-ink); color: #fff; }
+  .btn-primary:disabled { background: var(--line); color: var(--ink-3); cursor: not-allowed; }
   .btn-ghost { background: transparent; color: var(--ink-2); border-color: var(--line); }
   .btn-ghost:hover { background: var(--surface-2); color: var(--ink); border-color: #d6dadd; }
   .btn-quiet { background: transparent; color: var(--ink-3); padding: 6px 8px; }
@@ -119,7 +121,7 @@
     background: var(--surface); border: 1px solid var(--line);
     border-radius: var(--radius-sm); padding: 11px 13px; width: 100%;
     transition: border-color .14s ease, box-shadow .14s ease;
-    color-scheme: dark;
+    color-scheme: light;
   }
   .input::placeholder { color: var(--ink-3); }
   .input:focus, .select:focus {
@@ -163,8 +165,8 @@
   .mode-tab { appearance: none; cursor: pointer; font-family: var(--font); font-size: 14px; font-weight: 600; color: var(--ink-2); background: transparent; border: none; border-radius: 999px; padding: 9px 18px; display: inline-flex; align-items: center; gap: 8px; transition: background .14s, color .14s; white-space: nowrap; }
   .mode-tab svg { color: var(--ink-3); transition: color .14s; }
   .mode-tab:hover { color: var(--ink); }
-  .mode-tab.on { background: var(--accent); color: #0b1112; }
-  .mode-tab.on svg { color: #0b1112; }
+  .mode-tab.on { background: var(--accent); color: #302d22; }
+  .mode-tab.on svg { color: #302d22; }
   .mode-blurb { font-size: 14px; color: var(--ink-2); margin: 0 0 18px; max-width: 64ch; line-height: 1.5; }
 
   .mozi-dir { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
@@ -179,7 +181,7 @@
   .compass-needle-s { border-top: 58px solid var(--ink-3); top: 0; }
   .compass-pt { position: absolute; appearance: none; cursor: pointer; font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--ink-2); background: var(--surface); border: 1px solid var(--line); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; transition: all .14s; z-index: 4; }
   .compass-pt:hover { color: var(--ink); border-color: var(--ink-3); }
-  .compass-pt.on { background: var(--accent); color: #0b1112; border-color: var(--accent); }
+  .compass-pt.on { background: var(--accent); color: #302d22; border-color: var(--accent); }
   .compass-N  { top: -2px;  left: 50%; transform: translateX(-50%); }
   .compass-S  { bottom: -2px; left: 50%; transform: translateX(-50%); }
   .compass-E  { right: -2px; top: 50%; transform: translateY(-50%); }
@@ -264,9 +266,9 @@
   .auth-backdrop {
     position: fixed; inset: 0; z-index: 100;
     background:
-      radial-gradient(900px 600px at 80% -10%, rgba(45,212,191,.12), transparent 60%),
-      radial-gradient(700px 500px at -10% 110%, rgba(45,212,191,.06), transparent 55%),
-      #0e1416;
+      radial-gradient(900px 600px at 80% -10%, rgba(235,174,43,.12), transparent 60%),
+      radial-gradient(700px 500px at -10% 110%, rgba(235,174,43,.07), transparent 55%),
+      #f6f5ef;
     display: grid; overflow-y: auto; padding: 22px;
   }
   .auth-card {
@@ -356,7 +358,7 @@
   .org-filters { display: flex; gap: 7px; flex-wrap: wrap; }
   .org-filter { appearance: none; cursor: pointer; font-family: var(--font); font-size: 12.5px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); white-space: nowrap; }
   .org-filter:hover { color: var(--ink); border-color: var(--ink-3); }
-  .org-filter.active { background: var(--accent); color: #0b1112; border-color: var(--accent); font-weight: 600; }
+  .org-filter.active { background: var(--accent); color: #302d22; border-color: var(--accent); font-weight: 600; }
   .org-empty { text-align: center; color: var(--ink-3); padding: 40px; font-size: 14px; }
   .org-daygroup { margin-bottom: 22px; }
   .org-daylabel { display: flex; align-items: center; gap: 9px; font-size: 12px; font-family: var(--mono); text-transform: uppercase; letter-spacing: .08em; color: var(--ink-3); margin: 0 2px 11px; }
@@ -401,7 +403,7 @@
   .acct { position: relative; }
   .acct-btn { appearance: none; cursor: pointer; font-family: var(--font); display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px 5px 5px; color: var(--ink); }
   .acct-btn:hover { border-color: var(--ink-3); }
-  .acct-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #0b1112; font-weight: 700; font-size: 12px; display: grid; place-items: center; flex: none; }
+  .acct-avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #302d22; font-weight: 700; font-size: 12px; display: grid; place-items: center; flex: none; }
   .acct-name { font-size: 13.5px; font-weight: 600; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .acct-chev { color: var(--ink-3); display: grid; place-items: center; transition: transform .18s; }
   .acct-chev.up { transform: rotate(180deg); }
@@ -442,7 +444,7 @@
   /* ---------- Reroute card ---------- */
   .reroute-card { background: linear-gradient(180deg, color-mix(in oklab, var(--accent) 9%, var(--surface)), var(--surface)); border: 1px solid color-mix(in oklab, var(--accent) 32%, var(--line)); border-radius: var(--radius); padding: 20px 22px; margin-bottom: 26px; }
   .reroute-head { display: flex; gap: 14px; align-items: flex-start; }
-  .reroute-icon { width: 42px; height: 42px; flex: none; border-radius: 11px; background: var(--accent); color: #0b1112; display: grid; place-items: center; }
+  .reroute-icon { width: 42px; height: 42px; flex: none; border-radius: 11px; background: var(--accent); color: #302d22; display: grid; place-items: center; }
   .reroute-title { font-size: 17px; font-weight: 650; letter-spacing: -.01em; }
   .reroute-sub { font-size: 13.5px; color: var(--ink-2); margin-top: 3px; line-height: 1.5; max-width: 62ch; }
   .reroute-controls { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
@@ -455,7 +457,7 @@
   .switch { appearance: none; cursor: pointer; flex: none; width: 42px; height: 24px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); position: relative; transition: background .16s, border-color .16s; margin-top: 1px; }
   .switch .switch-knob { position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--ink-3); transition: transform .16s, background .16s; }
   .switch.on { background: var(--accent); border-color: var(--accent); }
-  .switch.on .switch-knob { transform: translateX(18px); background: #0b1112; }
+  .switch.on .switch-knob { transform: translateX(18px); background: #302d22; }
   .excl-text { flex: 1; min-width: 0; }
   .excl-title { font-size: 14px; font-weight: 600; color: var(--ink); }
   .excl-link { appearance: none; background: none; border: none; color: var(--accent); font-weight: 600; cursor: pointer; font-family: var(--font); font-size: 12px; padding: 0; }
@@ -610,62 +612,58 @@
     .home-choice { grid-template-columns: 1fr; }
   }
   /* ============================================================
-     BLADE OF TAKUMI OVERRIDE LAYER
-     Re-skin only — same components, same class names, BoT visual language.
+     SUFFAH LIGHT ADAPTATION LAYER
+     Re-skin only — same components, same class names, light admin look.
      ============================================================ */
 
   ::selection { background: var(--accent-soft); color: var(--ink); }
-  body { text-rendering: optimizeLegibility; }
 
-  /* nav / chrome surfaces use the warm near-black */
-  .nav { background: rgba(10,10,10,.8); }
-  .download-bar { background: rgba(14,13,11,.85) !important; }
+  /* chrome surfaces use translucent white */
+  .nav { background: rgba(255,255,255,.85); }
+  .download-bar { background: rgba(255,255,255,.9) !important; }
 
-  /* the wordmark reads like the BoT logo: gold display serif, balanced against a larger squared mark */
-  .brand { gap: 13px; }
-  .brand-mark { width: 42px; height: 42px; border-radius: 0 !important; background: var(--bg) !important; border: 1px solid var(--accent); }
-  .brand-mark svg { stroke: var(--accent); }
+  /* wordmark reads like the BoT logo: gold Luxia against a gold-tile mark */
+  .brand { gap: 12px; }
+  .brand-mark { width: 34px; height: 34px; border-radius: 8px !important; background: var(--accent) !important; border: none; }
+  .brand-mark svg { stroke: #302d22; }
   .brand-name {
-    font-family: var(--font-head); font-weight: 400;
-    color: var(--accent); font-size: 22px; letter-spacing: .02em; line-height: 1.05;
+    font-family: var(--brand-font); font-weight: 700;
+    color: var(--ink); font-size: 21px; letter-spacing: 0; line-height: 1.05;
   }
-  .brand-sub { letter-spacing: .26em; }
+  .brand-sub { letter-spacing: .2em; }
 
-  /* display serif for every heading / number, normal weight, easy tracking */
+  /* headings: bold system sans, tight tracking (matches Tools tab) */
   .page-title, .landing-title, .home-title, .auth-title, .choice-name,
   .day-title, .stop-name, .sc-name, .lib-card-name, .reroute-title,
   .dropzone-title, .lib-empty-title, .excl-title, .results-title,
   .stat-num, .org-stat-num, .home-stat-num {
-    font-family: var(--font-head); font-weight: 400; letter-spacing: 0;
+    font-family: var(--font-head); font-weight: 700; letter-spacing: -.02em;
   }
-  .landing-title, .home-title { font-size: 44px; line-height: 1.04; }
-  .page-title { font-size: 34px; }
-  .auth-title { font-size: 28px; }
-  .choice-name { font-size: 26px; }
+  .landing-title, .home-title { font-size: 42px; line-height: 1.05; }
+  .page-title { font-size: 30px; }
+  .auth-title { font-size: 24px; }
+  .choice-name { font-size: 22px; }
 
-  /* mono micro-labels echo the landing's wide-tracked eyebrows */
+  /* mono micro-labels */
   .stat-label, .org-stat-label, .home-section-label {
-    font-family: var(--mono); text-transform: uppercase; letter-spacing: .22em;
+    font-family: var(--mono); text-transform: uppercase; letter-spacing: .12em;
   }
 
-  /* squared geometry — the landing has no rounded corners.
-     Functional toggles (mode switch, on/off switch) stay pill-shaped. */
-  .card, .btn, .input, .field input, .field textarea, .field select,
-  .dropzone, .org-stat, .school-card, .lib-card, .lib-empty, .reroute-card,
-  .day-card, .auth-card, .choice-card, .home-stat, .acct-menu, .banner,
-  .compass-pt, .visit-btn, .org-filter, .acct-btn, .acct-avatar,
-  .dropzone-icon, .lib-empty-icon, .lib-card-icon, .reroute-icon, .day-badge {
-    border-radius: 0 !important;
-  }
+  /* gold avatar initial */
+  .acct-avatar { font-weight: 700; font-size: 13px; }
 
-  /* gold avatar with a serif initial, like the landing's account chip */
-  .acct-avatar { font-family: var(--font-head); font-weight: 400; font-size: 15px; }
-
-  /* gold focus rings + accent details */
-  .input:focus, .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
-  .compass-needle-n { border-bottom-color: var(--accent); }
+  /* ---------- shell integration: hide duplicate chrome, fit inside bot-scroll ---------- */
+  .nav .brand, .nav .site-home { display: none !important; }
+  .nav { justify-content: flex-start; gap: 8px; background: transparent; border-bottom: 1px solid var(--line); }
+  .nav .nav-tabs { margin-right: auto; }
+  .bot-scroll #root { min-height: 0; }
+  .footer { display: none; }
 </style>
 <body>
+  <!-- Owner-only access gate: covers the page until a logged-in account is confirmed. -->
+  <div id="auth-gate" style="position:fixed;inset:0;z-index:9999;background:#f6f5ef;display:flex;align-items:center;justify-content:center;">
+    <div style="font-family:'Space Mono',monospace;color:#928b6f;font-size:13px;letter-spacing:.02em;">Checking access&hellip;</div>
+  </div>
   <div id="root"></div>
 
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
@@ -678,7 +676,27 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script src="botakumi-auth.js"></script>
+  <script>
+    // Owner-only tool: only a logged-in account may view this page.
+    (function () {
+      function guard() {
+        if (!window.BOTAuth) { window.location.replace("index.html"); return; }
+        window.BOTAuth.ready.then(function () {
+          if (window.BOTAuth.current()) {
+            var g = document.getElementById("auth-gate");
+            if (g) g.remove();
+          } else {
+            window.location.replace("index.html");
+          }
+        });
+      }
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", guard);
+      else guard();
+    })();
+  </script>
   <script src="rihla-cloud.js"></script>
+  <script>window.BOTShell = { active: "rihla" };</script>
+  <script src="botakumi-shell.js"></script>
 
   <script type="text/babel" src="Rihla/icons.jsx"></script>
   <script type="text/babel" src="Rihla/api.jsx"></script>

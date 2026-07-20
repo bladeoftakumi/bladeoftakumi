@@ -11,11 +11,13 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="botakumi-auth.js"></script>
+<script>window.BOTShell = { active: "crm" };</script>
+<script src="botakumi-shell.js"></script>
 </head>
 <body>
 
 <!-- Owner-only access gate: covers the page until a logged-in account is confirmed. -->
-<div id="auth-gate" style="position:fixed;inset:0;z-index:9999;background:#f6f5f2;display:flex;align-items:center;justify-content:center;font-family:'Hanken Grotesk',system-ui,sans-serif">
+<div id="auth-gate" style="position:fixed;inset:0;z-index:9999;background:#f6f5ef;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif">
   <div style="color:#8a857c;font-size:13px;letter-spacing:.02em">Checking access&hellip;</div>
 </div>
 <script>
@@ -43,9 +45,9 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%}
-    body{font-family:'Hanken Grotesk',system-ui,sans-serif;background:#f6f5f2;color:#1c1a17;-webkit-font-smoothing:antialiased}
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f6f5ef;color:#302d22;-webkit-font-smoothing:antialiased}
     ::-webkit-scrollbar{height:10px;width:10px}
-    ::-webkit-scrollbar-thumb{background:#d8d5cf;border-radius:8px;border:2px solid #f6f5f2}
+    ::-webkit-scrollbar-thumb{background:#d8d5cf;border-radius:8px;border:2px solid #f6f5ef}
     ::-webkit-scrollbar-thumb:hover{background:#c4c0b8}
     @keyframes fade{from{opacity:0}to{opacity:1}}
     @keyframes rise{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
@@ -53,27 +55,20 @@
     textarea{font-family:inherit}
     .fld{font-family:inherit;font-size:14px;padding:10px 12px;border:1.5px solid #e0ddd6;border-radius:9px;background:#faf9f6;outline:none;width:100%;color:#1c1a17}
     .fld:focus{border-color:#1c1a17;background:#fff}
+    #dc-root{height:100%}
+    .bot-scroll #dc-root{height:100%}
   </style>
 </helmet>
-<div style="display:flex;flex-direction:column;height:100vh;overflow:hidden">
+<div style="display:flex;flex-direction:column;height:100%;overflow:hidden">
 
-  <header style="display:flex;align-items:center;justify-content:space-between;padding:18px 28px;background:#fffefb;border-bottom:1px solid #e8e5df;flex-shrink:0">
-    <div style="display:flex;align-items:center;gap:12px">
-      <div style="width:30px;height:30px;border-radius:8px;background:#1c1a17;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px">縁</div>
-      <div>
-        <div style="font-size:17px;font-weight:700;letter-spacing:-.01em">En</div>
-        <div style="font-size:12px;color:#8a857c;font-weight:500">{{ totalContacts }} contacts &middot; {{ totalStudents }} students across pipeline</div>
-      </div>
+  <header style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:#fffefb;border-bottom:1px solid #e8e5df;flex-shrink:0">
+    <div>
+      <div style="font-size:16px;font-weight:700;letter-spacing:-.01em">En</div>
+      <div style="font-size:12px;color:#8a857c;font-weight:500">{{ totalContacts }} contacts &middot; {{ totalStudents }} students across pipeline</div>
     </div>
     <div style="display:flex;align-items:center;gap:9px">
-      <a href="index.html" title="Back to Blade of Takumi" style="display:flex;align-items:center;gap:7px;background:#f0eee9;color:#33302a;border-radius:9px;padding:10px 13px;font-family:inherit;font-size:13.5px;font-weight:600;text-decoration:none">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"></path><path d="M6 9.5V20h12V9.5"></path></svg>
-        Home
-      </a>
-      <div id="crm-acct" style="position:relative"></div>
-      <span style="width:1px;height:22px;background:#e3e0d9"></span>
       <button onClick="{{ openStages }}" style="display:flex;align-items:center;gap:7px;background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 14px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#e6e3dc">Edit stages</button>
-      <button onClick="{{ openNew }}" style="display:flex;align-items:center;gap:7px;background:#1c1a17;color:#fff;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#33302a">
+      <button onClick="{{ openNew }}" style="display:flex;align-items:center;gap:7px;background:#ebae2b;color:#302d22;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#d2971a">
         <span style="font-size:16px;line-height:1;margin-top:-1px">+</span> New contact
       </button>
     </div>
@@ -145,6 +140,26 @@
           <div style="width:42%;flex-shrink:0;padding:20px 22px;border-right:1px solid #eceae4;display:flex;flex-direction:column;gap:18px">
             <div>
               <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94;margin-bottom:9px">Contact info</div>
+              <sc-if value="{{ dirHasData }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-bottom:12px">
+                  <input value="{{ dirQ }}" onInput="{{ onDirQ }}" placeholder="Import a mosque from Rihla Directory&hellip;" class="fld" style="font-size:13px;padding:8px 11px" />
+                  <sc-if value="{{ dirShowDetail }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:7px;border:1.5px solid #eceae4;border-radius:9px;overflow:hidden;max-height:192px;overflow-y:auto;background:#faf9f6">
+                      <sc-for list="{{ dirMatchesDetail }}" as="m" hint-placeholder-count="0">
+                        <button onClick="{{ m.onPick }}" style="display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #efece6;padding:8px 11px;cursor:pointer;font-family:inherit" style-hover="background:#f0eee9">
+                          <div style="font-size:12.5px;font-weight:600;color:#1c1a17">{{ m.name }}</div>
+                          <sc-if value="{{ m.sub }}" hint-placeholder-val="{{ false }}">
+                            <div style="font-size:11px;color:#8a857c;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.sub }}</div>
+                          </sc-if>
+                        </button>
+                      </sc-for>
+                      <sc-if value="{{ dirNoMatchDetail }}" hint-placeholder-val="{{ false }}">
+                        <div style="padding:10px 11px;font-size:12px;color:#a8a39a;font-style:italic">No matches.</div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
               <div style="display:flex;flex-direction:column;gap:12px">
                 <div>
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
@@ -232,7 +247,7 @@
               <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94;margin-bottom:9px">Notes &amp; activity</div>
               <div style="display:flex;gap:7px;margin-bottom:12px">
                 <input value="{{ noteDraft }}" onInput="{{ onNoteInput }}" onKeyDown="{{ onNoteKey }}" placeholder="Add a note…" class="fld" style="font-size:13px;padding:9px 11px" />
-                <button onClick="{{ addNote }}" style="background:#1c1a17;color:#fff;border:none;border-radius:9px;padding:0 15px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0" style-hover="background:#33302a">Add</button>
+                <button onClick="{{ addNote }}" style="background:#ebae2b;color:#302d22;border:none;border-radius:9px;padding:0 15px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0" style-hover="background:#d2971a">Add</button>
               </div>
               <div style="display:flex;flex-direction:column;gap:10px;overflow-y:auto">
                 <sc-for list="{{ notes }}" as="n" hint-placeholder-count="2">
@@ -262,7 +277,7 @@
           <button onClick="{{ deleteDetail }}" style="background:none;border:none;color:#bd8a82;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer" style-hover="color:#c0392b">Delete contact</button>
           <div style="display:flex;gap:10px">
             <button onClick="{{ cancelDetail }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#e6e3dc">Cancel</button>
-            <button onClick="{{ saveDetail }}" style="background:#1c1a17;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#33302a">Save changes</button>
+            <button onClick="{{ saveDetail }}" style="background:#ebae2b;color:#302d22;border:none;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#d2971a">Save changes</button>
           </div>
         </div>
       </div>
@@ -274,6 +289,30 @@
     <div onClick="{{ closeNew }}" style="position:fixed;inset:0;background:rgba(28,26,23,.32);display:flex;align-items:center;justify-content:center;z-index:50;animation:fade .14s ease both;backdrop-filter:blur(2px)">
       <div onClick="{{ stop }}" style="background:#fffefb;width:430px;max-width:92vw;border-radius:18px;padding:26px;box-shadow:0 24px 60px rgba(28,26,23,.22);animation:rise .2s ease both">
         <div style="font-size:18px;font-weight:700;letter-spacing:-.01em;margin-bottom:18px">New contact</div>
+        <sc-if value="{{ dirHasData }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #eceae4">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-size:12px;font-weight:600;color:#6e6a62">Search Rihla Directory</span>
+              <span style="font-size:11px;color:#a8a39a;font-weight:500">{{ dirCountLabel }}</span>
+            </div>
+            <input value="{{ dirQ }}" onInput="{{ onDirQ }}" placeholder="Find a mosque already in your directory&hellip;" class="fld" />
+            <sc-if value="{{ dirShowNew }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:7px;border:1.5px solid #eceae4;border-radius:10px;overflow:hidden;max-height:212px;overflow-y:auto;background:#faf9f6">
+                <sc-for list="{{ dirMatchesNew }}" as="m" hint-placeholder-count="0">
+                  <button onClick="{{ m.onPick }}" style="display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #efece6;padding:9px 12px;cursor:pointer;font-family:inherit" style-hover="background:#f0eee9">
+                    <div style="font-size:13px;font-weight:600;color:#1c1a17">{{ m.name }}</div>
+                    <sc-if value="{{ m.sub }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:11.5px;color:#8a857c;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.sub }}</div>
+                    </sc-if>
+                  </button>
+                </sc-for>
+                <sc-if value="{{ dirNoMatchNew }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:11px 12px;font-size:12.5px;color:#a8a39a;font-style:italic">No matches in your directory.</div>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
         <div style="display:flex;flex-direction:column;gap:13px">
           <label style="display:flex;flex-direction:column;gap:5px">
             <span style="font-size:12px;font-weight:600;color:#6e6a62">Name</span>
@@ -318,7 +357,7 @@
         </div>
         <div style="display:flex;gap:10px;margin-top:22px;justify-content:flex-end">
           <button onClick="{{ closeNew }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#e6e3dc">Cancel</button>
-          <button onClick="{{ saveNew }}" style="background:#1c1a17;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#33302a">Add contact</button>
+          <button onClick="{{ saveNew }}" style="background:#ebae2b;color:#302d22;border:none;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#d2971a">Add contact</button>
         </div>
       </div>
     </div>
@@ -348,7 +387,7 @@
         </div>
         <div style="display:flex;gap:10px;padding:14px 24px;border-top:1px solid #eceae4;background:#faf9f6;justify-content:flex-end">
           <button onClick="{{ closeStages }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#e6e3dc">Cancel</button>
-          <button onClick="{{ saveStages }}" style="background:#1c1a17;color:#fff;border:none;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#33302a">Save stages</button>
+          <button onClick="{{ saveStages }}" style="background:#ebae2b;color:#302d22;border:none;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#d2971a">Save stages</button>
         </div>
       </div>
     </div>
@@ -378,6 +417,8 @@ class Component extends DCLogic {
     detail: null,      // editable draft of the contact open in the modal
     noteDraft: '',
     newForm: { name: '', role: '', org: '', email: '', students: '', stage: 'new', pref: 'Email' },
+    dirPlaces: [],     // Rihla Directory places (localStorage + rihla/{uid} mirror)
+    dirQ: '',          // directory search query (shared; one modal open at a time)
   };
 
   METHODS = ['Email', 'Phone call', 'Text / SMS', 'WhatsApp', 'In person'];
@@ -457,6 +498,7 @@ class Component extends DCLogic {
     if (this.store.subscribe) {
       try { this._unsub = this.store.subscribe((rows) => { if (Array.isArray(rows)) this.setState({ contacts: rows }); }); } catch (e) {}
     }
+    this.loadDirectory();
   }
 
   componentWillUnmount() { if (this._unsub) try { this._unsub(); } catch (e) {} }
@@ -480,6 +522,84 @@ class Component extends DCLogic {
   }
 
   studentsOf(c) { return (c.institutions || []).reduce((a, i) => a + (Number(i.students) || 0), 0); }
+
+  // ---- Rihla Directory: read the same data the planner stores, pull a place in ----
+  dirPrimary(p) { const cs = (p && p.contacts) || []; return cs.find(c => c.primary) || cs[0] || null; }
+
+  dirMatch(q) {
+    const s = String(q || '').trim().toLowerCase();
+    if (!s) return [];
+    return (this.state.dirPlaces || []).filter(p => {
+      const hay = [p.name, p.address, (p.category || []).join(' '), (p.tags || []).join(' '),
+        ...((p.contacts || []).flatMap(c => [c.name, c.role, c.phone, c.email]))];
+      return hay.some(v => String(v || '').toLowerCase().includes(s));
+    }).slice(0, 8);
+  }
+
+  async loadDirectory() {
+    let places = [];
+    try { const d = JSON.parse(localStorage.getItem('rihla_directory_v1')); if (d && Array.isArray(d.places)) places = d.places; } catch (e) {}
+    if (places.length) this.setState({ dirPlaces: places });
+    // Authoritative, cross-device copy lives in the Rihla owner doc.
+    try {
+      let uid = null;
+      try { uid = ((window.BOTAuth && window.BOTAuth.current && window.BOTAuth.current()) || {}).uid || null; } catch (e) {}
+      if (!uid && window.firebase && firebase.auth && firebase.auth().currentUser) uid = firebase.auth().currentUser.uid;
+      if (uid && window.firebase && typeof firebase.firestore === 'function') {
+        const snap = await firebase.firestore().collection('rihla').doc(uid).get();
+        const data = snap.exists ? snap.data() : null;
+        if (data && data.directory && Array.isArray(data.directory.places) && data.directory.places.length) {
+          this.setState({ dirPlaces: data.directory.places });
+        }
+      }
+    } catch (e) {}
+  }
+
+  pickDirNew = (p) => {
+    const c = this.dirPrimary(p) || {};
+    this.setState(s => ({
+      dirQ: '',
+      newForm: {
+        ...s.newForm,
+        name: (c.name || p.name || s.newForm.name || '').trim(),
+        role: c.role || s.newForm.role,
+        org: p.name || s.newForm.org,
+        email: c.email || s.newForm.email,
+      },
+    }));
+  };
+
+  pickDirDetail = (p) => {
+    this.setState(s => {
+      if (!s.detail) return {};
+      const d = { ...s.detail };
+      const c = this.dirPrimary(p) || {};
+      if (!d.org) d.org = p.name || '';
+      if (!d.name) d.name = (c.name || p.name || '').trim();
+      if (!d.role && c.role) d.role = c.role;
+      const emails = [...(d.emails || [])];
+      const phones = [...(d.phones || [])];
+      (p.contacts || []).forEach(ct => {
+        if (ct.email && !emails.includes(ct.email)) emails.push(ct.email);
+        if (ct.phone && !phones.includes(ct.phone)) phones.push(ct.phone);
+      });
+      d.emails = emails; d.phones = phones;
+      const insts = [...(d.institutions || [])];
+      if (p.name && !insts.some(i => String(i.name || '').toLowerCase() === p.name.toLowerCase())) {
+        const nid = this.uid('i');
+        insts.push({ id: nid, name: p.name, students: 0 });
+        if (!d.focusId) d.focusId = nid;
+      }
+      d.institutions = insts;
+      const bits = [p.address, (p.category || []).length ? p.category.join(', ') : '', p.bestTime ? ('Best time: ' + p.bestTime) : ''].filter(Boolean);
+      const notes = [...(d.notes || [])];
+      if (!notes.some(n => String(n.text || '').startsWith('From Rihla Directory'))) {
+        notes.push({ id: this.uid('n'), ts: Date.now(), text: 'From Rihla Directory \u2014 ' + (bits.join(' \u00b7 ') || (p.name || 'place')) });
+      }
+      d.notes = notes;
+      return { detail: d, dirQ: '' };
+    });
+  };
 
   move(id, stage) {
     const contacts = this.state.contacts.map(c => c.id === id ? { ...c, stage } : c);
@@ -549,7 +669,7 @@ class Component extends DCLogic {
             focusName: focus ? focus.name : c.org,
             instLabel: more > 0 ? ('+' + more + ' more institution' + (more > 1 ? 's' : '')) : (c.role || ''),
             students: this.fmtNum(this.studentsOf(c)) + ' students',
-            onOpen: () => this.setState({ detail: JSON.parse(JSON.stringify(c)), noteDraft: '' }),
+            onOpen: () => this.setState({ detail: JSON.parse(JSON.stringify(c)), noteDraft: '', dirQ: '' }),
             onDragStart: (e) => { this.setState({ dragId: c.id }); try { e.dataTransfer.effectAllowed = 'move'; } catch (x) {} },
             onDragEnd: () => this.setState({ dragId: null, dragOver: null }),
             onDelete: (e) => { e.stopPropagation(); this.delContact(c.id); },
@@ -567,8 +687,8 @@ class Component extends DCLogic {
       contactMethods: this.METHODS,
       // new contact
       showNew: this.state.showNew,
-      openNew: () => this.setState({ showNew: true, newForm: { name: '', role: '', org: '', email: '', students: '', stage: (this.state.stages[0] || {}).id || 'new', pref: 'Email' } }),
-      closeNew: () => this.setState({ showNew: false }),
+      openNew: () => this.setState({ showNew: true, dirQ: '', newForm: { name: '', role: '', org: '', email: '', students: '', stage: (this.state.stages[0] || {}).id || 'new', pref: 'Email' } }),
+      closeNew: () => this.setState({ showNew: false, dirQ: '' }),
       saveNew: this.saveNew,
       nName: this.state.newForm.name, nRole: this.state.newForm.role, nOrg: this.state.newForm.org,
       nEmail: this.state.newForm.email, nStudents: this.state.newForm.students, nStage: this.state.newForm.stage,
@@ -664,7 +784,7 @@ class Component extends DCLogic {
           star: isFocus ? '\u2605' : '\u2606',
           focusLabel: isFocus ? 'Current focus' : 'Set focus',
           focusBg: isFocus ? '#1c1a17' : '#f0eee9',
-          focusColor: isFocus ? '#fff' : '#8a857c',
+          focusColor: isFocus ? '#302d22' : '#8a857c',
           onName: (e) => this.setInst(it.id, { name: e.target.value }),
           onStudents: (e) => this.setInst(it.id, { students: parseInt(String(e.target.value).replace(/[^0-9]/g, ''), 10) || 0 }),
           onRemove: () => this.setState(s => {
@@ -692,14 +812,32 @@ class Component extends DCLogic {
       out.onNoteKey = (e) => { if (e.key === 'Enter') { e.preventDefault(); this.addNoteNow(); } };
       out.addNote = this.addNoteNow;
 
-      out.cancelDetail = () => this.setState({ detail: null, noteDraft: '' });
+      out.cancelDetail = () => this.setState({ detail: null, noteDraft: '', dirQ: '' });
       out.saveDetail = () => {
         const contacts = this.state.contacts.map(c => c.id === d.id ? d : c);
         this.commit(contacts);
-        this.setState({ detail: null, noteDraft: '' });
+        this.setState({ detail: null, noteDraft: '', dirQ: '' });
       };
-      out.deleteDetail = () => { this.delContact(d.id); this.setState({ detail: null, noteDraft: '' }); };
+      out.deleteDetail = () => { this.delContact(d.id); this.setState({ detail: null, noteDraft: '', dirQ: '' }); };
     }
+
+    // ---- Rihla Directory search (pull a mosque's info into a contact) ----
+    out.dirQ = this.state.dirQ;
+    out.onDirQ = (e) => this.setState({ dirQ: e.target.value });
+    const _dirCount = (this.state.dirPlaces || []).length;
+    out.dirHasData = _dirCount > 0;
+    out.dirCountLabel = _dirCount + ' place' + (_dirCount !== 1 ? 's' : '') + ' in directory';
+    const _mapMatch = (onPick) => this.dirMatch(this.state.dirQ).map(p => {
+      const c = this.dirPrimary(p) || {};
+      const sub = [c.name || '', p.address || ''].filter(Boolean).join(' \u00b7 ') || (p.category || []).join(', ');
+      return { id: p.id, name: p.name || 'Untitled place', sub, onPick: () => onPick(p) };
+    });
+    out.dirShowNew = this.state.showNew && this.state.dirQ.trim().length > 0;
+    out.dirShowDetail = !!this.state.detail && this.state.dirQ.trim().length > 0;
+    out.dirMatchesNew = out.dirShowNew ? _mapMatch(this.pickDirNew) : [];
+    out.dirMatchesDetail = out.dirShowDetail ? _mapMatch(this.pickDirDetail) : [];
+    out.dirNoMatchNew = out.dirShowNew && out.dirMatchesNew.length === 0;
+    out.dirNoMatchDetail = out.dirShowDetail && out.dirMatchesDetail.length === 0;
 
     return out;
   }
@@ -732,7 +870,7 @@ class Component extends DCLogic {
       var initial = name.slice(0, 1).toUpperCase();
       host.innerHTML =
         '<button type="button" class="acct-btn" style="display:flex;align-items:center;gap:8px;background:#f0eee9;border:none;border-radius:9px;padding:6px 10px 6px 6px;font-family:inherit;cursor:pointer">' +
-          '<span style="width:26px;height:26px;border-radius:7px;background:#1c1a17;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">' + initial + '</span>' +
+          '<span style="width:26px;height:26px;border-radius:7px;background:#ebae2b;color:#302d22;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">' + initial + '</span>' +
           '<span style="font-size:13px;font-weight:600;color:#33302a;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + name + '</span>' +
         '</button>' +
         '<div class="acct-menu" style="display:none;position:absolute;right:0;top:calc(100% + 7px);min-width:180px;background:#fffefb;border:1px solid #e8e5df;border-radius:11px;box-shadow:0 16px 40px rgba(0,0,0,.12);padding:5px;z-index:50">' +

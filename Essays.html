@@ -320,6 +320,7 @@
       <a class="mono" href="index.html#presence">Presence</a>
       <a class="mono" href="index.html#tools">Tools</a>
       <a class="mono active" href="Essays.html">Essays</a>
+      <a class="mono" id="nav-dash" href="Dashboard.html" style="display:none">Dashboard</a>
       <a class="mono" href="https://www.instagram.com/bladeoftakumi" target="_blank" rel="noopener noreferrer">Connect</a>
     </div>
   </div>
@@ -666,13 +667,15 @@
 
   /* Know the owner before first paint so private essays + tools resolve right. */
   var authReady = (window.BOTAuth && window.BOTAuth.ready) ? window.BOTAuth.ready : Promise.resolve(null);
-  authReady.then(function (u) { isOwner = !!u; loadAll(); });
+  function markDash(u) { var d = document.getElementById("nav-dash"); if (d) d.style.display = u ? "" : "none"; }
+  authReady.then(function (u) { isOwner = !!u; markDash(u); loadAll(); });
 
   /* React to login / logout while the page is open. */
   if (window.BOTAuth && window.BOTAuth.onChange) {
     window.BOTAuth.onChange(function (u) {
       var was = isOwner;
       isOwner = !!u;
+      markDash(u);
       if (loaded && was !== isOwner) { editMode = false; route(); }
     });
   }

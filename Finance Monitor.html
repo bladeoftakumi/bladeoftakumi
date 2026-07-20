@@ -6,20 +6,21 @@
 <title>Finance Monitor</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 <style>
+  @font-face { font-family:'Luxia Display'; src:url('fonts/LuxiaDisplay.otf') format('opentype'); font-weight:400 700; font-style:normal; font-display:swap; }
   :root {
-    --bg: #0b0d12; --surface: #14171e; --surface-2: #1a1e27; --surface-3: #222734;
-    --ink: #eef1f7; --ink-soft: #c2c8d4; --muted: #8b93a3; --faint: #5a6271;
-    --line: #252a35; --line-soft: #1d222c;
-    --pos: #4cd08a; --pos-soft: rgba(76,208,138,.12); --neg: #f8836a; --neg-soft: rgba(248,131,106,.13);
-    --accent: #6ea0ff; --accent-soft: rgba(110,160,255,.14); --gold: #6ea0ff;
-    --shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 12px 34px rgba(0,0,0,.5);
+    --bg: #f6f5ef; --surface: #ffffff; --surface-2: #f6f5ef; --surface-3: #efecdc;
+    --ink: #302d22; --ink-soft: #504b38; --muted: #736c52; --faint: #928b6f;
+    --line: #e5e1cb; --line-soft: #efecdc;
+    --pos: #5f7a3e; --pos-soft: rgba(95,122,62,.13); --neg: #a4503f; --neg-soft: rgba(164,80,63,.12);
+    --accent: #c9971a; --accent-soft: #fcf2d6; --gold: #ebae2b;
+    --shadow: 0 1px 2px rgba(80,75,56,.06), 0 12px 30px rgba(80,75,56,.10);
     --radius: 14px;
-    --mono: "IBM Plex Mono", ui-monospace, monospace;
-    --sans: "Schibsted Grotesk", system-ui, sans-serif;
-    --serif: "Instrument Serif", Georgia, serif;
-    --fig: "Instrument Serif", Georgia, serif; /* all numeric figures */
+    --mono: "Space Mono", ui-monospace, monospace;
+    --sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --serif: 'Luxia Display', Georgia, serif;
+    --fig: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; /* all numeric figures */
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
@@ -33,13 +34,13 @@
   /* sidebar */
   .sidebar { width: 256px; flex: 0 0 256px; background: var(--surface); border-right: 1px solid var(--line); display: flex; flex-direction: column; padding: 26px 18px 20px; position: sticky; top: 0; height: 100vh; }
   .brand { display: flex; align-items: center; gap: 12px; padding: 4px 8px 26px; }
-  .brand__mark { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(150deg, var(--accent), #4d7ff0); color: #0b0d12; display: grid; place-items: center; box-shadow: 0 0 0 1px rgba(110,160,255,.25), 0 6px 18px rgba(77,127,240,.35); }
+  .brand__mark { width: 38px; height: 38px; border-radius: 10px; background: var(--gold); color: #302d22; display: grid; place-items: center; box-shadow: 0 2px 8px rgba(235,174,43,.35); font-family: var(--serif); font-weight: 700; }
   .brand__name { font-weight: 600; font-size: 15px; letter-spacing: -.01em; }
   .brand__sub { font-size: 12px; color: var(--faint); }
   .nav { display: flex; flex-direction: column; gap: 2px; }
   .nav__item { display: flex; align-items: center; gap: 11px; background: none; border: 0; text-align: left; padding: 10px 12px; border-radius: 9px; color: var(--ink-soft); font-size: 14.5px; font-weight: 500; transition: background .12s, color .12s; }
   .nav__item:hover { background: var(--surface-2); color: var(--ink); }
-  .nav__item.is-active { background: var(--accent-soft); color: var(--ink); box-shadow: inset 0 0 0 1px rgba(110,160,255,.22); }
+  .nav__item.is-active { background: var(--accent-soft); color: var(--ink); box-shadow: inset 0 0 0 1px rgba(235,174,43,.3); }
   .nav__dot { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); flex: 0 0 6px; transition: background .12s, transform .12s; }
   .nav__item:hover .nav__dot { background: var(--muted); }
   .nav__item.is-active .nav__dot { background: var(--accent); transform: scale(1.15); box-shadow: 0 0 8px var(--accent); }
@@ -63,8 +64,8 @@
   .periodpick__opt--month.is-active { color: var(--ink); }
 
   .sidebar__actions { display: flex; flex-direction: column; gap: 6px; }
-  .pdfbtn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px 12px; border: 0; border-radius: 9px; background: linear-gradient(150deg, var(--accent), #4d7ff0); color: #0b0d12; font-size: 13.5px; font-weight: 600; letter-spacing: -.01em; box-shadow: 0 0 0 1px rgba(110,160,255,.3), 0 6px 18px rgba(77,127,240,.3); transition: transform .1s, box-shadow .12s, filter .12s; }
-  .pdfbtn:hover { filter: brightness(1.06); box-shadow: 0 0 0 1px rgba(110,160,255,.45), 0 8px 22px rgba(77,127,240,.42); }
+  .pdfbtn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 11px 12px; border: 0; border-radius: 9px; background: var(--gold); color: #302d22; font-size: 13.5px; font-weight: 600; letter-spacing: -.01em; box-shadow: 0 2px 8px rgba(235,174,43,.35); transition: transform .1s, box-shadow .12s, filter .12s; }
+  .pdfbtn:hover { filter: brightness(1.04); box-shadow: 0 4px 14px rgba(235,174,43,.5); }
   .pdfbtn:active { transform: translateY(1px); }
   .pdfbtn svg { flex: 0 0 16px; }
   .ghostbtn { width: 100%; text-align: left; padding: 9px 12px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); color: var(--ink-soft); font-size: 13.5px; font-weight: 500; transition: background .12s, border-color .12s, color .12s; }
@@ -92,11 +93,11 @@
   .chip__n { font-family: var(--fig); font-weight: 500; font-size: 14px; color: var(--ink); background: var(--bg); border-radius: 12px; min-width: 22px; text-align: center; padding: 0 6px; }
   .chip__l { font-size: 12px; color: var(--muted); }
 
-  .warnbar { background: rgba(248,131,106,.1); border: 1px solid rgba(248,131,106,.3); color: #f0a48f; border-radius: 10px; padding: 11px 15px; font-size: 13px; margin-bottom: 20px; }
+  .warnbar { background: rgba(164,80,63,.09); border: 1px solid rgba(164,80,63,.28); color: #8a4234; border-radius: 10px; padding: 11px 15px; font-size: 13px; margin-bottom: 20px; }
 
   /* dashboard */
   .dash { display: flex; flex-direction: column; gap: 22px; }
-  .hero { display: grid; grid-template-columns: 1.25fr 1fr; gap: 32px; background: radial-gradient(120% 140% at 0% 0%, #1a1f2b 0%, var(--surface) 55%); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 34px 36px; }
+  .hero { display: grid; grid-template-columns: 1.25fr 1fr; gap: 32px; background: linear-gradient(120% 140% at 0% 0%, #fcf2d6 0%, var(--surface) 55%); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 34px 36px; }
   .hero__label { font-size: 12px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 10px; }
   .hero__number { font-family: var(--fig); font-size: 78px; line-height: .95; letter-spacing: 0; color: var(--ink); font-variant-numeric: tabular-nums; }
   .hero__number.is-neg { color: var(--neg); }
@@ -110,7 +111,7 @@
   .stat__sub { font-size: 12px; color: var(--faint); margin-top: 2px; }
 
   /* contractor spotlight (promoted, hero-scale) */
-  .spotlight { display: grid; grid-template-columns: 1.25fr 1fr; gap: 32px; align-items: center; background: radial-gradient(120% 160% at 100% 0%, rgba(110,160,255,.1) 0%, var(--surface) 50%); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 30px 36px; }
+  .spotlight { display: grid; grid-template-columns: 1.25fr 1fr; gap: 32px; align-items: center; background: linear-gradient(120% 160% at 100% 0%, rgba(235,174,43,.12) 0%, var(--surface) 50%); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 30px 36px; }
   .spotlight__head { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
   .spotlight__label { font-size: 18px; font-weight: 600; letter-spacing: -.01em; color: var(--ink); }
   .spotlight__number { font-family: var(--fig); font-size: 60px; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; }
@@ -133,8 +134,8 @@
   .barchart__col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; }
   .barchart__track { flex: 1; width: 100%; display: flex; align-items: flex-end; }
   .barchart__bar { width: 100%; border-radius: 5px 5px 2px 2px; min-height: 3px; transition: height .3s ease; }
-  .barchart__bar--pos { background: linear-gradient(180deg, #5fe0a0, #3aa873); box-shadow: 0 0 16px rgba(76,208,138,.25); }
-  .barchart__bar--neg { background: linear-gradient(180deg, #ff9a82, #d8624a); }
+  .barchart__bar--pos { background: linear-gradient(180deg, #7d9a52, #5f7a3e); box-shadow: 0 2px 10px rgba(95,122,62,.2); }
+  .barchart__bar--neg { background: linear-gradient(180deg, #c47a68, #a4503f); }
   .barchart__val { font-family: var(--fig); font-size: 15px; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
   .barchart__lbl { font-size: 11px; color: var(--faint); white-space: nowrap; }
 
@@ -150,8 +151,8 @@
   .flow__label { color: var(--ink-soft); }
   .flow__track { height: 16px; background: var(--surface-2); border-radius: 4px; overflow: hidden; }
   .flow__bar { height: 100%; border-radius: 4px; }
-  .flow__bar--neutral { background: #3a4150; }
-  .flow__bar--negative { background: rgba(248,131,106,.45); }
+  .flow__bar--neutral { background: #cdc7b0; }
+  .flow__bar--negative { background: rgba(164,80,63,.4); }
   .flow__bar--positive { background: var(--pos); }
   .flow__val { text-align: right; }
   .flow__val .money { font-size: 15px; }
@@ -326,21 +327,50 @@
     position: fixed; top: 18px; right: 22px; z-index: 80;
     display: inline-flex; align-items: center; gap: 8px;
     padding: 8px 14px; border-radius: 9px;
-    background: rgba(20,23,30,.82); backdrop-filter: blur(8px);
+    background: rgba(255,255,255,.85); backdrop-filter: blur(8px);
     border: 1px solid var(--line); color: var(--ink-soft);
     font-family: var(--sans); font-size: 13px; font-weight: 500;
     text-decoration: none; transition: border-color .12s, color .12s, background .12s;
   }
   .home-link:hover { border-color: var(--accent); color: var(--ink); background: var(--surface-3); }
   .home-link svg { flex: 0 0 15px; }
-  @media print { .home-link { display: none !important; } }
+  .corner-nav { position: fixed; top: 18px; right: 22px; z-index: 80; display: flex; gap: 8px; }
+  .corner-nav .home-link { position: static; }
+  #auth-gate { position: fixed; inset: 0; z-index: 9999; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+  .hero__number.is-neg, .spotlight__number.is-neg { color: var(--neg); }
+  .landing__title, .pagehead__title { font-weight: 700; }
+
+  /* ---------- shell integration: horizontal tool bar (was left sidebar) ---------- */
+  .corner-nav { display: none !important; }
+  .bot-scroll .landing { min-height: calc(100vh - 130px); }
+  .mwrap { display: flex; flex-direction: column; min-height: 100%; }
+  .mtoolbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 18px; flex-wrap: wrap; padding: 12px 40px; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .mtabs { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-right: auto; }
+  .mtab { appearance: none; cursor: pointer; font-family: var(--sans); font-size: 13.5px; font-weight: 500; color: var(--muted); background: none; border: none; border-radius: 8px; padding: 8px 13px; white-space: nowrap; transition: background .12s, color .12s; }
+  .mtab:hover { background: var(--surface-3); color: var(--ink); }
+  .mtab.is-active { background: var(--accent-soft); color: var(--ink); font-weight: 600; box-shadow: inset 0 0 0 1px rgba(235,174,43,.3); }
+  .mtools { display: flex; align-items: center; gap: 10px; }
+  .mtools__period { display: flex; align-items: center; gap: 8px; }
+  .mtools__period .yearpick__label { margin: 0; }
+  .mtools__period .periodpick { min-width: 150px; }
+  .mtools__period .periodpick__menu { bottom: auto; top: calc(100% + 8px); }
+  .pdfbtn--inline, .ghostbtn--inline { width: auto; }
+  .main { padding: 28px 40px 76px; max-width: 1180px; width: 100%; }
+  @media (max-width: 920px) { .mtoolbar { padding: 12px 20px; } .main { padding: 22px 20px 60px; } }
+  @media print { .home-link, .corner-nav { display: none !important; } }
 </style>
 </head>
 <body>
-  <a class="home-link" href="index.html" title="Back to Blade of Takumi">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"></path><path d="M6 9.5V20h12V9.5"></path></svg>
-    <span>Home</span>
-  </a>
+  <div class="corner-nav">
+    <a class="home-link" href="Dashboard.html" title="Owner dashboard">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      <span>Dashboard</span>
+    </a>
+    <a class="home-link" href="index.html" title="Back to Blade of Takumi">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"></path><path d="M6 9.5V20h12V9.5"></path></svg>
+      <span>Home</span>
+    </a>
+  </div>
   <div id="root"></div>
 
   <div id="auth-gate" style="position:fixed;inset:0;z-index:9999;background:var(--bg);display:flex;align-items:center;justify-content:center;">
@@ -351,6 +381,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script src="botakumi-auth.js"></script>
+  <script>window.BOTShell = { active: "finance" };</script>
+  <script src="botakumi-shell.js"></script>
   <script>
     // Owner-only tool: only a logged-in account may view this page.
     (function () {
