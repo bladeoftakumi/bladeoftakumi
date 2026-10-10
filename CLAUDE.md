@@ -26,6 +26,61 @@ GitHub repo. No build step — plain HTML + inline React (Babel) + vanilla JS. F
   Dashboard card appears only when logged in (see `TOOLS` / `DASHBOARD_TOOL` in app.jsx).
   Kaizen: logged-out = page IS the public progress view (`body.visitor`); logged-in = full tool.
 - `index.html` + `app.jsx` — landing page / tool launcher.
+- `City Place Finder.dc.html` (+ `support-v2.js`, newer DC runtime — kept separate so CRM's
+  `support.js` is untouched) — owner-only, Dashboard card, light-only in shell. Added
+  2026-09-27 from the user's clickable prototype. **Live mode wired 2026-09-28**: a real key
+  → Places API (New) Text Search (rectangle restriction, 3 pages max, quadtree split at 60)
+  + Place Details (phone/website/address parts). "Fill a sample key" → simulation. Key check
+  = 1 IDs-only Text Search (free SKU). City boundaries via Nominatim (free). Email scraping
+  disabled in live mode (CORS — needs the local helper). **First live run OK 2026-09-28**
+  (after a console fix of an earlier bare 403): Kent WA × "Quran school" = 3 calls, 2 places.
+  Live estimator = area×0.05 places/city (calibrated on that one run; refine as data grows).
+  **Library (2026-09-28):** every finished run (live + simulated) auto-saves to
+  `localStorage["cpf-library-v1"]` ({runs:[{id,date,live,kws,cities,calls,cost,results}]}).
+  Library screen (header button): Places tab merges all runs by place ID (keywords unioned,
+  Runs count, Last seen), flags "Possible duplicate" (same phone or street+ZIP), filters
+  (search, city, keyword, run, has phone/website/email, dups, include simulated), .xls
+  download of the filtered set; Runs tab: Open / Download / Delete, Clear library,
+  **Download history (.xls)** — sheets Coverage (city×keyword: times run, last run, places),
+  Keywords (yield), Cities, Runs, City runs. Live only unless "Include simulated" is on.
+  **Never auto-deletes (2026-10-07):** Library is stored in localStorage + IndexedDB
+  (`cpf-library`, persist() requested) + Firestore `cpf/{uid}/runs/{id}` (meta) with
+  `parts/{n}` chunks (700KB each). Union-merged on load; local-only runs re-pushed.
+  "Clear library" removed; Results "Delete run data" no longer touches the Library; only
+  the per-run Delete (two-click) in Library → Runs removes a run (local + cloud).
+  **Settings persist** (cities, keywords, options, limit) in `localStorage["cpf-settings-v1"]`.
+  **API key comes from Rihla**: `BOTAuth.current().apiKey`, fallback Firestore `rihla/{uid}.apiKey`;
+  auto-checked on load (1 IDs-only call) and kept between runs. Pasted keys still clear after a run.
+  **Pre-split (2026-09-28):** "Split large cities into areas of" option (4/6/8/12 km/off,
+  default 8, saved) tiles each boundary box into a grid BEFORE searching; each tile still
+  quadtree-splits at 60. Estimator counts tiles.
+  **From a state (2026-10-06):** Setup panel loads every incorporated place (+ optional CDPs)
+  for a state from Census TIGERweb (free, CORS ok, layers 25/26 = Census 2020, paged 500)
+  with population + boundary bbox, so no geocoding needed. Order (pop/N→S/W→E/A–Z),
+  min population, block size (5–50); "Load next N" replaces the Cities list with the next
+  cities NOT yet run (live Library runs) with ALL current keywords. Settings persisted.
+  **Auto-run (2026-10-07):** "Run next N" loads the block → Confirm screen; dropdown chains
+  0/1/2/4/9/all further blocks automatically (only after a clean, live, all-cities-finished
+  run, and only with the Rihla key since pasted keys clear). Stop cancels the chain.
+  "Done" = city ran with every current keyword in a non-partial live result; progress bar
+  shows % done; Cities rows tagged "Already ran with these keywords".
+  **Canada (2026-10-06):** provinces in the same picker ("Canada · Ontario"), list from
+  Statistics Canada 2021 census subdivisions (public ArcGIS FeatureServer
+  `zmLUiqh7X11gGV2d/.../Canadian_Population_and_Dwelling_Counts_2021`, layer 2); toggle adds
+  reserves/unorganized. "City, ON" accepted everywhere; Nominatim/Photon switch to CA; address
+  parser handles "ON M5V 2T6" + ", Canada".
+  City lookups: queue 20 concurrent, 60s timeout, results cached in `cpf-geo-v1`. User watches call counts closely: test with 1 city, 1 keyword, low limit (~30).
+- `Outreach Planner.html` + `outreach/data.jsx`, `outreach/app.jsx` (2026-10-07) — owner-only
+  calling CRM, Dashboard card, light-only. Pool = every live City Place Finder Library row
+  with a phone (deduped by last-10 digits, permanently-closed dropped); reads localStorage +
+  IndexedDB + Firestore Library. Batches by City or Area (state → z-order) of N numbers;
+  assignments stored so a contact keeps its original batch; "Rebuild batches" regroups.
+  Stages editable (roles: new / recontact / closed). Outcomes: No answer/Voicemail →
+  Recontact + call-back in N days; Spoke → first plain stage; Not interested → closed.
+  Today list: N numbers, their-local-time window, my hours, min/call → due call-backs
+  first, then ★ active batches; slot-scheduled by timezone (state map + split-state rules).
+  State saved to `localStorage["op-state-v1"]` + Firestore `cpf/{uid}/outreach/state`
+  (chunked parts; covered by the existing cpf rule).
 - `Suzuri.html` — essay composer. **Publish to site** (login-only) writes essays to
   Firestore `essays` collection (keyed by title-slug). Falls back to .txt download for
   manual GitHub upload. Editing an essay from Essays.html hands off via
@@ -95,6 +150,7 @@ spread** (Auto/Manual). Dwell fixed at 20 min/stop.
   to Storage path `essays-audio/{slug}.{ext}`. File-based essays can set `audio: <file>`
   in their `.txt` header (resolved relative to `essays/`, e.g. `audio/foo.wav`).
 - `kaizen/{uid}` — per-account goals.
+- `habits/{uid}` — per-account habit tracker (`{ habits:[{id,name,done:{"YYYY-MM-DD":true}}], updated }`).
 - `public/progress` — curated Kaizen progress mirror for brand followers.
 
 ## ⚠️ Pending user (console) actions — NOT done by code
@@ -134,6 +190,18 @@ spread** (Auto/Manual). Dwell fixed at 20 min/stop.
        match /rihla/{uid} {
          allow read, write: if request.auth != null && request.auth.uid == uid;
        }
+       match /habits/{uid} {
+         allow read, write: if request.auth != null && request.auth.uid == uid;
+       }
+       match /cpf/{uid}/{doc=**} {
+         allow read, write: if request.auth != null &amp;&amp; request.auth.uid == uid;
+       }
+       match /prototype/{uid} {
+         allow read, write: if request.auth != null && request.auth.uid == uid;
+         match /private/{doc} {
+           allow read, write: if request.auth != null && request.auth.uid == uid;
+         }
+       }
        match /public/{doc} {
          allow read:  if true;
          allow write: if request.auth != null;
@@ -169,10 +237,28 @@ spread** (Auto/Manual). Dwell fixed at 20 min/stop.
          allow read:  if true;
          allow write: if request.auth != null;
        }
+       match /prototype-files/{uid}/{file=**} {
+         allow read:  if true;
+         allow write: if request.auth != null && request.auth.uid == uid;
+       }
        match /{path=**} { allow read, write: if false; }
      }
    }
    ```
+
+## ⚠️ Pending user (console) actions for the Prototype tool — NOT done by code
+> Added 2026-07-25. The Prototype idea-board (`Prototype.html` + `prototype.js`) is built
+> but its cloud sync + file upload will silently fall back to on-device localStorage until
+> BOTH rules below are published. **Remind the user.**
+4. **Publish the `prototype/{uid}` Firestore block** (already added to the ruleset above —
+   the user needs to paste the updated ruleset into Firestore → Rules and Publish). Covers
+   the board doc + the `private/keys` subdoc (AI API keys). No cost.
+6. ✅ **`cpf/{uid}/{doc=**}` Firestore block published 2026-10-07** — verified: all 12
+   Library runs uploaded to `cpf/{uid}/runs`.
+5. **Publish the `prototype-files/{uid}/**` Storage block** (added to the Storage ruleset
+   above). ⚠️ Firebase Storage has cost — storage + download bandwidth on uploaded design
+   files. Likely pennies/mo at this scale but NOT $0; suggest a billing budget alert if
+   many/large files. Until published, uploads fail with `storage/unauthorized`.
 
 ## Working notes
 - **Always flag costs / potential costs.** Whenever a suggestion or feature could incur a
