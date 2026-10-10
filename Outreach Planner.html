@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Outreach Planner — Blade of Takumi</title>
+<link rel="icon" type="image/png" href="assets/logo-line.png">
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="botakumi-auth.js"></script>
+<script>window.BOTShell = { active: "outreach" };</script>
+<script src="botakumi-shell.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:#f6f5ef;color:#302d22;-webkit-font-smoothing:antialiased;font-size:14px}
+#root,.bot-scroll #root{height:100%}
+a{color:#8a6a12;text-decoration:none}a:hover{color:#1c1a17;text-decoration:underline}
+button{font-family:inherit;cursor:pointer}
+::-webkit-scrollbar{height:10px;width:10px}::-webkit-scrollbar-thumb{background:#d8d5cf;border-radius:8px;border:2px solid #f6f5ef}
+@keyframes fade{from{opacity:0}to{opacity:1}}@keyframes slide{from{transform:translateX(24px);opacity:0}to{transform:none;opacity:1}}
+input::placeholder{color:#a8a39a}
+.op-btn{background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:600;white-space:nowrap}.op-btn:hover{background:#e6e3dc}
+.op-btn.gold{background:#ebae2b;color:#302d22}.op-btn.gold:hover{background:#d2971a}
+.op-btn.sm{padding:5px 10px;font-size:12px;border-radius:7px}
+.op-fld{font-family:inherit;font-size:13px;padding:8px 10px;border:1.5px solid #e0ddd6;border-radius:9px;background:#faf9f6;outline:none;color:#1c1a17;min-width:0}.op-fld:focus{border-color:#1c1a17;background:#fff}
+.op-card{background:#fffefb;border:1px solid #e8e5df;border-radius:12px}
+.op-lbl{white-space:nowrap;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94}
+.op-tab{background:none;border:none;padding:8px 2px 10px;font-size:14px;font-weight:600;color:#8a857c;border-bottom:2px solid transparent}.op-tab:hover{color:#1c1a17}.op-tab.on{color:#1c1a17;border-bottom-color:#ebae2b}
+.op-pill{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;border-radius:20px;padding:2px 8px;white-space:nowrap}
+.op-muted{color:#8a857c}
+.op-link{background:none;border:none;padding:0;font-size:14px;font-weight:600;color:#1c1a17;text-align:left}.op-link:hover{text-decoration:underline}
+.op-kcard{background:#fffefb;border:1px solid #e8e5df;border-radius:11px;padding:11px 12px;cursor:pointer;box-shadow:0 1px 2px rgba(28,26,23,.04)}.op-kcard:hover{border-color:#d2cec6;box-shadow:0 2px 8px rgba(28,26,23,.07)}
+.op-trow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 16px 8px 46px;border-bottom:1px solid #f3f1ec;font-size:13px;cursor:pointer}.op-trow:hover{background:#faf9f6}
+</style>
+</head>
+<body>
+<div id="auth-gate" style="position:fixed;inset:0;z-index:9999;background:#f6f5ef;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"><div style="color:#8a857c;font-size:13px;letter-spacing:.02em">Checking access&hellip;</div></div>
+<script>(function(){function guard(){if(!window.BOTAuth){window.location.replace("index.html");return;}window.BOTAuth.ready.then(function(){if(window.BOTAuth.current()){var g=document.getElementById("auth-gate");if(g)g.remove();}else window.location.replace("index.html");});}if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",guard);else guard();})();</script>
+<div id="root"></div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="outreach/data.jsx"></script>
+<script type="text/babel" src="outreach/app.jsx"></script>
+</body>
+</html>

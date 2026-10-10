@@ -8,7 +8,7 @@
 <link rel="icon" type="image/png" href="assets/logo-line.png" />
 <style>
   @font-face { font-family:'Luxia Display'; src:url('fonts/LuxiaDisplay.otf') format('opentype'); font-weight:400 700; font-style:normal; font-display:swap; }
-  .panel{ background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:26px 28px 28px; max-width:680px; box-shadow:var(--shadow-sm); margin-top:24px; }
+  .panel{ background:var(--surface-card); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); padding:26px 28px 28px; max-width:680px; box-shadow:var(--shadow-sm); margin:24px auto 0; }
   .panel-head{ display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:14px; }
   .panel-head .eyebrow{ font-weight:600; font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold-700); display:inline-flex; align-items:center; gap:8px; }
   .panel-head .eyebrow::before{ content:""; width:16px; height:16px; border-radius:var(--radius-sm); background:var(--gold-100); }
@@ -59,7 +59,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="botakumi-auth.js"></script>
-<script>window.BOTShell = { active: "home", title: "Home" };</script>
+<script>window.BOTShell = { active: "home", title: "Home", immersive: false };</script>
 <script src="botakumi-shell.js"></script>
 <script>
   (function () {
