@@ -200,7 +200,7 @@
   }
   .prompter.show { display: flex; }
   .stage { position: relative; flex: 1; overflow: hidden; }
-  .scroller { will-change: transform; padding: 45vh max(48px, 8vw); }
+  .scroller { will-change: transform; padding: 6vh max(48px, 8vw) 85vh; }
   .reading {
     font-family: var(--font-body); font-size: 56px; line-height: 1.6; color: #ece6d8;
     text-align: center; white-space: pre-wrap; word-break: break-word; max-width: 22ch; margin: 0 auto;
@@ -208,11 +208,11 @@
   }
 
   .veil { position: absolute; inset: 0; pointer-events: none; }
-  .veil.manuscript { background: linear-gradient(to bottom, rgba(10,10,10,0.97) 0%, rgba(10,10,10,0.62) 24%, rgba(10,10,10,0) 41%, rgba(10,10,10,0) 59%, rgba(10,10,10,0.62) 76%, rgba(10,10,10,0.97) 100%); }
+  .veil.manuscript { background: linear-gradient(to bottom, rgba(10,10,10,0.5) 0%, rgba(10,10,10,0) 4%, rgba(10,10,10,0) 22%, rgba(10,10,10,0.62) 42%, rgba(10,10,10,0.97) 75%, rgba(10,10,10,0.97) 100%); }
   .band { position: absolute; left: 0; right: 0; height: 1px; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(180,150,90,0.32) 18%, rgba(180,150,90,0.32) 82%, transparent); }
-  .band.top { top: 41%; } .band.bot { top: 59%; }
-  .veil.cinema { background: linear-gradient(to bottom, rgba(0,0,0,0.99) 0%, rgba(0,0,0,0.99) 30%, rgba(0,0,0,0.2) 43%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.2) 57%, rgba(0,0,0,0.99) 70%, rgba(0,0,0,0.99) 100%); }
-  .marker { position: absolute; top: 50%; pointer-events: none; color: var(--accent); font-size: 22px; }
+  .band.top { top: 4%; } .band.bot { top: 22%; }
+  .veil.cinema { background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 8%, rgba(0,0,0,0) 18%, rgba(0,0,0,0.2) 25%, rgba(0,0,0,0.99) 40%, rgba(0,0,0,0.99) 100%); }
+  .marker { position: absolute; top: 13%; pointer-events: none; color: var(--accent); font-size: 22px; }
   .marker.l { left: max(20px, 4vw); transform: translateY(-50%); }
   .marker.r { right: max(20px, 4vw); transform: translateY(-50%) scaleX(-1); }
   .hidden { display: none !important; }
