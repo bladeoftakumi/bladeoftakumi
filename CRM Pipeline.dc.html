@@ -57,6 +57,7 @@
     ::-webkit-scrollbar-thumb{background:#d8d5cf;border-radius:8px;border:2px solid #f6f5ef}
     ::-webkit-scrollbar-thumb:hover{background:#c4c0b8}
     @keyframes fade{from{opacity:0}to{opacity:1}}
+    @keyframes slideIn{from{transform:translateX(28px);opacity:0}to{transform:none;opacity:1}}
     @keyframes rise{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
     input::placeholder,textarea::placeholder{color:#a8a39a}
     textarea{font-family:inherit}
@@ -66,7 +67,7 @@
     .bot-scroll #dc-root{height:100%}
   </style>
 </helmet>
-<div style="display:flex;flex-direction:column;height:100%;overflow:hidden">
+<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;position:relative">
 
   <header style="display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:#fffefb;border-bottom:1px solid #e8e5df;flex-shrink:0">
     <div>
@@ -74,7 +75,12 @@
       <div style="font-size:12px;color:#8a857c;font-weight:500">{{ totalContacts }} contacts &middot; {{ totalStudents }} students across pipeline</div>
     </div>
     <div style="display:flex;align-items:center;gap:9px">
+      <button onClick="{{ goDaily }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:9px 13px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;padding:10px 14px;font-size:13.5px" style-hover="background:#e6e3dc">Daily reach-out</button>
       <button onClick="{{ openStages }}" style="display:flex;align-items:center;gap:7px;background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 14px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#e6e3dc">Edit stages</button>
+      <sc-if value="{{ hasArch }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ openArch }}" style="display:flex;align-items:center;gap:7px;background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 14px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#e6e3dc">Archive <span style="color:#a39e94;font-weight:600">{{ archCount }}</span></button>
+      </sc-if>
+      <button onClick="{{ openImport }}" style="display:flex;align-items:center;gap:7px;background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 14px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#e6e3dc">Import leads</button>
       <button onClick="{{ openNew }}" style="display:flex;align-items:center;gap:7px;background:#ebae2b;color:#302d22;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer" style-hover="background:#d2971a">
         <span style="font-size:16px;line-height:1;margin-top:-1px">+</span> New contact
       </button>
@@ -103,6 +109,12 @@
                 <sc-if value="{{ c.focusName }}" hint-placeholder-val="{{ true }}">
                   <div style="font-size:12.5px;color:#8a857c;margin-top:2px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.focusName }}</div>
                 </sc-if>
+                <sc-if value="{{ c.hasNext }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:8px"><span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;border-radius:20px;padding:2px 8px;background:{{ c.nextBg }};color:{{ c.nextFg }}">{{ c.nextLabel }}</span></div>
+                </sc-if>
+                <sc-if value="{{ c.isNew }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:9px"><button onClick="{{ c.onNotQualified }}" style="background:none;border:1px solid #e0ddd6;border-radius:6px;color:#8a857c;font-family:inherit;font-size:11.5px;font-weight:600;padding:3px 8px;cursor:pointer" style-hover="border-color:#a93226;color:#a93226">Not qualified</button></div>
+                </sc-if>
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;gap:8px">
                   <span style="font-size:11.5px;color:#a39e94;font-weight:500">{{ c.instLabel }}</span>
                   <span style="font-size:12px;font-weight:700;color:#1c1a17;background:#f0eee9;border-radius:6px;padding:2px 8px;flex-shrink:0">{{ c.students }}</span>
@@ -119,55 +131,173 @@
   </div>
 
   <!-- ============ DETAIL / EDIT MODAL ============ -->
+  <sc-if value="{{ showLauncher }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#f6f5ef;z-index:30;display:flex;align-items:center;justify-content:center;padding:24px;animation:fade .14s ease both">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;width:100%;max-width:640px">
+        <button onClick="{{ goDaily }}" style="text-align:left;background:#fffefb;border:1.5px solid #e8e5df;border-radius:16px;padding:24px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:8px;min-height:170px" style-hover="border-color:#ebae2b;box-shadow:0 6px 20px rgba(28,26,23,.08)">
+          <span style="width:36px;height:36px;border-radius:10px;background:#fdf1d3;display:flex;align-items:center;justify-content:center;color:#8a6a12"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"></path></svg></span>
+          <span style="font-size:17px;font-weight:700;color:#1c1a17;margin-top:6px">Daily reach-out</span>
+          <span style="font-size:13px;color:#8a857c;font-variant-numeric:tabular-nums">{{ launchDailyMeta }}</span>
+        </button>
+        <button onClick="{{ goBoard }}" style="text-align:left;background:#fffefb;border:1.5px solid #e8e5df;border-radius:16px;padding:24px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:8px;min-height:170px" style-hover="border-color:#1c1a17;box-shadow:0 6px 20px rgba(28,26,23,.08)">
+          <span style="width:36px;height:36px;border-radius:10px;background:#efede8;display:flex;align-items:center;justify-content:center;color:#33302a"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="5" height="16" rx="1.5"></rect><rect x="10" y="4" width="5" height="11" rx="1.5"></rect><rect x="17" y="4" width="4" height="7" rx="1.5"></rect></svg></span>
+          <span style="font-size:17px;font-weight:700;color:#1c1a17;margin-top:6px">En</span>
+          <span style="font-size:13px;color:#8a857c;font-variant-numeric:tabular-nums">{{ totalContacts }} contacts</span>
+        </button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showDaily }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;inset:0;background:#f6f5ef;z-index:30;display:flex;flex-direction:column;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 28px;background:#fffefb;border-bottom:1px solid #e8e5df;flex-shrink:0;flex-wrap:wrap">
+        <div><div style="font-size:16px;font-weight:700;letter-spacing:-.01em">Daily reach-out</div><div style="font-size:12px;color:#8a857c;font-weight:500;font-variant-numeric:tabular-nums;white-space:nowrap">{{ dlyMeta }}</div></div>
+        <div style="display:flex;gap:8px">
+          <sc-if value="{{ dlyHasList }}" hint-placeholder-val="{{ false }}"><button onClick="{{ dlyNewList }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:9px 13px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#e6e3dc">New list</button></sc-if>
+          <button onClick="{{ goBoard }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:9px 13px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#e6e3dc">Open board</button>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:24px 20px">
+        <sc-if value="{{ dlySetup }}" hint-placeholder-val="{{ true }}">
+          <div style="max-width:560px;margin:0 auto;background:#fffefb;border:1px solid #e8e5df;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:18px">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94">How many today</span>
+              <input type="number" min="1" value="{{ dlyN }}" onInput="{{ onDlyN }}" class="fld" style="width:110px;font-size:16px;font-weight:700" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94">From</span>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <sc-for list="{{ dlySrc }}" as="sc" hint-placeholder-count="6">
+                  <button onClick="{{ sc.onClick }}" style="display:inline-flex;align-items:center;gap:6px;border:1.5px solid {{ sc.bd }};background:{{ sc.bg }};color:#33302a;border-radius:20px;padding:5px 11px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap"><span style="width:7px;height:7px;border-radius:50%;background:{{ sc.dot }};flex-shrink:0"></span>{{ sc.name }} <span style="color:#a39e94;font-weight:500">{{ sc.count }}</span></button>
+                </sc-for>
+              </div>
+              <span style="font-size:12px;color:#8a857c">New first, then call-backs that are due, then whoever you reached longest ago. Contacts with a future reach-out date are skipped.</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+              <span style="font-size:13px;color:#8a857c;font-variant-numeric:tabular-nums">{{ dlyAvail }}</span>
+              <button onClick="{{ dlyBuild }}" style="background:#ebae2b;color:#302d22;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#d2971a">{{ dlyBuildLabel }}</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ dlyDone }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:560px;margin:40px auto 0;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center">
+            <div style="font-size:20px;font-weight:700">Done for today</div>
+            <div style="font-size:13.5px;color:#8a857c">{{ dlyDoneMeta }}</div>
+            <div style="display:flex;gap:8px"><button onClick="{{ dlyBackStart }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:9px 13px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Review list</button><button onClick="{{ dlyNewList }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:9px 13px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Build more</button><button onClick="{{ goBoard }}" style="background:#ebae2b;color:#302d22;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap">Open board</button></div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ dlyCur }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <span style="font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap">{{ dlyPos }}</span>
+              <div style="flex:1;height:6px;background:#e3e0d9;border-radius:4px;overflow:hidden"><div style="height:100%;width:{{ dlyBar }};background:#ebae2b"></div></div>
+              <span style="font-size:12.5px;color:#8a857c;white-space:nowrap;font-variant-numeric:tabular-nums">{{ dlyReached }}</span>
+            </div>
+            <div style="background:#fffefb;border:1px solid #e8e5df;border-radius:16px;overflow:hidden">
+              <div style="padding:20px 22px 16px;border-bottom:1px solid #eceae4;display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+                <div style="flex:1;min-width:200px">
+                  <div style="font-size:21px;font-weight:700;letter-spacing:-.015em;line-height:1.2">{{ dc.org }}</div>
+                  <div style="font-size:15px;font-weight:700;color:#33302a;margin-top:4px">{{ dc.sub }} <span style="font-weight:500;color:#8a857c;font-size:13px">{{ dc.role }}</span></div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  <sc-if value="{{ dc.done }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;color:#1f7a45;background:#e3f3e9;border-radius:20px;padding:3px 10px;white-space:nowrap">&#10003; Reached today</span></sc-if>
+                  <select value="{{ dc.stage }}" onChange="{{ dc.onStage }}" style="font-family:inherit;font-size:12.5px;font-weight:600;padding:7px 10px;border:1.5px solid #e0ddd6;border-radius:8px;background:#faf9f6;outline:none;cursor:pointer">
+                    <sc-for list="{{ stages }}" as="s" hint-placeholder-count="4"><option value="{{ s.id }}">{{ s.name }}</option></sc-for>
+                  </select>
+                  <button onClick="{{ dc.onOpen }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:7px;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#e6e3dc">Full contact</button>
+                </div>
+                <sc-if value="{{ dc.isNew }}" hint-placeholder-val="{{ false }}">
+                  <div style="width:100%;display:flex;justify-content:flex-end;margin-top:-6px">
+                    <button onClick="{{ dc.onNotQualified }}" style="background:none;border:1.5px solid #e0ddd6;border-radius:7px;color:#8a857c;font-family:inherit;font-size:12px;font-weight:600;padding:4px 10px;cursor:pointer;white-space:nowrap" style-hover="border-color:#a93226;color:#a93226">Not qualified</button>
+                  </div>
+                </sc-if>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+                <div style="padding:18px 22px;display:flex;flex-direction:column;gap:14px;border-right:1px solid #eceae4">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <sc-for list="{{ dc.phones }}" as="p" hint-placeholder-count="1"><a href="{{ p.href }}" style="font-size:18px;font-weight:700;color:#1c1a17;font-variant-numeric:tabular-nums;text-decoration:none">{{ p.label }}</a></sc-for>
+                    <sc-for list="{{ dc.emails }}" as="e" hint-placeholder-count="1"><a href="{{ e.href }}" style="font-size:13.5px;color:#8a6a12">{{ e.label }}</a></sc-for>
+                    <sc-for list="{{ dc.links }}" as="l" hint-placeholder-count="0"><a href="{{ l.href }}" target="_blank" rel="noopener" style="font-size:13px;color:#8a6a12">{{ l.label }} &#8599;</a></sc-for>
+                    <sc-if value="{{ dc.noContact }}" hint-placeholder-val="{{ false }}"><span style="font-size:12.5px;color:#b0aba1;font-style:italic">No phone or email on file.</span></sc-if>
+                  </div>
+                  <sc-if value="{{ dc.hasStatus }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94">Where we are</span><div style="font-size:13px;line-height:1.5;white-space:pre-wrap;color:#33302a;max-height:180px;overflow-y:auto">{{ dc.status }}</div></div>
+                  </sc-if>
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94">Next reach-out</span>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                      <input type="date" value="{{ dc.next }}" onChange="{{ dc.onNext }}" class="fld" style="width:160px;font-size:13px;padding:7px 10px" />
+                      <sc-for list="{{ dc.chips }}" as="nc" hint-placeholder-count="4"><button onClick="{{ nc.onClick }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:7px;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#e6e3dc">{{ nc.label }}</button></sc-for>
+                      <sc-if value="{{ dc.hasNext }}" hint-placeholder-val="{{ false }}"><button onClick="{{ dc.clearNext }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:7px;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;background:none;color:#a39e94">Clear</button></sc-if>
+                    </div>
+                  </div>
+                </div>
+                <div style="padding:18px 22px;display:flex;flex-direction:column;gap:10px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94">Notes</span>
+                  <div style="display:flex;gap:7px">
+                    <input value="{{ dlyNote }}" onInput="{{ onDlyNote }}" onKeyDown="{{ onDlyNoteKey }}" placeholder="Add a note&hellip;" class="fld" style="font-size:13px;padding:9px 11px" />
+                    <button onClick="{{ dlyAddNote }}" style="background:#ebae2b;color:#302d22;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap;padding:0 15px;font-size:13px">Add</button>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:10px;max-height:300px;overflow-y:auto">
+                    <sc-for list="{{ dc.notes }}" as="n" hint-placeholder-count="2">
+                      <div style="display:flex;gap:10px"><span style="width:7px;height:7px;border-radius:50%;background:#c4c0b8;margin-top:6px;flex-shrink:0"></span><div><div style="font-size:13px;line-height:1.45;color:#33302a;white-space:pre-wrap">{{ n.text }}</div><div style="font-size:11.5px;color:#a39e94;margin-top:1px">{{ n.date }}</div></div></div>
+                    </sc-for>
+                    <sc-if value="{{ dc.noNotes }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:#b0aba1;font-style:italic">No notes yet.</span></sc-if>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap">
+              <button onClick="{{ dlyPrev }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:9px 13px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;opacity:{{ dlyPrevOp }}">&larr; Previous</button>
+              <div style="display:flex;gap:8px">
+                <button onClick="{{ dlySkip }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:9px 13px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Skip</button>
+                <button onClick="{{ dlyReach }}" style="background:#ebae2b;color:#302d22;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#d2971a">{{ dlyReachLabel }}</button>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ detailOpen }}" hint-placeholder-val="{{ false }}">
-    <div onClick="{{ cancelDetail }}" style="position:fixed;inset:0;background:rgba(28,26,23,.34);display:flex;align-items:center;justify-content:center;z-index:50;animation:fade .14s ease both;backdrop-filter:blur(2px);padding:24px">
-      <div onClick="{{ stop }}" style="background:#fffefb;width:780px;max-width:96vw;max-height:90vh;border-radius:18px;box-shadow:0 28px 70px rgba(28,26,23,.26);animation:rise .2s ease both;display:flex;flex-direction:column;overflow:hidden">
+    <div onClick="{{ cancelDetail }}" style="position:fixed;inset:0;background:rgba(28,26,23,.22);display:flex;align-items:stretch;justify-content:flex-end;z-index:50;animation:fade .14s ease both">
+      <div onClick="{{ stop }}" style="background:#fffefb;width:{{ dPanelW }};max-width:100vw;height:100%;box-shadow:-20px 0 60px rgba(28,26,23,.18);animation:slideIn .2s ease both;display:flex;flex-direction:column;overflow:hidden;transition:width .2s ease">
 
         <div style="display:flex;align-items:flex-start;gap:14px;padding:22px 24px 16px;border-bottom:1px solid #eceae4">
           <div style="flex:1;min-width:0">
-            <input value="{{ dName }}" onInput="{{ onDName }}" placeholder="Contact name" style="font-family:inherit;font-size:21px;font-weight:700;letter-spacing:-.015em;border:none;background:none;outline:none;width:100%;color:#1c1a17;padding:0" />
-            <div style="display:flex;gap:8px;margin-top:6px">
-              <input value="{{ dRole }}" onInput="{{ onDRole }}" placeholder="Role (e.g. Principal)" style="font-family:inherit;font-size:13px;font-weight:500;color:#8a857c;border:none;background:none;outline:none;padding:0;width:42%" />
+            <input value="{{ dOrg }}" onInput="{{ onDOrg }}" placeholder="Organization / district" style="font-family:inherit;font-size:21px;font-weight:700;letter-spacing:-.015em;border:none;background:none;outline:none;width:100%;color:#1c1a17;padding:0" />
+            <div style="display:flex;gap:8px;margin-top:6px;align-items:baseline">
+              <input value="{{ dName }}" onInput="{{ onDName }}" placeholder="Contact name" style="font-family:inherit;font-size:15px;font-weight:700;color:#33302a;border:none;background:none;outline:none;padding:0;field-sizing:content;min-width:3ch;max-width:60%;flex-shrink:0" />
               <span style="color:#d8d5cf">&middot;</span>
-              <input value="{{ dOrg }}" onInput="{{ onDOrg }}" placeholder="Organization / district" style="font-family:inherit;font-size:13px;font-weight:500;color:#8a857c;border:none;background:none;outline:none;padding:0;flex:1" />
+              <input value="{{ dRole }}" onInput="{{ onDRole }}" placeholder="Role (e.g. Principal)" style="font-family:inherit;font-size:13px;font-weight:500;color:#8a857c;border:none;background:none;outline:none;padding:0;flex:1;min-width:0;width:0" />
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-            <select value="{{ dStage }}" onChange="{{ onDStage }}" style="font-family:inherit;font-size:12.5px;font-weight:600;padding:7px 10px;border:1.5px solid #e0ddd6;border-radius:8px;background:#faf9f6;outline:none;cursor:pointer">
-              <sc-for list="{{ stages }}" as="s" hint-placeholder-count="4">
-                <option value="{{ s.id }}">{{ s.name }}</option>
-              </sc-for>
-            </select>
+          <div style="display:flex;align-items:flex-start;gap:10px;flex-shrink:0">
+            <div style="display:flex;flex-direction:column;align-items:stretch;gap:6px">
+              <select value="{{ dStage }}" onChange="{{ onDStage }}" style="max-width:150px;font-family:inherit;font-size:12.5px;font-weight:600;padding:7px 10px;border:1.5px solid #e0ddd6;border-radius:8px;background:#faf9f6;outline:none;cursor:pointer">
+                <sc-for list="{{ stages }}" as="s" hint-placeholder-count="4">
+                  <option value="{{ s.id }}">{{ s.name }}</option>
+                </sc-for>
+              </select>
+              <sc-if value="{{ dIsNew }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ dNotQualified }}" style="background:none;border:1.5px solid #e0ddd6;border-radius:8px;color:#8a857c;font-family:inherit;font-size:12px;font-weight:600;padding:5px 10px;cursor:pointer;white-space:nowrap" style-hover="border-color:#a93226;color:#a93226">Not qualified</button>
+              </sc-if>
+            </div>
+            <button onClick="{{ toggleFull }}" title="{{ dFullLabel }}" style="background:none;border:none;color:#a8a39a;cursor:pointer;padding:2px;display:flex" style-hover="color:#1c1a17">
+              <sc-if value="{{ dIsFull }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"></path></svg></sc-if>
+              <sc-if value="{{ dIsSide }}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"></path></svg></sc-if>
+            </button>
             <button onClick="{{ cancelDetail }}" style="background:none;border:none;color:#a8a39a;cursor:pointer;font-size:22px;line-height:1;padding:0" style-hover="color:#1c1a17">&times;</button>
           </div>
         </div>
 
-        <div style="flex:1;overflow-y:auto;display:flex;gap:0">
+        <div style="flex:1;overflow-y:auto;display:flex;flex-direction:{{ dBodyDir }};gap:0;max-width:{{ dBodyMax }};width:100%;margin:0 auto">
           <!-- LEFT: contact + institutions -->
-          <div style="width:42%;flex-shrink:0;padding:20px 22px;border-right:1px solid #eceae4;display:flex;flex-direction:column;gap:18px">
+          <div style="width:{{ dLeftW }};flex-shrink:0;padding:20px 22px;border-right:{{ dLeftBr }};border-bottom:{{ dLeftBb }};display:flex;flex-direction:column;gap:18px">
             <div>
               <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94;margin-bottom:9px">Contact info</div>
-              <sc-if value="{{ dirHasData }}" hint-placeholder-val="{{ false }}">
-                <div style="margin-bottom:12px">
-                  <input value="{{ dirQ }}" onInput="{{ onDirQ }}" placeholder="Import a mosque from Rihla Directory&hellip;" class="fld" style="font-size:13px;padding:8px 11px" />
-                  <sc-if value="{{ dirShowDetail }}" hint-placeholder-val="{{ false }}">
-                    <div style="margin-top:7px;border:1.5px solid #eceae4;border-radius:9px;overflow:hidden;max-height:192px;overflow-y:auto;background:#faf9f6">
-                      <sc-for list="{{ dirMatchesDetail }}" as="m" hint-placeholder-count="0">
-                        <button onClick="{{ m.onPick }}" style="display:block;width:100%;text-align:left;background:none;border:none;border-bottom:1px solid #efece6;padding:8px 11px;cursor:pointer;font-family:inherit" style-hover="background:#f0eee9">
-                          <div style="font-size:12.5px;font-weight:600;color:#1c1a17">{{ m.name }}</div>
-                          <sc-if value="{{ m.sub }}" hint-placeholder-val="{{ false }}">
-                            <div style="font-size:11px;color:#8a857c;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ m.sub }}</div>
-                          </sc-if>
-                        </button>
-                      </sc-for>
-                      <sc-if value="{{ dirNoMatchDetail }}" hint-placeholder-val="{{ false }}">
-                        <div style="padding:10px 11px;font-size:12px;color:#a8a39a;font-style:italic">No matches.</div>
-                      </sc-if>
-                    </div>
-                  </sc-if>
-                </div>
-              </sc-if>
-              <div style="display:flex;flex-direction:column;gap:12px">
+                            <div style="display:flex;flex-direction:column;gap:12px">
                 <div>
                   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
                     <span style="font-size:12px;color:#8a857c;font-weight:600">Emails</span>
@@ -215,6 +345,32 @@
 
             <div>
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
+                <button onClick="{{ toggleLinks }}" style="display:flex;align-items:center;gap:6px;background:none;border:none;padding:0;cursor:pointer;font-family:inherit;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94" style-hover="color:#1c1a17">
+                  <span style="display:inline-block;font-size:9px;transform:rotate({{ linksRot }});transition:transform .15s ease">&#9654;</span>Related links <span style="font-weight:600;letter-spacing:0;color:#c4c0b8">{{ linksCount }}</span>
+                </button>
+                <button onClick="{{ addLink }}" style="background:#f0eee9;border:none;border-radius:6px;color:#33302a;font-family:inherit;font-size:11.5px;font-weight:600;padding:3px 9px;cursor:pointer;white-space:nowrap" style-hover="background:#e6e3dc">+ Add</button>
+              </div>
+              <sc-if value="{{ linksOpen }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ links }}" as="lk" hint-placeholder-count="1">
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <input value="{{ lk.label }}" onInput="{{ lk.onLabel }}" placeholder="Label" class="fld" style="font-size:13px;padding:8px 11px;flex:0 0 34%;width:34%" />
+                      <input value="{{ lk.url }}" onInput="{{ lk.onUrl }}" placeholder="https://&hellip;" class="fld" style="font-size:13px;padding:8px 11px;flex:1" />
+                      <sc-if value="{{ lk.hasUrl }}" hint-placeholder-val="{{ false }}">
+                        <a href="{{ lk.href }}" target="_blank" rel="noopener" title="Open" style="color:#8a6a12;font-size:14px;line-height:1;flex-shrink:0;text-decoration:none">&#8599;</a>
+                      </sc-if>
+                      <button onClick="{{ lk.onRemove }}" title="Remove" style="background:none;border:none;color:#c4c0b8;cursor:pointer;font-size:15px;line-height:1;padding:0;flex-shrink:0" style-hover="color:#c0392b">&times;</button>
+                    </div>
+                  </sc-for>
+                  <sc-if value="{{ noLinks }}" hint-placeholder-val="{{ false }}">
+                    <div style="font-size:12px;color:#b0aba1;font-style:italic">No links yet.</div>
+                  </sc-if>
+                </div>
+              </sc-if>
+            </div>
+
+            <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:9px">
                 <span style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94">Related institutions</span>
                 <button onClick="{{ addInst }}" style="background:#f0eee9;border:none;border-radius:6px;color:#33302a;font-family:inherit;font-size:11.5px;font-weight:600;padding:3px 9px;cursor:pointer" style-hover="background:#e6e3dc">+ Add</button>
               </div>
@@ -245,9 +401,23 @@
 
           <!-- RIGHT: status + notes -->
           <div style="flex:1;min-width:0;padding:20px 22px;display:flex;flex-direction:column;gap:18px">
+            <sc-if value="{{ dIsNew }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #eceae4;border-radius:10px;background:#faf9f6">
+                <span style="font-size:12.5px;color:#8a857c">New lead</span>
+                <button onClick="{{ dNotQualified }}" style="background:#fffefb;border:1.5px solid #e0ddd6;border-radius:8px;color:#8a857c;font-family:inherit;font-size:12.5px;font-weight:600;padding:5px 10px;cursor:pointer;white-space:nowrap" style-hover="border-color:#a93226;color:#a93226">Not qualified</button>
+              </div>
+            </sc-if>
+            <div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94;margin-bottom:9px">Next reach-out</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                <input type="date" value="{{ dNext }}" onChange="{{ onDNext }}" class="fld" style="width:160px;font-size:13px;padding:7px 10px" />
+                <sc-for list="{{ nextChips }}" as="nc" hint-placeholder-count="4"><button onClick="{{ nc.onClick }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:7px;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#e6e3dc">{{ nc.label }}</button></sc-for>
+                <sc-if value="{{ dHasNext }}" hint-placeholder-val="{{ false }}"><button onClick="{{ clearDNext }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:7px;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;background:none;color:#a39e94">Clear</button></sc-if>
+              </div>
+            </div>
             <div>
               <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#a39e94;margin-bottom:9px">Where we are</div>
-              <textarea value="{{ dStatus }}" onInput="{{ onDStatus }}" placeholder="Key status — what stage of the conversation, blockers, next steps, decision-makers, pricing discussed…" rows="4" class="fld" style="resize:vertical;line-height:1.5"></textarea>
+              <textarea value="{{ dStatus }}" onInput="{{ onDStatus }}" placeholder="Key status — what stage of the conversation, blockers, next steps, decision-makers, pricing discussed…" rows="10" class="fld" style="resize:vertical;line-height:1.5;min-height:220px"></textarea>
             </div>
 
             <div style="display:flex;flex-direction:column;flex:1;min-height:0">
@@ -264,7 +434,7 @@
                       <span style="flex:1;width:1.5px;background:#eceae4;margin-top:4px"></span>
                     </div>
                     <div style="flex:1;padding-bottom:4px">
-                      <div style="font-size:13px;line-height:1.45;color:#33302a">{{ n.text }}</div>
+                      <div style="font-size:13px;line-height:1.45;color:#33302a;white-space:pre-wrap">{{ n.text }}</div>
                       <div style="display:flex;align-items:center;gap:8px;margin-top:3px">
                         <span style="font-size:11px;color:#a39e94;font-weight:500">{{ n.date }}</span>
                         <button onClick="{{ n.onDelete }}" style="background:none;border:none;color:#c4c0b8;font-family:inherit;font-size:11px;cursor:pointer;padding:0" style-hover="color:#c0392b">delete</button>
@@ -370,6 +540,75 @@
     </div>
   </sc-if>
 
+  <sc-if value="{{ showArch }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeArch }}" style="position:fixed;inset:0;background:rgba(28,26,23,.32);display:flex;align-items:center;justify-content:center;z-index:50;animation:fade .14s ease both;padding:24px">
+      <div onClick="{{ stop }}" style="background:#fffefb;width:620px;max-width:96vw;max-height:90vh;border-radius:18px;box-shadow:0 24px 60px rgba(28,26,23,.22);animation:rise .2s ease both;display:flex;flex-direction:column;overflow:hidden">
+        <div style="display:flex;align-items:center;gap:12px;padding:18px 22px 14px;border-bottom:1px solid #eceae4">
+          <div style="font-size:17px;font-weight:700;white-space:nowrap">Archive</div>
+          <input value="{{ archQ }}" onInput="{{ onArchQ }}" placeholder="Search" class="fld" style="font-size:13px;padding:7px 11px;flex:1;min-width:0" />
+          <button onClick="{{ closeArch }}" style="background:none;border:none;color:#a8a39a;cursor:pointer;font-size:22px;line-height:1;padding:0" style-hover="color:#1c1a17">&times;</button>
+        </div>
+        <div style="flex:1;overflow-y:auto">
+          <sc-for list="{{ archRows }}" as="a" hint-placeholder-count="3">
+            <div style="display:flex;gap:12px;align-items:center;padding:11px 22px;border-bottom:1px solid #f3f1ec">
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13.5px;font-weight:600">{{ a.name }}</div>
+                <div style="font-size:12px;color:#8a857c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ a.sub }}</div>
+                <div style="font-size:11.5px;color:#a39e94;margin-top:1px">{{ a.meta }}</div>
+              </div>
+              <button onClick="{{ a.onOpen }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:7px;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#e6e3dc">Restore &amp; open</button>
+              <button onClick="{{ a.onRestore }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:7px;padding:5px 10px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap" style-hover="background:#e6e3dc">Restore</button>
+            </div>
+          </sc-for>
+          <sc-if value="{{ archEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:22px;font-size:13px;color:#8a857c">Nothing archived.</div></sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showImport }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeImport }}" style="position:fixed;inset:0;background:rgba(28,26,23,.32);display:flex;align-items:center;justify-content:center;z-index:50;animation:fade .14s ease both;padding:24px">
+      <div onClick="{{ stop }}" style="background:#fffefb;width:620px;max-width:96vw;max-height:90vh;border-radius:18px;box-shadow:0 24px 60px rgba(28,26,23,.22);animation:rise .2s ease both;display:flex;flex-direction:column;overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 22px 14px;border-bottom:1px solid #eceae4">
+          <div style="font-size:17px;font-weight:700;white-space:nowrap;flex:1">Import leads</div>
+          <button onClick="{{ closeImport }}" style="background:none;border:none;color:#a8a39a;cursor:pointer;font-size:22px;line-height:1;padding:0" style-hover="color:#1c1a17">&times;</button>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding:18px 22px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <label style="background:#f0eee9;border-radius:9px;padding:9px 13px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap">Choose file (.csv / .tsv)<input type="file" accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values" onChange="{{ onImportFile }}" style="display:none" /></label>
+            <span style="font-size:12.5px;color:#8a857c">{{ impFileName }}</span>
+          </div>
+          <textarea value="{{ impText }}" onInput="{{ onImpText }}" placeholder="&hellip;or paste rows here, header row included" rows="7" class="fld" style="resize:vertical;font-size:12px;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.45;white-space:pre"></textarea>
+          <sc-if value="{{ impHasRows }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <span style="font-size:13px;font-weight:600">{{ impSummary }}</span>
+                <span style="font-size:12.5px;color:#8a857c">Add to</span>
+                <select value="{{ impStage }}" onChange="{{ onImpStage }}" class="fld" style="width:auto;cursor:pointer;font-size:12.5px;padding:6px 9px">
+                  <sc-for list="{{ stages }}" as="s" hint-placeholder-count="4"><option value="{{ s.id }}">{{ s.name }}</option></sc-for>
+                </select>
+              </div>
+              <div style="border:1px solid #eceae4;border-radius:10px;overflow:hidden;max-height:260px;overflow-y:auto">
+                <sc-for list="{{ impPreview }}" as="r" hint-placeholder-count="3">
+                  <div style="display:flex;gap:10px;align-items:baseline;padding:8px 12px;border-bottom:1px solid #f3f1ec;font-size:12.5px;opacity:{{ r.op }}">
+                    <span style="flex:1 1 160px;min-width:0;font-weight:600">{{ r.name }}</span>
+                    <span style="flex:1 1 180px;min-width:0;color:#8a857c;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ r.sub }}</span>
+                    <span style="flex:0 0 auto;font-size:11.5px;font-weight:600;color:{{ r.tagFg }}">{{ r.tag }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ impErrOn }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;color:#a93226">{{ impErr }}</div></sc-if>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid #eceae4;background:#faf9f6">
+          <button onClick="{{ closeImport }}" style="background:#f0eee9;color:#33302a;border:none;border-radius:9px;padding:10px 16px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer">Cancel</button>
+          <button onClick="{{ doImport }}" style="background:{{ impBtnBg }};color:#302d22;border:none;border-radius:9px;padding:10px 18px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer">{{ impBtnLabel }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <!-- ============ EDIT STAGES MODAL ============ -->
   <sc-if value="{{ showStages }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ closeStages }}" style="position:fixed;inset:0;background:rgba(28,26,23,.32);display:flex;align-items:center;justify-content:center;z-index:50;animation:fade .14s ease both;backdrop-filter:blur(2px)">
@@ -405,6 +644,13 @@
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   state = {
+    mode: null,
+    daily: (() => { try { return JSON.parse(localStorage.getItem('crm-daily-v1') || 'null'); } catch (e) { return null; } })(),
+    dailyN: (() => { try { return +localStorage.getItem('crm-daily-n') || 20; } catch (e) { return 20; } })(),
+    dailySrc: (() => { try { return JSON.parse(localStorage.getItem('crm-daily-src') || 'null'); } catch (e) { return null; } })(),
+    dailySetup: false, dlyNote: '',
+    linksOpen: (() => { try { return localStorage.getItem('crm-links-open') !== '0'; } catch (e) { return true; } })(),
+    dFull: (() => { try { return localStorage.getItem('crm-detail-full') === '1'; } catch (e) { return false; } })(),
     contacts: null,
     stages: [
       { id: 'new',         name: 'New',         dot: 'oklch(0.62 0.13 255)' },
@@ -515,6 +761,11 @@ class Component extends DCLogic {
     if (this.store) this.store.save(contacts);
   }
 
+  isNewStage(id) { const s = this.state.stages.find(x => x.id === id); return !!s && (s.id === 'new' || /^new$/i.test(s.name.trim())); }
+  markNotQualified(id) {
+    this.commit((this.state.contacts || []).map(c => c.id === id ? { ...c, archived: { ts: Date.now(), reason: 'Not qualified' } } : c));
+    if (this.state.detail && this.state.detail.id === id) this.setState({ detail: null, noteDraft: '', dirQ: '' });
+  }
   commitStages(stages, contacts) {
     this.setState({ stages });
     if (this.store && this.store.saveStages) this.store.saveStages(stages);
@@ -633,6 +884,58 @@ class Component extends DCLogic {
     }));
   };
 
+  ymd(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  addDays(n) { const d = new Date(); d.setDate(d.getDate() + n); return this.ymd(d); }
+  niceDay(s) { if (!s) return ''; if (s === this.ymd()) return 'Today'; if (s === this.addDays(1)) return 'Tomorrow'; return new Date(s + 'T12:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); }
+  nextPill(s) { const t = this.ymd(), od = s < t, td = s === t; return { label: (od ? 'Overdue \u00b7 ' : td ? 'Reach out today' : 'Reach out \u00b7 ') + (td ? '' : this.niceDay(s)), bg: od ? '#fbe9e7' : td ? '#fff3d6' : '#e6effb', fg: od ? '#a93226' : td ? '#8a6100' : '#2b5ea8' }; }
+  dateChips(fn) { return [['Tomorrow', 1], ['3 days', 3], ['1 week', 7], ['2 weeks', 14], ['1 month', 30]].map(([label, n]) => ({ label, onClick: () => fn(this.addDays(n)) })); }
+  patchContact(id, fn) { const contacts = (this.state.contacts || []).map(c => c.id === id ? fn({ ...c }) : c); this.commit(contacts); }
+  dailySrcIds() { const st = this.state.stages; if (this.state.dailySrc) return this.state.dailySrc.filter(id => st.some(s => s.id === id)); return st.filter(s => !/^paying/i.test(s.name.trim())).map(s => s.id); }
+  dailyCandidates() {
+    const t = this.ymd(), src = new Set(this.dailySrcIds()), st = this.state.stages, order = Object.fromEntries(st.map((s, i) => [s.id, i]));
+    const newId = (st.find(s => /^new$/i.test(s.name.trim())) || st[0] || {}).id;
+    const list = (this.state.contacts || []).filter(c => !c.archived && src.has(c.stage) && !(c.nextReach && c.nextReach > t) && !(c.lastReach && this.ymd(new Date(c.lastReach)) === t));
+    const tier = c => c.stage === newId ? 0 : (c.nextReach && c.nextReach <= t) ? 1 : 2;
+    return list.sort((a, b) => tier(a) - tier(b) || (tier(a) === 1 ? a.nextReach.localeCompare(b.nextReach) : 0) || (a.lastReach || 0) - (b.lastReach || 0) || order[a.stage] - order[b.stage] || String(a.name).localeCompare(String(b.name)));
+  }
+  saveDaily(d) { try { localStorage.setItem('crm-daily-v1', JSON.stringify(d)); } catch (e) {} this.setState({ daily: d }); }
+  parseLeads(text) {
+    text = String(text || '').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+    const first = text.split('\n')[0] || '', delim = (first.match(/\t/g) || []).length >= (first.match(/,/g) || []).length ? '\t' : ',';
+    const rows = []; let row = [], cur = '', q = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (q) { if (ch === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+      else if (ch === '"' && cur === '') q = true;
+      else if (ch === delim) { row.push(cur); cur = ''; }
+      else if (ch === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+      else cur += ch;
+    }
+    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+    const nonEmpty = rows.filter(r => r.some(c => String(c).trim()));
+    if (nonEmpty.length < 2) return { leads: [], err: nonEmpty.length ? 'Only a header row found.' : '' };
+    const hdr = nonEmpty[0].map(x => String(x).trim().toLowerCase());
+    const col = (...keys) => { for (const k of keys) { const i = hdr.findIndex(x => x === k || x.startsWith(k)); if (i >= 0) return i; } return -1; };
+    const iName = col('full_name', 'name'), iEmail = col('email'), iPhone = col('phone_number', 'phone'), iZip = col('zip_code', 'zip', 'post_code'),
+      iJob = col('job_title'), iRole = col('which_role'), iInt = col('are_you_interested'), iStu = col('what_is_the_estimated_number', 'students'),
+      iDate = col('created_time'), iCamp = col('campaign_name'), iForm = col('form_name'), iPlat = col('platform'), iId = col('id');
+    if (iName < 0 && iEmail < 0 && iPhone < 0) return { leads: [], err: 'Couldn\u2019t find full_name, email or phone_number columns.' };
+    const g = (r, i) => i >= 0 ? String(r[i] || '').trim() : '';
+    const META = /^(id|created_time|ad_id|ad_name|adset_id|adset_name|campaign_id|campaign_name|form_id|form_name|is_organic|platform|full_name|first_name|last_name|email|phone_number|phone|lead_status|inbox_url)$/;
+    const qCols = nonEmpty[0].map((x, i) => [String(x).trim(), i]).filter(([x]) => x && !META.test(x.toLowerCase()));
+    const qLabel = s => { const t = s.replace(/_/g, ' ').replace(/\s+/g, ' ').trim(); return { 'zip code': 'ZIP code', 'job title': 'Job title', 'post code': 'Postal code' }[t.toLowerCase()] || t.charAt(0).toUpperCase() + t.slice(1); };
+    const clean = v => String(v || '').trim().replace(/^[a-z]:\s*/i, '').replace(/_/g, ' ');
+    const tidy = s => s.replace(/_/g, ' ').replace(/\s+/g, ' ').trim().replace(/^./, c => c.toUpperCase());
+    const leads = nonEmpty.slice(1).map(r => {
+      const phone = g(r, iPhone).replace(/^p:\s*/i, ''), email = g(r, iEmail).replace(/^e:\s*/i, '');
+      const roleAns = tidy(g(r, iRole)), job = g(r, iJob), stuRaw = g(r, iStu), students = (() => { const n = (stuRaw.replace(/,/g, '').match(/\d+/g) || []).map(Number); if (!n.length) return 0; const v = n.length > 1 ? Math.round((n[0] + n[1]) / 2) : n[0]; return v > 100000 ? 0 : v; })();
+      const dt = g(r, iDate), date = dt ? new Date(dt) : null;
+      return { leadId: g(r, iId), name: g(r, iName) || email || phone, email, phone, zip: g(r, iZip).replace(/^z:\s*/i, ''), role: job || roleAns, roleAns, interest: tidy(g(r, iInt)), stuRaw: tidy(stuRaw), students,
+        answers: qCols.map(([q, i]) => [qLabel(q), clean(r[i])]).filter(([, a]) => a),
+        ts: date && !isNaN(date) ? date.getTime() : Date.now(), camp: g(r, iCamp), form: g(r, iForm), plat: g(r, iPlat) };
+    }).filter(l => l.name);
+    return { leads, err: '' };
+  }
   saveNew = () => {
     const f = this.state.newForm;
     if (!f.name.trim()) return;
@@ -653,7 +956,8 @@ class Component extends DCLogic {
   setNF(k, v) { this.setState(s => ({ newForm: { ...s.newForm, [k]: v } })); }
 
   renderVals() {
-    const contacts = this.state.contacts || [];
+    const contacts = (this.state.contacts || []).filter(c => !c.archived);
+    const archivedList = (this.state.contacts || []).filter(c => c.archived).sort((a, b) => b.archived.ts - a.archived.ts);
     const stageName = (id) => (this.state.stages.find(s => s.id === id) || {}).name || '';
 
     const columns = this.state.stages.map(st => {
@@ -676,22 +980,125 @@ class Component extends DCLogic {
             focusName: focus ? focus.name : c.org,
             instLabel: more > 0 ? ('+' + more + ' more institution' + (more > 1 ? 's' : '')) : (c.role || ''),
             students: this.fmtNum(this.studentsOf(c)) + ' students',
+            ...(c.nextReach ? (() => { const p = this.nextPill(c.nextReach); return { hasNext: true, nextLabel: p.label, nextBg: p.bg, nextFg: p.fg }; })() : { hasNext: false, nextLabel: '', nextBg: '', nextFg: '' }),
             onOpen: () => this.setState({ detail: JSON.parse(JSON.stringify(c)), noteDraft: '', dirQ: '' }),
             onDragStart: (e) => { this.setState({ dragId: c.id }); try { e.dataTransfer.effectAllowed = 'move'; } catch (x) {} },
             onDragEnd: () => this.setState({ dragId: null, dragOver: null }),
+            isNew: this.isNewStage(c.stage),
+            onNotQualified: (e) => { e.stopPropagation(); this.markNotQualified(c.id); },
             onDelete: (e) => { e.stopPropagation(); this.delContact(c.id); },
           };
         }),
       };
     });
 
+    const T = this.ymd(), D = this.state.daily && this.state.daily.date === T ? this.state.daily : null, byId = new Map(contacts.map(c => [c.id, c]));
+    const dIds = D ? D.ids.filter(id => byId.has(id)) : [], dIdx = D ? Math.min(D.idx || 0, dIds.length) : 0;
+    const reachedToday = id => { const c = byId.get(id); return !!(c && c.lastReach && this.ymd(new Date(c.lastReach)) === T); };
+    const reachedN = dIds.filter(reachedToday).length, cand = this.dailyCandidates(), srcIds = new Set(this.dailySrcIds());
+    const setIdx = i => this.saveDaily({ ...D, ids: dIds, idx: Math.max(0, Math.min(i, dIds.length)) });
+    const curC = D && dIdx < dIds.length ? byId.get(dIds[dIdx]) : null, setupOn = this.state.dailySetup || !D || !dIds.length;
     const out = {
       columns,
+      showLauncher: this.state.mode === null && !this.state.detail,
+      showDaily: this.state.mode === 'daily',
+      goDaily: () => this.setState({ mode: 'daily' }),
+      goBoard: () => this.setState({ mode: 'board' }),
+      launchDailyMeta: D && dIds.length ? reachedN + ' of ' + dIds.length + ' reached today' : cand.length + ' ready to reach out',
+      dlyMeta: D && dIds.length && !setupOn ? reachedN + ' of ' + dIds.length + ' reached today' : cand.length + ' ready',
+      dlyHasList: !!(D && dIds.length) && !setupOn,
+      dlyNewList: () => this.setState({ dailySetup: true }),
+      dlySetup: setupOn,
+      dlyN: String(this.state.dailyN), onDlyN: (e) => { const n = Math.max(1, parseInt(e.target.value, 10) || 1); try { localStorage.setItem('crm-daily-n', n); } catch (x) {} this.setState({ dailyN: n }); },
+      dlySrc: this.state.stages.map(s => { const on = srcIds.has(s.id), n = contacts.filter(c => c.stage === s.id).length; return { name: s.name, dot: s.dot, count: String(n), bd: on ? s.dot : '#e0ddd6', bg: on ? '#fff' : '#faf9f6',
+        onClick: () => { const cur = new Set(this.dailySrcIds()); cur.has(s.id) ? cur.delete(s.id) : cur.add(s.id); const arr = [...cur]; try { localStorage.setItem('crm-daily-src', JSON.stringify(arr)); } catch (x) {} this.setState({ dailySrc: arr }); } }; }),
+      dlyAvail: cand.length + (cand.length === 1 ? ' contact' : ' contacts') + ' available',
+      dlyBuildLabel: cand.length ? 'Start ' + Math.min(this.state.dailyN, cand.length) : 'Nobody to reach',
+      dlyBuild: () => { if (!cand.length) return; const keep = D ? dIds.filter(reachedToday) : []; const add = cand.filter(c => !keep.includes(c.id)).slice(0, this.state.dailyN).map(c => c.id);
+        this.saveDaily({ date: T, ids: keep.concat(add), idx: keep.length }); this.setState({ dailySetup: false, dlyNote: '' }); },
+      dlyDone: !setupOn && !!D && dIdx >= dIds.length,
+      dlyDoneMeta: reachedN + ' of ' + dIds.length + ' reached out to today.',
+      dlyBackStart: () => setIdx(0),
+      dlyCur: !setupOn && !!curC,
+      dlyPos: (dIdx + 1) + ' of ' + dIds.length, dlyBar: dIds.length ? (reachedN / dIds.length * 100).toFixed(1) + '%' : '0%', dlyReached: reachedN + ' reached',
+      dlyPrev: () => { if (dIdx > 0) { setIdx(dIdx - 1); this.setState({ dlyNote: '' }); } }, dlyPrevOp: dIdx > 0 ? '1' : '.4',
+      dlySkip: () => { setIdx(dIdx + 1); this.setState({ dlyNote: '' }); },
+      dlyReachLabel: curC && reachedToday(curC.id) ? 'Next \u2192' : 'Reached out \u2713  Next \u2192',
+      dlyReach: () => { if (!curC) return; const note = this.state.dlyNote.trim();
+        this.patchContact(curC.id, c => { if (!reachedToday(c.id)) c.lastReach = Date.now(); if (note) c.notes = [...(c.notes || []), { id: this.uid('n'), ts: Date.now(), text: note }]; if (c.nextReach && c.nextReach <= T) c.nextReach = ''; return c; });
+        setIdx(dIdx + 1); this.setState({ dlyNote: '' }); },
+      dlyNote: this.state.dlyNote, onDlyNote: (e) => this.setState({ dlyNote: e.target.value }),
+      dlyAddNote: () => { const t = this.state.dlyNote.trim(); if (!t || !curC) return; this.patchContact(curC.id, c => { c.notes = [...(c.notes || []), { id: this.uid('n'), ts: Date.now(), text: t }]; return c; }); this.setState({ dlyNote: '' }); },
+      onDlyNoteKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); const t = this.state.dlyNote.trim(); if (!t || !curC) return; this.patchContact(curC.id, c => { c.notes = [...(c.notes || []), { id: this.uid('n'), ts: Date.now(), text: t }]; return c; }); this.setState({ dlyNote: '' }); } },
+      dc: curC ? (() => { const c = curC, links = (c.links || []).filter(l => String(l.url || '').trim()), notes = [...(c.notes || [])].sort((a, b) => b.ts - a.ts);
+        const setN = v => this.patchContact(c.id, x => { x.nextReach = v; return x; });
+        return { name: c.name || '', org: c.org || c.name || '', sub: c.org ? (c.name || '') : '', role: c.role || '', stage: c.stage, done: reachedToday(c.id),
+          onStage: (e) => { const v = e.target.value; this.patchContact(c.id, x => { x.stage = v; return x; }); },
+          onOpen: () => this.setState({ detail: JSON.parse(JSON.stringify(c)), noteDraft: '', dirQ: '' }),
+          isNew: this.isNewStage(c.stage),
+          onNotQualified: () => { this.markNotQualified(c.id); this.saveDaily({ ...D, ids: dIds.filter(id => id !== c.id), idx: dIdx }); this.setState({ dlyNote: '' }); },
+          phones: (c.phones || []).filter(Boolean).map(p => ({ label: p, href: 'tel:' + String(p).replace(/[^0-9+]/g, '') })),
+          emails: (c.emails || []).filter(Boolean).map(e => ({ label: e, href: 'mailto:' + e })),
+          links: links.map(l => { const u = String(l.url).trim(); return { label: l.label || u.replace(/^https?:\/\/(www\.)?/, ''), href: /^https?:\/\//i.test(u) ? u : 'https://' + u }; }),
+          noContact: !(c.phones || []).filter(Boolean).length && !(c.emails || []).filter(Boolean).length,
+          hasStatus: !!String(c.status || '').trim(), status: c.status || '',
+          next: c.nextReach || '', hasNext: !!c.nextReach, onNext: (e) => setN(e.target.value), clearNext: () => setN(''), chips: this.dateChips(setN),
+          notes: notes.map(n => ({ text: n.text, date: this.fmtDate(n.ts) })), noNotes: !notes.length };
+      })() : { name: '', org: '', sub: '', role: '', stage: '', done: false, isNew: false, onNotQualified: () => {}, onStage: () => {}, onOpen: () => {}, phones: [], emails: [], links: [], noContact: false, hasStatus: false, status: '', next: '', hasNext: false, onNext: () => {}, clearNext: () => {}, chips: [], notes: [], noNotes: true },
+      dIsNew: false, dNotQualified: () => {},
+      dNext: '', dHasNext: false, onDNext: () => {}, clearDNext: () => {}, nextChips: [],
       stages: this.state.stages,
       totalContacts: contacts.length,
+      archCount: String(archivedList.length), hasArch: archivedList.length > 0,
+      showArch: !!this.state.showArch, openArch: () => this.setState({ showArch: true, archQ: '' }), closeArch: () => this.setState({ showArch: false }),
+      archQ: this.state.archQ || '', onArchQ: (e) => this.setState({ archQ: e.target.value }),
+      archRows: archivedList.filter(c => { const q = (this.state.archQ || '').trim().toLowerCase(); return !q || [c.name, c.org, c.role, ...(c.emails || []), ...(c.phones || [])].join(' ').toLowerCase().includes(q); }).slice(0, 300).map(c => ({
+        name: c.org || c.name || '(no name)', sub: [c.org ? c.name : '', c.role, (c.phones || [])[0] || (c.emails || [])[0]].filter(Boolean).join(' \u00b7 '),
+        meta: c.archived.reason + ' \u00b7 ' + this.fmtDate(c.archived.ts),
+        onRestore: () => { this.patchContact(c.id, x => { delete x.archived; return x; }); },
+        onOpen: () => { const x = JSON.parse(JSON.stringify(c)); delete x.archived; this.patchContact(c.id, y => { delete y.archived; return y; }); this.setState({ showArch: false, mode: 'board', detail: x, noteDraft: '', dirQ: '' }); },
+      })),
+      archEmpty: !archivedList.length,
       totalStudents: this.fmtNum(contacts.reduce((a, c) => a + this.studentsOf(c), 0)),
       stop: (e) => e.stopPropagation(),
       contactMethods: this.METHODS,
+      ...(() => {
+        const st = this.state, P = st.impText ? this.parseLeads(st.impText) : { leads: [], err: '' };
+        const all = st.contacts || [], dig = s => String(s || '').replace(/\D/g, '').slice(-10);
+        const emails = new Set(), phones = new Set(), leadIds = new Set();
+        all.forEach(c => { (c.emails || []).forEach(e => emails.add(String(e).toLowerCase())); (c.phones || []).forEach(p => { const d = dig(p); if (d.length >= 7) phones.add(d); }); if (c.leadId) leadIds.add(c.leadId); });
+        const marked = P.leads.map(l => { const dup = (l.leadId && leadIds.has(l.leadId)) || (l.email && emails.has(l.email.toLowerCase())) || (dig(l.phone).length >= 7 && phones.has(dig(l.phone)));
+          if (!dup) { if (l.email) emails.add(l.email.toLowerCase()); if (dig(l.phone).length >= 7) phones.add(dig(l.phone)); if (l.leadId) leadIds.add(l.leadId); } return { ...l, dup }; });
+        const fresh = marked.filter(l => !l.dup), stage = st.impStage || (st.stages[0] || {}).id;
+        return {
+          showImport: !!st.showImport,
+          openImport: () => this.setState({ showImport: true, impText: '', impFile: '', impStage: (st.stages[0] || {}).id }),
+          closeImport: () => this.setState({ showImport: false, impText: '', impFile: '' }),
+          impText: st.impText || '', onImpText: (e) => this.setState({ impText: e.target.value, impFile: '' }),
+          impFileName: st.impFile || '',
+          onImportFile: (e) => { const f = e.target.files && e.target.files[0]; if (!f) return; const rd = new FileReader();
+            rd.onload = () => { const b = new Uint8Array(rd.result); let enc = 'utf-8'; if (b[0] === 0xFF && b[1] === 0xFE) enc = 'utf-16le'; else if (b[0] === 0xFE && b[1] === 0xFF) enc = 'utf-16be'; else if (b.length > 3 && b[1] === 0 && b[3] === 0) enc = 'utf-16le';
+              this.setState({ impText: new TextDecoder(enc).decode(b), impFile: f.name }); };
+            rd.readAsArrayBuffer(f); e.target.value = ''; },
+          impHasRows: marked.length > 0, impErrOn: !!P.err, impErr: P.err,
+          impSummary: fresh.length + ' new' + (marked.length - fresh.length ? ' \u00b7 ' + (marked.length - fresh.length) + ' already in En' : ''),
+          impStage: stage, onImpStage: (e) => this.setState({ impStage: e.target.value }),
+          impPreview: marked.slice(0, 200).map(l => ({ name: l.name, sub: [l.role, l.email, l.phone].filter(Boolean).join(' \u00b7 '), tag: l.dup ? 'Already in En' : l.students ? l.students + ' students' : '', tagFg: l.dup ? '#a8a39a' : '#8a6a12', op: l.dup ? '.55' : '1' })),
+          impBtnBg: fresh.length ? '#ebae2b' : '#e6e3dc', impBtnLabel: fresh.length ? 'Import ' + fresh.length + (fresh.length === 1 ? ' lead' : ' leads') : 'Nothing to import',
+          doImport: () => {
+            if (!fresh.length) return;
+            const add = fresh.map(l => {
+              const instId = this.uid('i'), bits = [l.interest && 'Interest: ' + l.interest, l.roleAns && l.roleAns !== l.role && 'Focus: ' + l.roleAns, l.stuRaw && 'Est. students: ' + l.stuRaw, l.zip && 'ZIP: ' + l.zip, [l.form, l.camp, l.plat].filter(Boolean).join(' / ')].filter(Boolean);
+              return { id: this.uid('c'), leadId: l.leadId || undefined, name: l.name, role: l.role, org: '',
+                emails: l.email ? [l.email] : [], phones: l.phone ? [l.phone] : [], stage, pref: l.phone && !l.email ? 'Phone call' : 'Email',
+                institutions: l.students ? [{ id: instId, name: '', students: l.students }] : [], focusId: l.students ? instId : null,
+                status: '', notes: [{ id: this.uid('n'), ts: l.ts, text: 'Lead form' + ([l.form, l.camp, l.plat].filter(Boolean).length ? ' (' + [l.form, l.plat].filter(Boolean).join(', ') + ')' : '') + '\n' + (l.answers || []).map(([q, a]) => q + '\n\u2192 ' + a).join('\n\n') }] };
+            });
+            this.commit([...all, ...add]);
+            this.setState({ showImport: false, impText: '', impFile: '' });
+          },
+        };
+      })(),
       // new contact
       showNew: this.state.showNew,
       openNew: () => this.setState({ showNew: true, dirQ: '', newForm: { name: '', role: '', org: '', email: '', students: '', stage: (this.state.stages[0] || {}).id || 'new', pref: 'Email' } }),
@@ -709,8 +1116,15 @@ class Component extends DCLogic {
       onNPref: (e) => this.setNF('pref', e.target.value),
       // detail defaults (so template paints during stream)
       detailOpen: false,
+      ...(() => { const f = !!this.state.dFull; return {
+        dIsFull: f, dIsSide: !f, dFullLabel: f ? 'Exit full screen' : 'Full screen',
+        dPanelW: f ? '100vw' : '560px', dBodyDir: f ? 'row' : 'column', dBodyMax: f ? '1200px' : 'none',
+        dLeftW: f ? '42%' : 'auto', dLeftBr: f ? '1px solid #eceae4' : 'none', dLeftBb: f ? 'none' : '1px solid #eceae4',
+        toggleFull: () => this.setState(s => { const v = !s.dFull; try { localStorage.setItem('crm-detail-full', v ? '1' : ''); } catch (e) {} return { dFull: v }; }),
+      }; })(),
       dName: '', dRole: '', dOrg: '', dPref: 'Email', dStage: 'new', dStatus: '',
       emails: [], noEmails: false, phones: [], noPhones: false,
+      links: [], noLinks: true, linksOpen: true, linksRot: '90deg', linksCount: '', toggleLinks: () => {}, addLink: () => {},
       insts: [], noInsts: false, notes: [], noNotes: false, noteDraft: '',
       // edit stages
       showStages: this.state.showStages,
@@ -756,6 +1170,11 @@ class Component extends DCLogic {
       out.dPref = d.pref || 'Email';
       out.onDPref = (e) => this.setD('pref', e.target.value);
       out.dStatus = d.status || '';
+      out.dIsNew = this.isNewStage(d.stage) && (this.state.contacts || []).some(c => c.id === d.id);
+      out.dNotQualified = () => this.markNotQualified(d.id);
+      out.dNext = d.nextReach || ''; out.dHasNext = !!d.nextReach;
+      out.onDNext = (e) => this.setD('nextReach', e.target.value); out.clearDNext = () => this.setD('nextReach', '');
+      out.nextChips = this.dateChips(v => this.setD('nextReach', v));
 
       const emails = d.emails || [];
       out.noEmails = emails.length === 0;
@@ -774,6 +1193,21 @@ class Component extends DCLogic {
         onRemove: () => this.setState(s => ({ detail: { ...s.detail, phones: s.detail.phones.filter((_, j) => j !== i) } })),
       }));
       out.addPhone = () => this.setState(s => ({ detail: { ...s.detail, phones: [...(s.detail.phones || []), ''] } }));
+
+      const links = d.links || [], lOpen = this.state.linksOpen !== false;
+      out.links = links.map((lk, i) => {
+        const u = String(lk.url || '').trim();
+        return {
+          label: lk.label || '', url: lk.url || '', hasUrl: !!u, href: /^https?:\/\//i.test(u) ? u : 'https://' + u,
+          onLabel: (e) => { const v = e.target.value; this.setState(s => ({ detail: { ...s.detail, links: s.detail.links.map((x, j) => j === i ? { ...x, label: v } : x) } })); },
+          onUrl: (e) => { const v = e.target.value; this.setState(s => ({ detail: { ...s.detail, links: s.detail.links.map((x, j) => j === i ? { ...x, url: v } : x) } })); },
+          onRemove: () => this.setState(s => ({ detail: { ...s.detail, links: s.detail.links.filter((_, j) => j !== i) } })),
+        };
+      });
+      out.noLinks = links.length === 0;
+      out.linksOpen = lOpen; out.linksRot = lOpen ? '90deg' : '0deg'; out.linksCount = links.length ? String(links.length) : '';
+      out.toggleLinks = () => this.setState(s => { const v = s.linksOpen === false; try { localStorage.setItem('crm-links-open', v ? '1' : '0'); } catch (e) {} return { linksOpen: v }; });
+      out.addLink = () => this.setState(s => ({ linksOpen: true, detail: { ...s.detail, links: [...(s.detail.links || []), { label: '', url: '' }] } }));
       out.onDName = (e) => this.setD('name', e.target.value);
       out.onDRole = (e) => this.setD('role', e.target.value);
       out.onDOrg = (e) => this.setD('org', e.target.value);
