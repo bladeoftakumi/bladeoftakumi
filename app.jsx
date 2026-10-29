@@ -86,6 +86,7 @@ const IconSearch = () =>
 
 /* ----------------------------- data ----------------------------- */
 const LINKS = {
+  substack: "https://bladeoftakumi.substack.com/",
   instagram: "https://www.instagram.com/bladeoftakumi",
   unsplash: "https://unsplash.com/@bladeoftakumi",
   youtube: "https://www.youtube.com/@bladeoftakumi"
@@ -94,14 +95,16 @@ const LINKS = {
 const PRESENCE = [
 { icon: <IconYouTube />, name: "YouTube", href: LINKS.youtube, kind: "ext", cue: "Watch" },
 { icon: <IconInstagram />, name: "Instagram", href: LINKS.instagram, kind: "ext", cue: "Follow" },
-{ icon: <IconPen />, name: "Essays", href: "Essays.html", kind: "page", cue: "Read" },
+{ icon: <IconPen />, name: "Essays", href: LINKS.substack, kind: "ext", cue: "Read" },
 { icon: <IconPhoto />, name: "Unsplash", href: LINKS.unsplash, kind: "ext", cue: "Browse" }];
 
 // RULE: the public Tools section shows ONLY these cards. Every other tool is
 // owner-only and lives on Dashboard.html — add new tools THERE, not here.
+// Owner mode (Owner.html sets window.BOT_OWNER_MODE) restores login + Dashboard; public index.html has neither.
+const OWNER_MODE = !!window.BOT_OWNER_MODE;
 const TOOLS = [
-{ tag: "Goal Monitor", name: "Kaizen", desc: "The goals I\u2019m holding focus on \u2014 progress, pace, and hours logged.", href: "Kaizen.html" },
-{ tag: "Reflection", name: "Ruminations on Death", desc: "A quiet meditation on mortality. Reflect on death to increase urgency.", href: "https://ruminationsondeath.com/", external: true }];
+{ tag: "Reflection", name: "Ruminations on Death", desc: "A quiet meditation on mortality. Reflect on death to increase urgency.", href: "https://ruminationsondeath.com/", external: true },
+{ tag: "orwellianthoughts", name: "Doublethink", desc: "", href: "https://orwellianthoughts.com/", external: true }];
 
 // Owner launcher card — rendered in Tools ONLY when logged in.
 const DASHBOARD_TOOL = { tag: "Owner", name: "Dashboard", desc: "", href: "Dashboard.html", account: true };
@@ -647,13 +650,13 @@ function App() {
           <div className="navlinks">
             <a className="mono" href="#presence" onClick={(e) => scrollTo(e, "#presence")}>Presence</a>
             <a className="mono" href="#tools" onClick={(e) => scrollTo(e, "#tools")}>Tools</a>
-            <a className="mono" href="Essays.html">Essays</a>
+            <a className="mono" href={LINKS.substack} target="_blank" rel="noopener noreferrer">Essays</a>
             <a className="mono" href={LINKS.instagram} target="_blank" rel="noopener noreferrer">Connect</a>
-            <div className="nav-account">
+            {OWNER_MODE && <div className="nav-account">
               {user
                 ? <AccountMenu user={user} onLogout={logout} onSecurity={() => setSecurity(true)} onLock={lock} />
                 : <button className="login-btn" onClick={() => openLogin()}><IconUser /> Log in</button>}
-            </div>
+            </div>}
           </div>
         </div>
       </nav>
@@ -707,7 +710,7 @@ function App() {
             <span className="rule"></span>
           </div>
           <div className="tools-grid">
-            {(user ? TOOLS.concat([DASHBOARD_TOOL]) : TOOLS).map((tool) => {
+            {(OWNER_MODE && user ? TOOLS.concat([DASHBOARD_TOOL]) : TOOLS).map((tool) => {
               const blocked = tool.gated && !user;          // hard-gated, logged out
               const accountAware = tool.account || tool.gated;
               const synced = accountAware && !!user;
@@ -758,10 +761,10 @@ function App() {
       {security && <SecurityModal onClose={() => setSecurity(false)} />}
 
       {/* TRUST-THIS-DEVICE affirmation (after sign-in) */}
-      {trustPrompt && user && <TrustPrompt onDone={() => setTrustPrompt(false)} />}
+      {OWNER_MODE && trustPrompt && user && <TrustPrompt onDone={() => setTrustPrompt(false)} />}
 
       {/* LOCK SCREEN */}
-      {locked && user && <LockScreen user={user} onUnlock={unlock} />}
+      {OWNER_MODE && locked && user && <LockScreen user={user} onUnlock={unlock} />}
 
       {/* TWEAKS */}
       <TweaksPanel>
